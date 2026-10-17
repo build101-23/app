@@ -50,6 +50,12 @@ export const t = {
     // Drafts left in the chat box for the user to finish.
     changeDay: (day: string) => `Cambiar el ${day}: `,
     changeMeal: (slot: string, day: string) => `Cambiar ${slot.toLowerCase()} del ${day}: `,
+    // With the numbers switch on. Amounts come in already formatted ("1.850").
+    macros: (kcal: string, protein: string, carbs: string, fat: string) =>
+      `${kcal} kcal · ${protein} g prote · ${carbs} g carbos · ${fat} g grasa`,
+    dayTotal: 'Total del día',
+    // After the macros when some foods have no values: "(sin contar espinaca, mayonesa)".
+    without: (names: string) => `sin contar ${names.toLowerCase()}`,
   },
   list: {
     hint: 'Tachá lo que ya tenés en casa.',
@@ -159,6 +165,8 @@ export const t = {
     dislike: 'No me gusta',
     like: 'Me gusta',
     want: 'Quiero comer',
+    numbers: 'Mostrar números (calorías y macros)',
+    numbersError: 'No se pudo guardar. Probá de nuevo.',
     signOut: 'Cerrar sesión',
   },
 }

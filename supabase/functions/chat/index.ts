@@ -1,8 +1,9 @@
 import Anthropic from 'npm:@anthropic-ai/sdk@0.135.0'
 import { createClient } from 'npm:@supabase/supabase-js@2.118.0'
-import { catalog } from '../_shared/catalog.ts'
+import { catalog, type CatalogKey } from '../_shared/catalog.ts'
 import { buildList, itemId, type Have } from '../_shared/list.ts'
 import { days, foodProblems, menuProblems, type Ingredient, type MenuData } from '../_shared/menu.ts'
+import { nutritionText } from '../_shared/nutrition.ts'
 import { MENU_TAG, PROFILE_TAG, SYSTEM_PROMPT } from './prompt.ts'
 
 type MessageParam = Anthropic.Beta.BetaMessageParam
@@ -41,6 +42,10 @@ const saveProfile: Anthropic.Beta.BetaTool = {
       dislike: list,
       like: list,
       want: list,
+      show_numbers: {
+        ...nullable('boolean'),
+        description: 'The numbers switch. null: never set (numbers hidden). true: show calories and macros. false: the user turned them off.',
+      },
     },
     required: [
       'goal',
@@ -52,6 +57,7 @@ const saveProfile: Anthropic.Beta.BetaTool = {
       'dislike',
       'like',
       'want',
+      'show_numbers',
     ],
     additionalProperties: false,
   },
@@ -85,10 +91,10 @@ const saveMenu: Anthropic.Beta.BetaTool = {
             food: {
               type: 'string',
               enum: [...Object.keys(catalog), 'other'],
-              description: `A catalog food, or 'other' for anything else. Catalog foods and their units:\n${Object.entries(
+              description: `A catalog food, or 'other' for anything else. Catalog foods, their units and what they contain (the Menu tab adds these up):\n${Object.entries(
                 catalog,
               )
-                .map(([key, food]) => `${key} (${food.unit})`)
+                .map(([key, food]) => `${key} (${food.unit}; ${nutritionText(key as CatalogKey)})`)
                 .join('\n')}`,
             },
             other_name: { ...nullable('string'), description: "The food's name when food is 'other', otherwise null." },
