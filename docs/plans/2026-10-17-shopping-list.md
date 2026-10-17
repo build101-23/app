@@ -1,6 +1,6 @@
 # Shopping list
 
-Status: **built**, not released: steps 9 (release) and 10 (phone check) are pending. Milestone 4 in [milestones](../notes/milestones.md). Builds on [plan and menu](2026-10-17-plan-and-menu.md) and [lock down writes](2026-10-17-lock-down-writes.md) ([ADR 0014](../adr/0014-client-reads-chat-function-writes.md): the client only reads, except named columns). Milestone 5's plan builds on this one.
+Status: **released**; the phone check (step 10) is pending. Milestone 4 in [milestones](../notes/milestones.md). Builds on [plan and menu](2026-10-17-plan-and-menu.md) and [lock down writes](2026-10-17-lock-down-writes.md) ([ADR 0014](../adr/0014-client-reads-chat-function-writes.md): the client only reads, except named columns). Milestone 5's plan builds on this one.
 
 ## Context
 Milestone 3 leaves the week in `menus.data`. Each ingredient is a catalog `food` (or `other` + `other_name`) with an `amount` per serving, raw as bought, and its `unit`. Milestone 4 turns that into the **List** tab:
