@@ -24,6 +24,7 @@ Living doc: how the system is *now*. Reasoning lives in [ADRs](adr/), not here.
 - Client: installable web app (PWA), Capacitor later ([ADR 0002](adr/0002-pwa-now-capacitor-later.md))
 - Framework: Vite + React + TypeScript ([ADR 0004](adr/0004-vite-react-supabase-claude.md))
 - UI language: Spanish, strings in `src/strings.ts` ([ADR 0006](adr/0006-spanish-ui.md))
+- UI design: plain CSS with design tokens in `src/index.css`, VIVERI identity, no CSS framework ([ADR 0008](adr/0008-viveri-identity-and-ui-system.md), [design.md](design.md))
 - Backend: Supabase: auth, Postgres, Edge Functions ([ADR 0004](adr/0004-vite-react-supabase-claude.md))
 - AI: `claude-sonnet-5-5` at medium effort via the Anthropic SDK ([ADR 0007](adr/0007-sonnet-for-chat.md))
 - Hosting: Cloudflare Worker serving the static build ([ADR 0005](adr/0005-cloudflare-workers.md))

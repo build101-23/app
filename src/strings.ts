@@ -1,24 +1,64 @@
 // All user-facing text, in Rioplatense Spanish (ADR 0006).
 export const t = {
+  loading: 'Cargando…',
+  retry: 'Reintentar',
   signIn: {
     title: 'Ingresar',
+    hint: 'Te mandamos un link a tu email para entrar, sin contraseña.',
     email: 'Email',
     send: 'Enviame un link para entrar',
+    sending: 'Enviando…',
     sent: 'Revisá tu email y tocá el link para entrar.',
     otherEmail: 'Usar otro email',
+    error: 'No pudimos mandar el link. Probá de nuevo en unos minutos.',
   },
+  nav: 'Secciones',
   tabs: { chat: 'Chat', menu: 'Menú', list: 'Lista', profile: 'Perfil' },
-  soon: 'Muy pronto.',
+  soon: 'Muy pronto',
+  placeholder: {
+    menu: {
+      title: 'Tu semana, día por día',
+      body: 'Esta parte todavía no está disponible. Acá vas a ver el menú de la semana, con cada comida.',
+    },
+    list: {
+      title: 'Tu lista de compras',
+      body: 'Esta parte todavía no está disponible. Acá vas a ver la lista de la semana, armada a partir de tu menú.',
+    },
+    days: ['L', 'M', 'M', 'J', 'V', 'S', 'D'],
+  },
   chat: {
     welcome: 'Hola. Contame un poco de vos: ¿qué querés lograr con tu alimentación?',
+    // Only what the chat does today, in the user's own words. Tapping one sends it.
+    starters: 'Para empezar',
+    intents: [
+      'Armemos mi plan desde cero',
+      'Tengo un plan de mi nutricionista',
+      'Hay cosas que no puedo comer',
+      'Tengo poco tiempo para cocinar',
+    ],
     placeholder: 'Escribí tu mensaje…',
     send: 'Enviar',
+    waiting: 'Armando la respuesta…',
+    typing: 'Escribiendo…',
+    disclaimer: 'No reemplaza a tu nutricionista.',
+    healthData: 'Tus datos de salud',
+    loading: 'Cargando la conversación…',
     error: 'No se pudo enviar. Probá de nuevo.',
     loadError: 'No se pudo cargar la conversación.',
     noReply: 'No pude responder eso. Probá decirlo de otra forma.',
   },
+  // The health-data consent doesn't exist yet (milestone 6): say so, and only what's true today.
+  healthData: {
+    title: 'Tus datos de salud',
+    soon: 'Acá vas a poder leer y aceptar cómo usamos tus datos de salud.',
+    now: 'Por ahora, tus mensajes y lo que le contás al chat (tu objetivo, tus gustos, lo que no podés comer) quedan guardados en tu cuenta.',
+    close: 'Entendido',
+  },
   profile: {
+    loading: 'Cargando tu perfil…',
+    loadError: 'No se pudo cargar tu perfil.',
     empty: 'Todavía no hay nada guardado. Contáselo al chat.',
+    openChat: 'Ir al chat',
     goal: 'Objetivo',
     meals: 'Comidas por día',
     cookingTime: 'Tiempo para cocinar',
@@ -29,6 +69,7 @@ export const t = {
     dislike: 'No me gusta',
     like: 'Me gusta',
     want: 'Quiero comer',
+    account: 'Cuenta',
     signOut: 'Cerrar sesión',
   },
 }

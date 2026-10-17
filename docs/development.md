@@ -16,6 +16,7 @@ Sign-in uses Supabase's default magic link email. The link only sends you back t
 | Command | What |
 | --- | --- |
 | `npm run dev` | Dev server at http://localhost:5173 |
+| `npm run dev:fixture` | Dev server at http://localhost:5199 with synthetic data instead of Supabase ([Testing](#testing)) |
 | `npm run build` | Type-check and build to `dist/` |
 | `npm run lint` | Lint with oxlint |
 | `npx supabase migration new <name>` | Create an empty migration in `supabase/migrations/` |
@@ -44,6 +45,21 @@ Vite reads `.env`, then `.env.local` (gitignored), which overrides it.
 - Every table enables row-level security in its migration, with an owner policy (`auth.uid() = user_id`). Check Database → Advisors → Security after each milestone.
 
 ## Testing
+
+### Screens with synthetic data
+`npm run dev:fixture` runs the app with `src/dev/fixture.ts` in place of the Supabase client (`vite.config.ts` swaps it in fixture mode only; the production build never includes it). You're signed in as `persona@ejemplo.com` with a sample conversation and profile, so every screen can be checked without an account. Pick states with query parameters, combined freely:
+
+| Parameter | Values (default first) | What it shows |
+| --- | --- | --- |
+| `auth` | `in`, `out` | Signed in, or the sign-in screen |
+| `otp` | `ok`, `error`, `slow` | Sign-in link sent, refused (rate limit), or slow |
+| `chat` | `long`, `empty`, `error` | Sample conversation, no messages, or a load error |
+| `reply` | `ok`, `error`, `slow`, `trickle` | The streamed reply to a sent message. `slow` waits 3 s for the first words; `trickle` streams one chunk every 600 ms, to see the status line |
+| `profile` | `full`, `empty`, `error` | Saved profile, nothing saved, or a load error |
+| `loading` | `session`, `data` | Stuck on the splash, or on the chat and profile skeletons |
+| `safe` | `iphone` | Simulated 47 px top and 34 px bottom safe areas |
+
+Example: http://localhost:5199/?chat=empty&reply=slow. Check new screens at 360 px, 390 px and 1280 px wide, in light and dark ([design.md](design.md)). Anything that scrolls under the glass dock also needs its bottom checked, so that nothing hides under the dock.
 
 ## Deploy
 
