@@ -11,6 +11,10 @@ One file per decision: `NNNN-short-title.md`. ADRs are append-only: never rewrit
 | 0005 | [Host the web app on Cloudflare Workers](0005-cloudflare-workers.md) | Accepted | 2026-10-17 |
 | 0006 | [Spanish UI, English everything else](0006-spanish-ui.md) | Accepted | 2026-10-17 |
 | 0007 | [Claude Sonnet 5.5 at medium effort for the chat](0007-sonnet-for-chat.md) | Accepted | 2026-10-17 |
+| 0008 | [VIVERI identity and a token-based UI system](0008-viveri-identity-and-ui-system.md) | Superseded by 0009 | 2026-10-17 |
+| 0009 | [Coral and aquamarine identity, floating glass dock](0009-coral-identity-and-glass-dock.md) | Proposed (colors superseded by 0011) | 2026-10-17 |
+| 0010 | [Google's button leads the sign-in screen](0010-google-leads-sign-in.md) | Proposed | 2026-10-17 |
+| 0011 | [Naranja zapallo colors](0011-naranja-zapallo-colors.md) | Proposed | 2026-10-17 |
 
 ## Template
 

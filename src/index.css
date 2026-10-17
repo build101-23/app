@@ -1,215 +1,1133 @@
-:root {
-  --text: #1f2328;
-  --muted: #59636e;
-  --bg: #fff;
-  --surface: #f6f8fa;
-  --border: #d1d9e0;
-  --accent: #1a7f37;
-  --on-accent: #fff;
-  --danger: #cf222e;
+/* VIVERI design tokens and styles ("Naranja zapallo"). The system is described in docs/design.md. */
 
-  font: 16px/1.5 system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
-  color-scheme: light dark;
-  color: var(--text);
-  background: var(--bg);
+:root {
+  /* Brand: pumpkin orange and black. The orange is a touch deeper than pure #ff7f00, so it reads less neon. */
+  --orange: #ea7402;
+  --black: #111111;
+  --field-gradient: linear-gradient(135deg, #e96104 0%, var(--orange) 45%, #ec8a08 80%, #f09912 100%);
+  --on-field: #111111;
+  /* The sign-in card's shadow and hairline take the field's own dark tone; a neutral one would gray the field. */
+  --field-shade: #6e2e02;
+  --field-rim: color-mix(in srgb, var(--field-shade) 12%, transparent);
+  --tile: var(--black);
+  --tile-edge: var(--black);
+  --logo-dot: #e96104;
+  --logo-dot-2: #ea7f05;
+  --logo-dot-3: #f09c1b;
+  --logo-apex: #ffffff;
+
+  /* Color: light */
+  --ground: #f4f2ee;
+  --surface: #ffffff;
+  --surface-sunk: #e9e6e0;
+  --line: #dfdbd3;
+  --line-strong: #7e7973;
+  --ink: #111111;
+  --ink-muted: #56524c;
+  --primary: var(--black);
+  --primary-hover: #33312e;
+  --on-primary: #ffffff;
+  --bubble-user: var(--orange);
+  --on-bubble-user: #111111;
+  --accent: var(--orange);
+  --on-accent: #111111;
+  --focus: var(--ink);
+  --danger: #b0103f;
+  --danger-surface: #fce8ee;
+  --sent-surface: color-mix(in srgb, var(--orange) 20%, var(--surface));
+  --week-dot: color-mix(in srgb, var(--orange) 50%, var(--surface));
+
+  /* Dock material. The base values are the solid fallback; glass is layered on where supported. */
+  --dock-solid: var(--surface);
+  --dock-glass: color-mix(in srgb, var(--ground) 50%, transparent);
+  --dock-sheen: linear-gradient(to bottom, transparent 0 2px, rgb(255 255 255 / 0.4) 2px, rgb(255 255 255 / 0) 22%);
+  --dock-edge: rgb(255 255 255 / 0.95);
+  --dock-rim: rgb(18 18 18 / 0.12);
+  --dock-shadow: 0 12px 32px -12px rgb(18 18 18 / 0.4), 0 2px 8px rgb(18 18 18 / 0.08);
+
+  /* Space, shape, layout */
+  --gutter: 16px;
+  --column: 720px;
+  --radius-card: 16px;
+  --radius-field: 14px;
+  --radius-bubble: 18px;
+  --radius-composer: 24px;
+  --radius-dock: 34px;
+  --radius-dock-item: 29px;
+  --dock-h: 68px;
+  --dock-gap: 12px;
+
+  /* Safe areas, overridable by the dev fixture */
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-right: env(safe-area-inset-right, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-left: env(safe-area-inset-left, 0px);
+
+  /* Height from the viewport's bottom edge to the top of the dock */
+  --dock-space: calc(var(--dock-h) + var(--dock-gap) + var(--safe-bottom));
+
+  /* Scroll-edge veils: --veil is how strongly content fades into the ground where it meets the floating
+     chrome. --veil-hole masks a feathered ellipse inside the dock's outline where the veil drops to about a
+     third, so the glass shows what's scrolling past while everything around the dock stays calm. Each size
+     stays single-unit: Chromium rejects % and px mixed in a gradient size. */
+  --veil: 88%;
+  --veil-rx: 47%;
+  --veil-hole: radial-gradient(
+    var(--veil-rx) calc(var(--dock-h) / 2) at left 50% bottom calc(var(--dock-gap) + var(--safe-bottom) + var(--dock-h) / 2),
+    rgb(0 0 0 / 0.3) 0 55%,
+    #000 100%
+  );
+
+  /* Motion */
+  --dur-fast: 120ms;
+  --dur: 200ms;
+  --ease: cubic-bezier(0.2, 0.7, 0.2, 1);
+
+  --font: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+
+  color-scheme: light;
+  font: 400 1rem/1.5 var(--font);
+  color: var(--ink);
+  background: var(--ground);
+  accent-color: var(--orange);
   -webkit-font-smoothing: antialiased;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+/* From 464px the dock reaches its 440px cap. */
+@media (min-width: 464px) {
+  :root {
+    --veil-rx: 220px;
+  }
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --text: #f0f6fc;
-    --muted: #9198a1;
-    --bg: #0d1117;
-    --surface: #151b23;
-    --border: #3d444d;
-    --accent: #3fb950;
-    --on-accent: #0d1117;
-    --danger: #f85149;
+    --ground: #0d0c0b;
+    --surface: #191816;
+    --surface-sunk: #262421;
+    --line: #2e2c29;
+    --line-strong: #7a756f;
+    --ink: #f5f3ee;
+    --ink-muted: #b0aaa2;
+    --primary: #f5f3ee;
+    --primary-hover: #dad6cf;
+    --on-primary: #111111;
+    --danger: #ff8fa8;
+    --danger-surface: #2d121a;
+    --sent-surface: color-mix(in srgb, var(--orange) 17%, var(--surface));
+    --tile-edge: rgb(255 255 255 / 0.16);
+    --week-dot: color-mix(in srgb, var(--orange) 62%, var(--surface));
+    --dock-glass: color-mix(in srgb, var(--surface) 55%, transparent);
+    --dock-sheen: linear-gradient(to bottom, transparent 0 2px, rgb(255 255 255 / 0.08) 2px, rgb(255 255 255 / 0) 22%);
+    --dock-edge: rgb(255 255 255 / 0.22);
+    --dock-rim: rgb(255 255 255 / 0.1);
+    --dock-shadow: 0 12px 32px -12px rgb(0 0 0 / 0.8), 0 2px 8px rgb(0 0 0 / 0.4);
+
+    color-scheme: dark;
   }
+}
+
+/* Base */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
 }
 
 body {
   margin: 0;
-  background: var(--bg);
+  background: var(--ground);
+  overscroll-behavior: none;
 }
 
-h1 {
-  font-size: 1.5rem;
+h1,
+h2,
+p {
   margin: 0;
+}
+
+h1,
+h2 {
+  font-weight: 650;
+  letter-spacing: -0.01em;
+  text-wrap: balance;
+}
+
+::selection {
+  background: color-mix(in srgb, var(--bubble-user) 35%, transparent);
+}
+
+:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+
+* {
+  scrollbar-color: var(--line-strong) transparent;
+  scrollbar-width: thin;
 }
 
 button,
-input {
+input,
+textarea {
   font: inherit;
-}
-
-input {
-  width: 100%;
-  box-sizing: border-box;
-  margin-top: 4px;
-  padding: 12px;
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  background: var(--surface);
-  color: var(--text);
+  color: inherit;
 }
 
 button {
-  padding: 12px 16px;
+  margin: 0;
+  padding: 0;
   border: 0;
-  border-radius: 8px;
-  background: var(--accent);
-  color: var(--on-accent);
+  background: none;
   cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
 }
 
 button:disabled {
-  opacity: 0.6;
+  cursor: default;
 }
 
-button.link {
-  background: none;
-  color: var(--muted);
-  text-decoration: underline;
+input,
+textarea {
+  caret-color: var(--ink);
 }
 
-[role='alert'] {
-  color: var(--danger);
-}
-
-.signin {
-  max-width: 400px;
-  margin: 0 auto;
-  padding: 48px 16px;
-}
-
-.signin form {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  margin-top: 24px;
-}
-
-.shell {
-  display: flex;
-  flex-direction: column;
-  height: 100svh;
-}
-
-.shell header {
-  padding: calc(16px + env(safe-area-inset-top)) 16px 16px;
-  border-bottom: 1px solid var(--border);
-}
-
-.shell main {
-  flex: 1;
-  min-height: 0;
-  overflow-y: auto;
-}
-
-.soon,
-.profile {
-  padding: 16px;
-}
-
-.shell nav {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  padding-bottom: env(safe-area-inset-bottom);
-  border-top: 1px solid var(--border);
-  background: var(--surface);
-}
-
-.shell nav button {
-  border-radius: 0;
-  background: none;
-  color: var(--muted);
-}
-
-.shell nav button[aria-current='page'] {
-  color: var(--accent);
-  font-weight: 600;
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
 }
 
 .muted {
-  color: var(--muted);
+  color: var(--ink-muted);
 }
 
-textarea {
-  font: inherit;
-  flex: 1;
-  resize: none;
-  padding: 12px;
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  background: var(--bg);
-  color: var(--text);
+/* Buttons */
+
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 48px;
+  padding: 0 22px;
+  border-radius: 999px;
+  font-weight: 600;
+  text-align: center;
+  transition:
+    background-color var(--dur-fast) var(--ease),
+    box-shadow var(--dur-fast) var(--ease),
+    transform var(--dur-fast) var(--ease);
 }
 
-.chat {
+.button:active:not(:disabled) {
+  transform: scale(0.98);
+}
+
+.button:disabled {
+  opacity: 0.55;
+}
+
+/* Busy is "working", not "unavailable": keep full color. */
+.button[aria-busy='true'] {
+  opacity: 1;
+  cursor: progress;
+}
+
+.button.primary {
+  background: var(--primary);
+  color: var(--on-primary);
+}
+
+.button.secondary {
+  box-shadow: inset 0 0 0 1px var(--line-strong);
+  color: var(--ink);
+}
+
+.button.quiet {
+  min-height: 44px;
+  padding: 0 12px;
+  color: var(--ink);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+@media (hover: hover) {
+  .button.primary:hover:not(:disabled) {
+    background: var(--primary-hover);
+  }
+
+  .button.secondary:hover:not(:disabled) {
+    background: var(--surface-sunk);
+  }
+}
+
+/* Fields */
+
+.field {
+  display: grid;
+  gap: 6px;
+  font-size: 0.9375rem;
+  font-weight: 550;
+}
+
+.field input {
+  width: 100%;
+  min-height: 52px;
+  padding: 0 16px;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-field);
+  background: var(--surface);
+  font-size: 1rem;
+  font-weight: 400;
+}
+
+.field input:disabled {
+  color: var(--ink-muted);
+}
+
+/* Fields draw their focus ring over their own border: one ring, not two. */
+.field input:focus-visible,
+.composer textarea:focus-visible {
+  outline-offset: -1px;
+}
+
+::placeholder {
+  color: var(--ink-muted);
+  opacity: 1;
+}
+
+/* Feedback */
+
+.alert {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 12px 14px;
+  border-radius: var(--radius-field);
+  background: var(--danger-surface);
+  color: var(--danger);
+  font-size: 0.9375rem;
+  overflow-wrap: anywhere;
+}
+
+.alert .icon {
+  flex: none;
+  width: 20px;
+  height: 20px;
+  margin-top: 1px;
+}
+
+/* "Reintentar" lines up with the message text while keeping its 44 px target. */
+.alert .button.quiet {
+  margin: -6px 0 -10px -12px;
+  color: var(--danger);
+}
+
+.alert-detail {
+  margin-top: 2px;
+  color: var(--ink-muted);
+  font-size: 0.8125rem;
+}
+
+.pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 10px;
+  border-radius: 999px;
+  background: var(--surface-sunk);
+  color: var(--ink-muted);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.card {
+  border: 1px solid var(--line);
+  border-radius: var(--radius-card);
+  background: var(--surface);
+}
+
+.skeleton-line {
+  display: block;
+  border-radius: 999px;
+  background: var(--surface-sunk);
+  animation: pulse 1.4s ease-in-out infinite;
+}
+
+/* The mark, the tile and the wordmark */
+
+.mark {
+  display: block;
+  flex: none;
+}
+
+.mark .step-1 {
+  fill: var(--logo-dot);
+}
+
+.mark .step-2 {
+  fill: var(--logo-dot-2, var(--logo-dot));
+}
+
+.mark .step-3 {
+  fill: var(--logo-dot-3, var(--logo-dot));
+}
+
+.mark .step-4 {
+  fill: var(--logo-apex);
+}
+
+.mark.animated .dot {
+  animation: converge 1.2s ease-in-out infinite both;
+}
+
+.mark.animated .step-2 {
+  animation-delay: 0.15s;
+}
+
+.mark.animated .step-3 {
+  animation-delay: 0.3s;
+}
+
+.mark.animated .step-4 {
+  animation-delay: 0.45s;
+}
+
+/* The mark never sits on a light ground: it lives on its black tile. */
+.tile {
+  display: inline-grid;
+  flex: none;
+  place-items: center;
+  border-radius: 22%;
+  background: var(--tile);
+  box-shadow: inset 0 0 0 1px var(--tile-edge);
+}
+
+.wordmark {
+  display: block;
+  fill: var(--wordmark, var(--on-field));
+}
+
+.splash {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  background: var(--field-gradient);
+}
+
+.splash .tile {
+  animation: fade-in var(--dur) var(--ease) 400ms both;
+}
+
+/* Sign-in: the whole screen is the brand field */
+
+.signin-screen {
+  min-height: 100svh;
+  min-height: 100dvh;
+  background: var(--field-gradient);
+  color: var(--on-field);
+}
+
+.signin {
   display: flex;
   flex-direction: column;
+  width: 100%;
+  max-width: 440px;
+  min-height: 100svh;
+  min-height: 100dvh;
+  margin: 0 auto;
+  padding: calc(var(--safe-top) + 32px) calc(24px + var(--safe-right)) calc(var(--safe-bottom) + 32px)
+    calc(24px + var(--safe-left));
+}
+
+.lockup {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.signin-body {
+  display: grid;
+  gap: 20px;
+  margin-top: clamp(40px, 12vh, 140px);
+}
+
+.signin-body header {
+  display: grid;
+  gap: 8px;
+}
+
+.signin h1 {
+  font-size: 1.75rem;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+}
+
+.signin-card {
+  display: grid;
+  gap: 16px;
+  padding: 20px;
+  border-color: transparent;
+  box-shadow:
+    0 0 0 1px var(--field-rim),
+    0 12px 32px -14px color-mix(in srgb, var(--field-shade) 32%, transparent);
+  color: var(--ink);
+}
+
+.signin form {
+  display: grid;
+  gap: 16px;
+}
+
+.signin form .button {
+  width: 100%;
+  min-height: 52px;
+}
+
+/* Google's button leads the card. Its look and text are Google's; the box only reserves the large button's
+   height so the card doesn't jump while Google's script loads, and centers it. */
+.google {
+  display: grid;
+  gap: 12px;
+}
+
+.google-button {
+  display: flex;
+  justify-content: center;
+  min-height: 44px;
+}
+
+/* The email form under Google: a hairline separates the two ways in. */
+.google ~ form {
+  padding-top: 16px;
+  border-top: 1px solid var(--line);
+}
+
+.email-hint {
+  color: var(--ink-muted);
+  font-size: 0.9375rem;
+}
+
+.email-toggle {
+  justify-self: center;
+}
+
+.sent {
+  display: grid;
+  justify-items: start;
+  gap: 12px;
+  padding: 4px 0;
+  animation: fade-in var(--dur) var(--ease) both;
+}
+
+.sent-badge {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: var(--sent-surface);
+}
+
+.sent .icon {
+  width: 24px;
+  height: 24px;
+}
+
+.sent-email {
+  font-weight: 650;
+  overflow-wrap: anywhere;
+}
+
+.sent .button.quiet {
+  margin-left: -12px;
+}
+
+/* Shell: title bar and one scrolling work area; the dock floats over the bottom */
+
+.shell {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  height: 100svh;
+  height: 100dvh;
+}
+
+.shell > header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: calc(var(--safe-top) + 58px);
+  padding: calc(var(--safe-top) + 10px) max(calc(var(--gutter) + var(--safe-right)), calc((100% - var(--column)) / 2)) 10px
+    max(calc(var(--gutter) + var(--safe-left)), calc((100% - var(--column)) / 2));
+  border-bottom: 1px solid var(--line);
+  background: var(--ground);
+}
+
+.shell > header h1 {
+  font-size: 1.25rem;
+  line-height: 1.3;
+}
+
+/* The page area reserves its scrollbar on both edges, so centered page content stays under the title
+   whether or not it scrolls. (The chat's message list computes its own padding and needs no gutter.) */
+.shell > main {
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable both-edges;
+}
+
+.shell > main:has(> .chat) {
+  scrollbar-gutter: auto;
+}
+
+/* The dock: one floating pill at every width. Content keeps scrolling underneath it. */
+
+.shell > nav {
+  --dock-bg: var(--dock-solid);
+  --dock-filter: none;
+  --dock-border: var(--line-strong);
+  --dock-layer: none;
+
+  position: fixed;
+  z-index: 10;
+  right: 0;
+  bottom: calc(var(--dock-gap) + var(--safe-bottom));
+  left: 0;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 4px;
+  width: min(calc(100% - 24px - var(--safe-left) - var(--safe-right)), 440px);
+  height: var(--dock-h);
+  margin: 0 auto;
+  padding: 5px;
+  border: 1px solid var(--dock-border);
+  border-radius: var(--radius-dock);
+  background: var(--dock-layer), var(--dock-bg);
+  box-shadow:
+    inset 0 1px 0 var(--dock-edge),
+    var(--dock-shadow);
+  -webkit-backdrop-filter: var(--dock-filter);
+  backdrop-filter: var(--dock-filter);
+  animation: dock-in var(--dur) var(--ease) backwards;
+}
+
+@supports ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {
+  .shell > nav {
+    --dock-bg: var(--dock-glass);
+    --dock-filter: blur(24px) saturate(180%);
+    --dock-border: var(--dock-rim);
+    --dock-layer: var(--dock-sheen);
+  }
+}
+
+/* Asked for less transparency or more contrast: the same dock, solid. */
+@media (prefers-reduced-transparency: reduce), (prefers-contrast: more) {
+  /* ...and the scroll edges turn solid, with no hole. */
+  :root {
+    --veil: 100%;
+    --veil-hole: none;
+  }
+
+  .shell > nav {
+    --dock-bg: var(--dock-solid);
+    --dock-filter: none;
+    --dock-border: var(--line-strong);
+    --dock-layer: none;
+  }
+}
+
+@media (prefers-contrast: more) {
+  .shell > nav {
+    --dock-border: var(--ink);
+  }
+}
+
+.shell > nav button {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  min-width: 48px;
+  border-radius: var(--radius-dock-item);
+  color: var(--ink);
+  font-size: 0.75rem;
+  font-weight: 600;
+  line-height: 1.2;
+  letter-spacing: 0.01em;
+}
+
+/* Pressing gives instant feedback; switching tabs is not animated. */
+.shell > nav button:active {
+  transform: scale(0.96);
+}
+
+/* Focus on a tab is drawn inside it, clear of the active pill's ring next to it. */
+.shell > nav button:focus-visible {
+  outline-offset: -4px;
+}
+
+.shell > nav button[aria-current='page'] {
+  background: var(--accent);
+  box-shadow: inset 0 0 0 1.5px var(--ink);
+  color: var(--on-accent);
+  font-weight: 750;
+}
+
+/* Inside the active pill the ring sits on the accent, so it takes the accent's text color: in dark mode the
+   light ink is under 3:1 on orange. */
+.shell > nav button[aria-current='page']:focus-visible {
+  outline-color: var(--on-accent);
+}
+
+@media (hover: hover) {
+  .shell > nav button:not([aria-current]):hover {
+    background: color-mix(in srgb, var(--ink) 8%, transparent);
+  }
+}
+
+@media (forced-colors: active) {
+  .shell > nav {
+    border: 1px solid CanvasText;
+    background: Canvas;
+  }
+
+  .shell > nav button[aria-current='page'] {
+    outline: 2px solid Highlight;
+    outline-offset: -3px;
+  }
+
+  .shell > nav button:focus-visible,
+  .shell > nav button[aria-current='page']:focus-visible {
+    outline: 3px solid CanvasText;
+    outline-offset: 2px;
+  }
+}
+
+/* While the on-screen keyboard is up and you're typing, the dock steps aside so the keyboard doesn't
+   stack on it. It comes back as soon as the keyboard goes down, even if the composer keeps focus. */
+.shell[data-keyboard='open']:has(.composer:focus-within) {
+  --dock-space: 0px;
+  --veil-hole: none;
+}
+
+.shell[data-keyboard='open']:has(.composer:focus-within) > nav {
+  display: none;
+}
+
+/* Scroll edge: page content fades into the ground where it meets the floating dock (below it and beside it),
+   except in the hole behind the dock, where the glass shows it. The veils also keep dark-mode dock labels
+   above 4.5:1 over bright content; keep the hole's center at about a third if you tune them. */
+.shell::after {
+  content: '';
+  position: fixed;
+  z-index: 5;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  height: calc(var(--dock-space) + 28px);
+  background: linear-gradient(to bottom, transparent, color-mix(in srgb, var(--ground) var(--veil), transparent) 28px);
+  -webkit-mask-image: var(--veil-hole);
+  mask-image: var(--veil-hole);
+  pointer-events: none;
+}
+
+/* The chat draws its own edge (below), so the page one stays out of its way. */
+.shell:has(.chat)::after {
+  display: none;
+}
+
+/* Pages */
+
+.page {
+  width: 100%;
+  max-width: calc(var(--column) + 2 * var(--gutter));
+  margin: 0 auto;
+  padding: 20px calc(var(--gutter) + var(--safe-right)) calc(var(--dock-space) + 28px)
+    calc(var(--gutter) + var(--safe-left));
+}
+
+.placeholder {
+  display: grid;
+  justify-items: start;
+  gap: 8px;
+  padding-top: clamp(28px, 10vh, 96px);
+}
+
+.placeholder h2 {
+  font-size: 1.4375rem;
+  line-height: 1.25;
+}
+
+.placeholder p {
+  max-width: 36ch;
+  color: var(--ink-muted);
+}
+
+.week {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  width: 100%;
+  max-width: 420px;
+  margin: 24px 0 0;
+  padding: 20px 8px 16px;
+  list-style: none;
+}
+
+.week li {
+  display: grid;
+  justify-items: center;
+  gap: 10px;
+  color: var(--ink-muted);
+  font-size: 0.8125rem;
+  font-weight: 550;
+}
+
+/* The week as the mark's dots: filled, quiet, not yet colored in. */
+.week li::before {
+  content: '';
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--week-dot);
+}
+
+/* Chat: messages scroll all the way down, behind the floating composer and dock */
+
+.chat {
+  position: relative;
   height: 100%;
 }
 
-.chat .messages {
-  flex: 1;
-  overflow-y: auto;
+/* The chat's scroll edge: strong from the bottom up to the composer (gap, gutters and below the dock
+   stay calm), eased out over 44px above it, with the same hole behind the dock as the pages. It stops
+   12px short of the right edge, where only the scrollbar lives. */
+.chat::after {
+  content: '';
+  position: absolute;
+  z-index: 1;
+  right: 12px;
+  bottom: 0;
+  left: 0;
+  height: calc(var(--dock-space) + 8px + var(--composer-h, 60px) + 44px);
+  background: linear-gradient(
+    to top,
+    color-mix(in srgb, var(--ground) var(--veil), transparent) 0,
+    color-mix(in srgb, var(--ground) var(--veil), transparent) calc(var(--dock-space) + 8px + var(--composer-h, 60px)),
+    color-mix(in srgb, var(--ground) 52%, transparent) calc(var(--dock-space) + 8px + var(--composer-h, 60px) + 14px),
+    color-mix(in srgb, var(--ground) 18%, transparent) calc(var(--dock-space) + 8px + var(--composer-h, 60px) + 30px),
+    transparent 100%
+  );
+  -webkit-mask-image: var(--veil-hole);
+  mask-image: var(--veil-hole);
+  pointer-events: none;
+}
+
+.messages {
+  --below-last: calc(var(--dock-space) + 8px + var(--composer-h, 60px) + 48px);
+
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  padding: 16px;
+  gap: 6px;
+  height: 100%;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 16px max(calc(var(--gutter) + var(--safe-right)), calc((100% - var(--column)) / 2)) var(--below-last)
+    max(calc(var(--gutter) + var(--safe-left)), calc((100% - var(--column)) / 2));
+  scroll-padding-bottom: var(--below-last);
+}
+
+/* Chromium makes a scroller with nothing focusable inside a Tab stop. Its ring goes inside the box, because
+   the work area clips anything drawn outside it. */
+.messages:focus-visible {
+  outline-offset: -2px;
 }
 
 .bubble {
-  max-width: 85%;
-  margin: 0;
+  max-width: min(85%, 36rem);
   padding: 10px 14px;
-  border-radius: 16px;
+  border-radius: var(--radius-bubble);
+  line-height: 1.45;
   white-space: pre-wrap;
   overflow-wrap: anywhere;
 }
 
+/* Only messages that arrive while you're here rise in; coming back to the chat doesn't replay them. */
+.bubble.fresh {
+  animation: rise-in 160ms var(--ease) both;
+}
+
 .bubble.user {
   align-self: flex-end;
-  background: var(--accent);
-  color: var(--on-accent);
+  border-bottom-right-radius: 6px;
+  background: var(--bubble-user);
+  color: var(--on-bubble-user);
 }
 
 .bubble.assistant {
   align-self: flex-start;
+  border: 1px solid var(--line);
+  border-bottom-left-radius: 6px;
   background: var(--surface);
-  border: 1px solid var(--border);
 }
 
-.chat form {
+.bubble.user + .bubble.assistant,
+.bubble.assistant + .bubble.user {
+  margin-top: 10px;
+}
+
+/* Waiting for the reply: the mark on its black tile color. */
+.bubble.typing {
+  padding: 13px 16px;
+  border-color: var(--tile-edge);
+  background: var(--tile);
+}
+
+.messages .alert {
+  align-self: stretch;
+  margin-top: 10px;
+}
+
+.chat-skeleton {
   display: flex;
-  gap: 8px;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.chat-skeleton .skeleton-line {
+  height: 42px;
+  border-radius: var(--radius-bubble);
+}
+
+.chat-skeleton .skeleton-line:nth-child(2) {
+  align-self: flex-end;
+  width: 55%;
+}
+
+.chat-skeleton .skeleton-line:nth-child(3) {
+  width: 75%;
+  height: 64px;
+}
+
+.chat-skeleton .skeleton-line:nth-child(4) {
+  width: 40%;
+}
+
+/* The composer floats just above the dock: an opaque field and the send button, no bar behind them. */
+.composer {
+  position: absolute;
+  right: 0;
+  bottom: calc(var(--dock-space) + 8px);
+  left: 0;
+  display: flex;
   align-items: flex-end;
-  padding: 8px 16px;
-  border-top: 1px solid var(--border);
+  gap: 8px;
+  z-index: 6;
+  padding: 0 max(calc(12px + var(--safe-right)), calc((100% - var(--column)) / 2)) 0
+    max(calc(12px + var(--safe-left)), calc((100% - var(--column)) / 2));
+  pointer-events: none;
+}
+
+.composer > * {
+  pointer-events: auto;
+}
+
+.composer textarea {
+  flex: 1;
+  min-width: 0;
+  min-height: 48px;
+  max-height: 9.75rem;
+  padding: 12px 18px;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-composer);
   background: var(--surface);
+  box-shadow: 0 6px 18px -8px rgb(18 18 18 / 0.35);
+  font-size: 1rem;
+  line-height: 1.45;
+  resize: none;
+  field-sizing: content;
+  scrollbar-width: none;
 }
 
-.profile dl {
-  margin: 0 0 16px;
+.send {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 6px 18px -8px rgb(18 18 18 / 0.35);
+  color: var(--on-accent);
+  transition:
+    background-color var(--dur-fast) var(--ease),
+    color var(--dur-fast) var(--ease),
+    transform var(--dur-fast) var(--ease);
 }
 
-.profile dt {
-  color: var(--muted);
+.send:active:not(:disabled) {
+  transform: scale(0.94);
+}
+
+.send:disabled {
+  background: var(--surface-sunk);
+  color: var(--ink-muted);
+}
+
+/* Profile */
+
+.profile {
+  display: grid;
+  gap: 28px;
+}
+
+.facts {
+  margin: 0;
+  padding: 0 16px;
+}
+
+.facts > div {
+  padding: 12px 0;
+}
+
+.facts > div + div {
+  border-top: 1px solid var(--line);
+}
+
+.facts dt {
+  color: var(--ink-muted);
   font-size: 0.875rem;
 }
 
-.profile dd {
-  margin: 0 0 12px;
+.facts dd {
+  margin: 2px 0 0;
+  overflow-wrap: anywhere;
+  font-variant-numeric: tabular-nums;
 }
 
-.profile h2 {
+.group h2,
+.account h2 {
+  margin-bottom: 10px;
   font-size: 1rem;
-  margin: 16px 0 4px;
 }
 
-.profile ul {
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
   margin: 0;
-  padding-left: 20px;
+  padding: 0;
+  list-style: none;
+}
+
+.chips li {
+  max-width: 100%;
+  padding: 6px 14px;
+  border-radius: 999px;
+  background: var(--surface-sunk);
+  font-size: 0.9375rem;
+  overflow-wrap: anywhere;
+}
+
+.account-card {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px 16px;
+  padding: 12px 12px 12px 16px;
+}
+
+.account-email {
+  min-width: 0;
+  color: var(--ink-muted);
+  overflow-wrap: anywhere;
+}
+
+.profile-empty {
+  display: grid;
+  justify-items: start;
+  gap: 16px;
+  padding: 8px 0;
+}
+
+.profile-empty p {
+  max-width: 34ch;
+}
+
+.profile-skeleton {
+  display: grid;
+  gap: 18px;
+  padding: 16px;
+}
+
+.profile-skeleton .skeleton-line {
+  height: 14px;
+}
+
+.profile-skeleton .skeleton-line:nth-child(odd) {
+  width: 30%;
+  height: 10px;
+}
+
+.profile-skeleton .skeleton-line:nth-child(even) {
+  width: 70%;
+}
+
+/* Motion */
+
+@keyframes converge {
+  0%,
+  100% {
+    opacity: 0.25;
+  }
+
+  40% {
+    opacity: 1;
+  }
+}
+
+@keyframes rise-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes dock-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.98);
+  }
+}
+
+@keyframes pulse {
+  50% {
+    opacity: 0.5;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
+  }
 }

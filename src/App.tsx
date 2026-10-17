@@ -1,12 +1,17 @@
-import { useEffect, useState, type FormEvent } from 'react'
+import { useCallback, useEffect, useRef, useState, type FormEvent } from 'react'
+import { flushSync } from 'react-dom'
 import type { Session } from '@supabase/supabase-js'
 import { supabase } from './supabase'
 import { t } from './strings'
 import Chat from './Chat'
+import GoogleSignIn from './GoogleSignIn'
+import { googleAvailable } from './google'
 import Profile from './Profile'
+import { AlertIcon, ChatIcon, ListIcon, MailIcon, MenuIcon, ProfileIcon, Tile, Wordmark } from './ui'
 
 const tabs = ['chat', 'menu', 'list', 'profile'] as const
 type Tab = (typeof tabs)[number]
+const icons = { chat: ChatIcon, menu: MenuIcon, list: ListIcon, profile: ProfileIcon }
 
 export default function App() {
   const [session, setSession] = useState<Session | null>(null)
@@ -21,16 +26,41 @@ export default function App() {
     return () => data.subscription.unsubscribe()
   }, [])
 
-  if (loading) return null
+  if (loading) return <Splash />
   return session ? <Shell session={session} /> : <SignIn />
 }
 
+// Shows up only if the session takes more than a moment (the fade-in is delayed in CSS).
+function Splash() {
+  return (
+    <div className="splash" role="status">
+      <Tile size={88} animated />
+      <span className="sr-only">{t.loading}</span>
+    </div>
+  )
+}
+
+// Google leads. The magic link stays as the other way in: opened on request, and the only way in when Google
+// isn't configured or its button can't load.
 // shortcut: the magic link opens Safari on an installed iOS PWA, switch to an emailed code once we have our own SMTP (milestone 6)
 function SignIn() {
   const [email, setEmail] = useState('')
   const [sent, setSent] = useState(false)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
+  const [google, setGoogle] = useState(googleAvailable)
+  const [withEmail, setWithEmail] = useState(!googleAvailable)
+  const emailInput = useRef<HTMLInputElement>(null)
+  const googleUnreachable = useCallback(() => {
+    setGoogle(false)
+    setWithEmail(true)
+  }, [])
+
+  // The toggle disappears once pressed, so focus moves on to the field it opened.
+  function openEmail() {
+    flushSync(() => setWithEmail(true))
+    emailInput.current?.focus()
+  }
 
   async function submit(e: FormEvent) {
     e.preventDefault()
@@ -46,52 +76,153 @@ function SignIn() {
   }
 
   return (
-    <main className="signin">
-      <h1>{t.signIn.title}</h1>
-      <form onSubmit={submit}>
-        <label>
-          {t.signIn.email}
-          <input
-            type="email"
-            required
-            autoComplete="email"
-            value={email}
-            disabled={sent}
-            onChange={(e) => setEmail(e.target.value)}
-          />
-        </label>
-        {sent ? <p>{t.signIn.sent}</p> : <button disabled={busy}>{t.signIn.send}</button>}
-        {sent && (
-          <button type="button" className="link" onClick={() => setSent(false)}>
-            {t.signIn.otherEmail}
-          </button>
-        )}
-        {error && <p role="alert">{error}</p>}
-      </form>
-    </main>
+    <div className="signin-screen">
+      <main className="signin">
+        <div className="lockup">
+          <Tile size={48} />
+          <Wordmark height={26} />
+        </div>
+        <div className="signin-body">
+          <header>
+            <h1>{t.signIn.title}</h1>
+            <p>{google ? t.signIn.googleHint : t.signIn.hint}</p>
+          </header>
+          <div className="card signin-card">
+            {googleAvailable && !sent && <GoogleSignIn onUnreachable={googleUnreachable} />}
+            {!withEmail && !sent ? (
+              <button type="button" className="button quiet email-toggle" onClick={openEmail}>
+                {t.signIn.useEmail}
+              </button>
+            ) : sent ? (
+              <div className="sent" role="status">
+                <span className="sent-badge">
+                  <MailIcon />
+                </span>
+                <p>{t.signIn.sent}</p>
+                <p className="sent-email">{email}</p>
+                <button type="button" className="button quiet" onClick={() => setSent(false)}>
+                  {t.signIn.otherEmail}
+                </button>
+              </div>
+            ) : (
+              <form onSubmit={submit}>
+                {google && <p className="email-hint">{t.signIn.hint}</p>}
+                <label className="field">
+                  {t.signIn.email}
+                  <input
+                    ref={emailInput}
+                    type="email"
+                    required
+                    autoComplete="email"
+                    inputMode="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                  />
+                </label>
+                <button
+                  className={google ? 'button secondary' : 'button primary'}
+                  disabled={busy}
+                  aria-busy={busy}
+                >
+                  {busy ? t.signIn.sending : t.signIn.send}
+                </button>
+                {error && (
+                  // Supabase's message is in English; keep it as a detail under the Spanish one.
+                  <div role="alert" className="alert">
+                    <AlertIcon />
+                    <div>
+                      <p>{t.signIn.error}</p>
+                      <p className="alert-detail">{error}</p>
+                    </div>
+                  </div>
+                )}
+              </form>
+            )}
+          </div>
+        </div>
+      </main>
+    </div>
   )
+}
+
+// True while the on-screen keyboard takes up part of the screen, read from the visual viewport
+// (zoom-independent). The CSS uses it to move the dock aside only while you're actually typing.
+function useKeyboardOpen() {
+  const [open, setOpen] = useState(false)
+
+  useEffect(() => {
+    const viewport = window.visualViewport
+    if (!viewport) return
+    let width = viewport.width * viewport.scale
+    let full = viewport.height * viewport.scale
+    const update = () => {
+      const w = viewport.width * viewport.scale
+      const h = viewport.height * viewport.scale
+      // A rotation changes the full height, so start over.
+      if (Math.abs(w - width) > 1) {
+        width = w
+        full = h
+      }
+      full = Math.max(full, h)
+      setOpen(full - h > 120)
+    }
+    viewport.addEventListener('resize', update)
+    return () => viewport.removeEventListener('resize', update)
+  }, [])
+
+  return open
 }
 
 function Shell({ session }: { session: Session }) {
   const [tab, setTab] = useState<Tab>('chat')
+  const keyboardOpen = useKeyboardOpen()
 
   return (
-    <div className="shell">
+    <div className="shell" data-keyboard={keyboardOpen ? 'open' : undefined}>
       <header>
+        <Tile size={30} />
         <h1>{t.tabs[tab]}</h1>
+        {(tab === 'menu' || tab === 'list') && <span className="pill">{t.soon}</span>}
       </header>
       <main>
         {tab === 'chat' && <Chat session={session} />}
-        {tab === 'profile' && <Profile session={session} />}
-        {(tab === 'menu' || tab === 'list') && <p className="soon">{t.soon}</p>}
+        {tab === 'profile' && <Profile session={session} onOpenChat={() => setTab('chat')} />}
+        {tab === 'menu' && <Placeholder {...t.placeholder.menu} week />}
+        {tab === 'list' && <Placeholder {...t.placeholder.list} />}
       </main>
-      <nav>
-        {tabs.map((key) => (
-          <button key={key} aria-current={key === tab ? 'page' : undefined} onClick={() => setTab(key)}>
-            {t.tabs[key]}
-          </button>
-        ))}
+      <nav aria-label={t.nav}>
+        {tabs.map((key) => {
+          const Icon = icons[key]
+          return (
+            <button
+              key={key}
+              type="button"
+              aria-current={key === tab ? 'page' : undefined}
+              onClick={() => setTab(key)}
+            >
+              <Icon />
+              <span>{t.tabs[key]}</span>
+            </button>
+          )
+        })}
       </nav>
+    </div>
+  )
+}
+
+// Menu and List aren't built yet (milestones 3 and 4): say what will be here, nothing more.
+function Placeholder({ title, body, week = false }: { title: string; body: string; week?: boolean }) {
+  return (
+    <div className="page placeholder">
+      <h2>{title}</h2>
+      <p>{body}</p>
+      {week && (
+        <ol className="week card" aria-hidden="true">
+          {t.placeholder.days.map((day, i) => (
+            <li key={i}>{day}</li>
+          ))}
+        </ol>
+      )}
     </div>
   )
 }

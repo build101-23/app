@@ -1,0 +1,154 @@
+/* Dev-only alternative directions, compared with the picker (src/dev/picker.tsx). The shipped default,
+   "Naranja zapallo", lives in src/index.css. Coral manda was the default before it; its full token set below is
+   also the base that Aguamarina manda and Trópico change. */
+
+:root:is([data-direction='coral'], [data-direction='aguamarina'], [data-direction='tropico']) {
+  --coral: #ff6a5c;
+  --peach: #ff9e7a;
+  --aqua: #5fe8cf;
+  --field-gradient: linear-gradient(135deg, var(--coral) 0%, var(--peach) 46%, #ffd5c2 55%, #fffaf4 59%, #d2f7ee 63%, var(--aqua) 76%);
+  --on-field: #121212;
+  --field-shade: rgb(120 45 35);
+  --tile: #121212;
+  --tile-edge: #121212;
+  --logo-dot: var(--coral);
+  --logo-dot-2: var(--logo-dot);
+  --logo-dot-3: var(--logo-dot);
+  --logo-apex: var(--aqua);
+  --ground: #fff6f2;
+  --surface-sunk: #fce6de;
+  --line: #f1ddd5;
+  --line-strong: #8c7770;
+  --ink: #121212;
+  --ink-muted: #5e524e;
+  --primary: #121212;
+  --primary-hover: #34302e;
+  --bubble-user: var(--coral);
+  --on-bubble-user: #121212;
+  --accent: var(--aqua);
+  --on-accent: #121212;
+  --danger: #b3132b;
+  --danger-surface: #ffe9eb;
+  --sent-surface: color-mix(in srgb, var(--aqua) 24%, var(--surface));
+  --week-dot: color-mix(in srgb, var(--coral) 45%, var(--surface));
+  accent-color: var(--coral);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:is([data-direction='coral'], [data-direction='aguamarina'], [data-direction='tropico']) {
+    --ground: #0e0e0e;
+    --surface: #1a1918;
+    --surface-sunk: #262423;
+    --line: #2c2a28;
+    --line-strong: #77706d;
+    --ink: #f6f1ee;
+    --ink-muted: #b5aba7;
+    --primary: var(--coral);
+    --primary-hover: #ff8478;
+    --on-primary: #121212;
+    --danger: #ff8e96;
+    --danger-surface: #2c1214;
+    --sent-surface: color-mix(in srgb, var(--aqua) 16%, var(--surface));
+    --tile-edge: rgb(255 255 255 / 0.16);
+    --week-dot: color-mix(in srgb, var(--coral) 60%, var(--surface));
+  }
+}
+
+/* Aguamarina manda: aquamarine bubbles and dots, coral marks what's active. */
+:root[data-direction='aguamarina'] {
+  --field-gradient: linear-gradient(135deg, var(--aqua) 0%, #4fe0ca 44%, #c8f4ec 53%, #f6fdfa 57%, #ffdccf 61%, #ff8a72 74%);
+  --logo-dot: var(--aqua);
+  --logo-apex: var(--coral);
+  --bubble-user: var(--aqua);
+  --accent: var(--coral);
+  --ground: #f0fbf8;
+  --surface-sunk: #d9f4ed;
+  --line: #cfebe4;
+  --week-dot: color-mix(in srgb, var(--aqua) 55%, var(--surface));
+}
+
+/* Trópico: a third color, sun yellow; each pair of dots takes one of the three, the apex goes white. */
+:root[data-direction='tropico'] {
+  --sun: #ffd23f;
+  --field-gradient: linear-gradient(135deg, var(--coral) 0%, var(--sun) 44%, #fff6d2 53%, #dff9ee 58%, var(--aqua) 74%);
+  --logo-dot: var(--coral);
+  --logo-dot-2: var(--sun);
+  --logo-dot-3: var(--aqua);
+  --logo-apex: #ffffff;
+  --accent: var(--sun);
+  --ground: #fffaf0;
+  --surface-sunk: #fdedc8;
+  --line: #f2e6cc;
+  --week-dot: color-mix(in srgb, var(--sun) 70%, var(--surface));
+}
+
+@media (prefers-color-scheme: dark) {
+  :root[data-direction='aguamarina'],
+  :root[data-direction='tropico'] {
+    --ground: #0e0e0e;
+    --surface-sunk: #262423;
+    --line: #2c2a28;
+  }
+
+  :root[data-direction='aguamarina'] {
+    --primary: var(--aqua);
+    --primary-hover: #86eedb;
+  }
+}
+
+.dev-picker {
+  position: fixed;
+  z-index: 100;
+  top: calc(var(--safe-top) + 8px);
+  right: 8px;
+  display: grid;
+  gap: 4px;
+  max-width: min(calc(100% - 16px), 260px);
+  margin: 0;
+  padding: 8px 10px;
+  border: 1px solid var(--line-strong);
+  border-radius: 12px;
+  background: var(--surface);
+  color: var(--ink);
+  font-size: 0.8125rem;
+  box-shadow: 0 6px 18px -8px rgb(18 18 18 / 0.35);
+}
+
+.dev-picker legend {
+  float: left;
+  margin-bottom: 2px;
+  color: var(--ink-muted);
+  font-weight: 600;
+}
+
+.dev-picker-row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.dev-picker select {
+  flex: 1;
+  min-width: 0;
+  min-height: 32px;
+  padding: 0 6px;
+  border: 1px solid var(--line-strong);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--ink);
+  font: inherit;
+}
+
+.dev-picker button {
+  width: 32px;
+  height: 32px;
+  border: 1px solid var(--line-strong);
+  border-radius: 8px;
+  font-size: 1.125rem;
+  line-height: 1;
+}
+
+.dev-picker-mood {
+  color: var(--ink-muted);
+  line-height: 1.35;
+}
