@@ -250,9 +250,18 @@ textarea {
   text-transform: capitalize;
 }
 
-.menu-preview button {
+.menu-preview button,
+.list-preview button {
   margin-top: 12px;
   padding: 8px 14px;
+}
+
+.list-preview p {
+  margin: 0;
+}
+
+.list-preview p + p {
+  margin-top: 12px;
 }
 
 .chat form {
