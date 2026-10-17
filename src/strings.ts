@@ -34,6 +34,7 @@ export const t = {
     confirm: 'Confirmar menú',
     confirmed: 'Menú confirmado.',
     confirmError: 'No se pudo confirmar. Probá de nuevo.',
+    changed: 'El menú cambió desde que lo abriste: este es el nuevo.',
     // Lowercase to fit inside a sentence; headings capitalize them with CSS.
     days: {
       monday: 'lunes',

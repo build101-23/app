@@ -17,6 +17,8 @@ function inTurn<T>(task: () => PromiseLike<T>): Promise<T> {
   queue = run.catch(() => {})
   return run
 }
+// Counts saves, so a load can tell that a tap came in while it was reading.
+let saves = 0
 
 // Rounds up, so a line never reads as less than the menu needs.
 const num = (n: number) => n.toLocaleString('es-UY', { maximumFractionDigits: 2, roundingMode: 'ceil' })
@@ -39,13 +41,16 @@ export default function List({ session, onOpenMenu }: { session: Session; onOpen
   // Reads again whenever the app comes back to the screen, so marks saved from the chat or another device
   // show up before the next tap writes the whole map over them.
   useEffect(() => {
-    const load = () =>
-      inTurn(() => supabase.from('menus').select('data, confirmed_at, have').maybeSingle()).then(
+    const load = () => {
+      const before = saves
+      return inTurn(() => supabase.from('menus').select('data, confirmed_at, have').maybeSingle()).then(
         ({ data, error }) => {
           if (error) setError(t.menu.loadError)
-          else setMenu(data)
+          // A tap made while this read was in flight is newer than the `have` it read, and that save writes it.
+          else setMenu((m) => (saves !== before && m && data ? { ...data, have: m.have } : data))
         },
       )
+    }
     const onVisible = () => document.visibilityState === 'visible' && load()
     load()
     document.addEventListener('visibilitychange', onVisible)
@@ -78,6 +83,7 @@ export default function List({ session, onOpenMenu }: { session: Session; onOpen
 
   // The screen changes at once. Each save sends the whole map, so the last one to land decides what's stored.
   function save(next: Have) {
+    saves++
     setMenu((m) => m && { ...m, have: next })
     setNotice('')
     inTurn(async () => {

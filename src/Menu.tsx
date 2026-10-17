@@ -4,12 +4,13 @@ import { days as order, type MenuData } from '../supabase/functions/_shared/menu
 import { supabase } from './supabase'
 import { t } from './strings'
 
-type MenuRow = { data: MenuData; confirmed_at: string | null }
+// updated_at: the menu's version, which every save_menu changes.
+type MenuRow = { data: MenuData; confirmed_at: string | null; updated_at: string }
 
 const byDay = (days: MenuData['days']) => [...days].sort((a, b) => order.indexOf(a.day) - order.indexOf(b.day))
 
 // The week as a save_menu call saved it, shown in the chat under that reply.
-export function MenuPreview({ menu, onOpen }: { menu: MenuData; onOpen: () => void }) {
+export function MenuPreview({ menu, busy, onOpen }: { menu: MenuData; busy: boolean; onOpen: () => void }) {
   const names = new Map(menu.recipes.map((recipe) => [recipe.id, recipe.name]))
   return (
     <div className="bubble assistant menu-preview">
@@ -21,7 +22,9 @@ export function MenuPreview({ menu, onOpen }: { menu: MenuData; onOpen: () => vo
           </li>
         ))}
       </ul>
-      <button onClick={onOpen}>{t.chat.openMenu}</button>
+      <button disabled={busy} onClick={onOpen}>
+        {t.chat.openMenu}
+      </button>
     </div>
   )
 }
@@ -32,23 +35,34 @@ export default function Menu({ session, onChange }: { session: Session; onChange
   const [error, setError] = useState('')
   const [busy, setBusy] = useState(false)
 
-  useEffect(() => {
-    supabase
+  function load() {
+    return supabase
       .from('menus')
-      .select('data, confirmed_at')
+      .select('data, confirmed_at, updated_at')
       .maybeSingle()
       .then(({ data, error }) => {
         if (error) setError(t.menu.loadError)
         else setMenu(data)
       })
+  }
+
+  useEffect(() => {
+    load()
   }, [])
 
-  async function confirm() {
+  async function confirm(version: string) {
     setBusy(true)
     setError('')
     const confirmed_at = new Date().toISOString()
-    const { error } = await supabase.from('menus').update({ confirmed_at }).eq('user_id', session.user.id)
+    // Only the version on screen: the chat may have saved a newer menu since this tab loaded.
+    const { data, error } = await supabase
+      .from('menus')
+      .update({ confirmed_at })
+      .eq('user_id', session.user.id)
+      .eq('updated_at', version)
+      .select('updated_at')
     if (error) setError(t.menu.confirmError)
+    else if (!data.length) await load().then(() => setError((e) => e || t.menu.changed))
     else setMenu((m) => m && { ...m, confirmed_at })
     setBusy(false)
   }
@@ -64,7 +78,7 @@ export default function Menu({ session, onChange }: { session: Session; onChange
       {menu.confirmed_at ? (
         <p className="muted">{t.menu.confirmed}</p>
       ) : (
-        <button disabled={busy} onClick={confirm}>
+        <button disabled={busy} onClick={() => confirm(menu.updated_at)}>
           {t.menu.confirm}
         </button>
       )}

@@ -86,7 +86,8 @@ export default function Chat({
   const [showList, setShowList] = useState(false)
   const [bubbles, setBubbles] = useState<Bubble[]>([])
   const [draft, setDraft] = useState(initialDraft)
-  const [busy, setBusy] = useState(false)
+  // Starts true: sending waits until the latest chat is open (the effect below).
+  const [busy, setBusy] = useState(true)
   const [error, setError] = useState('')
   const [listening, setListening] = useState(false)
   const end = useRef<HTMLDivElement>(null)
@@ -131,12 +132,14 @@ export default function Chat({
     return data ?? []
   }
 
+  // Sending waits for the messages, so they can't land over the new message's bubbles.
   function open(id: string) {
     setConversationId(id)
     setShowList(false)
     setBubbles([])
     setError('')
-    return loadMessages(id)
+    setBusy(true)
+    return loadMessages(id).finally(() => setBusy(false))
   }
 
   async function loadMessages(id: string) {
@@ -156,12 +159,13 @@ export default function Chat({
     setError('')
   }
 
-  // Opens on the most recent chat. State is only set once the queries resolve, which the rule can't see.
+  // Opens on the most recent chat. A message sent before that would start a new chat that this then switches
+  // away from, so sending unlocks only here. State is only set once the queries resolve, which the rule can't see.
   useEffect(() => {
     // oxlint-disable-next-line react/set-state-in-effect
-    loadConversations().then((list) => {
-      if (list[0]) open(list[0].id)
-    })
+    loadConversations()
+      .then((list) => list[0] && open(list[0].id))
+      .finally(() => setBusy(false))
   }, [])
 
   // Braces matter: newer browsers return a Promise from scrollIntoView, and an effect may only return a cleanup.
@@ -250,7 +254,11 @@ export default function Chat({
           {conversations.length === 0 && <li className="muted">{t.chat.noChats}</li>}
           {conversations.map((c) => (
             <li key={c.id}>
-              <button aria-current={c.id === conversationId ? 'true' : undefined} onClick={() => open(c.id)}>
+              <button
+                aria-current={c.id === conversationId ? 'true' : undefined}
+                disabled={busy}
+                onClick={() => open(c.id)}
+              >
                 <span>{c.title}</span>
                 <small>{day(c.updated_at)}</small>
               </button>
@@ -262,7 +270,7 @@ export default function Chat({
           {bubbles.length === 0 && !error && <p className="bubble assistant">{t.chat.welcome}</p>}
           {bubbles.map((bubble, i) =>
             bubble.menu ? (
-              <MenuPreview key={i} menu={bubble.menu} onOpen={onOpenMenu} />
+              <MenuPreview key={i} menu={bubble.menu} busy={busy} onOpen={onOpenMenu} />
             ) : (
               <p key={i} className={`bubble ${bubble.role}`}>
                 {bubble.text || '…'}

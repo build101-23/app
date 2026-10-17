@@ -285,6 +285,8 @@ Deno.serve(async (req) => {
             cache_control: { type: 'ephemeral' },
             system: SYSTEM_PROMPT,
             tools: [saveProfile, saveMenu, showMenu, updateShoppingList],
+            // No tools in the last round, so the turn ends on a reply about the earlier calls, not on tool results.
+            tool_choice: { type: round < 4 ? 'auto' : 'none' },
             messages,
             // Prompt changes during development drop old reasoning instead of failing with a 400.
             thinking: { type: 'adaptive', block_binding: { prefix_mismatch_behavior: 'drop_block' } },
@@ -310,12 +312,15 @@ Deno.serve(async (req) => {
           // end_turn, refusal or max_tokens: nothing more to run.
           if (message.stop_reason !== 'tool_use') break
 
+          // Before the last round, say so: otherwise the model may promise or report a save it can no longer make.
+          const note =
+            round === 3 ? "\nNo more tool calls this turn: tell the user in one line what was saved and what wasn't." : ''
           const results: Anthropic.Beta.BetaToolResultBlockParam[] = []
           for (const block of message.content) {
             if (block.type !== 'tool_use') continue
             const problem = await runTool(block.name, block.input)
             const is_error = !!problem && block.name !== 'show_menu'
-            results.push({ type: 'tool_result', tool_use_id: block.id, content: problem || 'Saved.', is_error })
+            results.push({ type: 'tool_result', tool_use_id: block.id, content: (problem || 'Saved.') + note, is_error })
           }
           const toolTurn: MessageParam = { role: 'user', content: results }
           messages.push(toolTurn)
