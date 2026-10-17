@@ -18,4 +18,5 @@ Browser → Supabase (auth and data, protected by row-level security) → Edge F
 - Framework: Vite + React + TypeScript ([ADR 0004](adr/0004-vite-react-supabase-claude.md))
 - Backend: Supabase: auth, Postgres, Edge Functions ([ADR 0004](adr/0004-vite-react-supabase-claude.md))
 - AI: Claude via the Anthropic SDK ([ADR 0004](adr/0004-vite-react-supabase-claude.md))
+- Hosting: Cloudflare Worker serving the static build ([ADR 0005](adr/0005-cloudflare-workers.md))
 - Prices: supermarket websites and SIPC ([ADR 0003](adr/0003-price-sources.md))
