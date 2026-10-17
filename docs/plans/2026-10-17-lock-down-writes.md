@@ -1,6 +1,6 @@
 # Lock down writes and cap chat turns
 
-Status: **done**; the release (step 6) waits for the team's OK. Must ship before the pilot (milestone 6 in [milestones](../notes/milestones.md)).
+Status: **released**; trying it with a real user (step 6.4) is pending. Must ship before the pilot (milestone 6 in [milestones](../notes/milestones.md)).
 
 ## Context
 The owner policies on `messages`, `profiles` and `menus` are `for all`. Any signed-in user can INSERT or UPDATE their own rows straight through the REST API with the publishable key. That lets them:
