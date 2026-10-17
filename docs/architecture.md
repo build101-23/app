@@ -4,19 +4,27 @@ Living doc: how the system is *now*. Reasoning lives in [ADRs](adr/), not here.
 
 ## Components
 
-- **Web app**: a single-page app installed on the phone as a PWA. It talks to Supabase with the public key only.
-- **Supabase**: one hosted project. Auth (magic link email for now, an emailed code from milestone 6), Postgres with row-level security on every table, and Edge Functions for anything that needs a secret.
-- **Claude**: called only from Edge Functions, never from the browser.
+- **Web app** (`src/`): a single-page app installed on the phone as a PWA. It talks to Supabase with the public key and the user's login token. Screens: Chat, Menu and List (placeholders), and Profile.
+- **Supabase**: one hosted project.
+  - Auth: magic link email for now, an emailed code from milestone 6.
+  - Postgres (`supabase/migrations/`), with row-level security and an owner policy on every table:
+    - `messages`: one ongoing chat per user. `content` holds each message exactly as sent to or returned by Claude, thinking blocks included. The history is append-only and replayed as is.
+    - `profiles`: what the AI saved about the user (goal, meals, cooking time, nutritionist's plan, and can't eat / don't like / like / want lists), as one `data` JSON object.
+  - Edge Function `chat` (`supabase/functions/chat/`): checks the caller's token, loads the history, calls Claude, streams the reply as plain text, runs the `save_profile` tool, and stores the whole exchange at the end. All database access runs as the user, under row-level security.
+- **Claude**: called only from Edge Functions, never from the browser. The system prompt lives in `supabase/functions/chat/prompt.ts`.
 
 ## Data flow
 
-Browser → Supabase (auth and data, protected by row-level security) → Edge Function → Claude.
+1. Sign-in: browser → Supabase Auth → magic link email → back to the app with a session.
+2. Chat: browser → `chat` function (user token) → Claude (streaming) → text streamed back to the browser. `save_profile` calls write `profiles`, and the new turns are appended to `messages`.
+3. Screens read `messages` and `profiles` directly from Supabase, limited to the user's own rows.
 
 ## Stack
 <!-- One line per item, linking its ADR, e.g.: Database: Postgres ([ADR 0002](adr/0002-use-postgres.md)) -->
 - Client: installable web app (PWA), Capacitor later ([ADR 0002](adr/0002-pwa-now-capacitor-later.md))
 - Framework: Vite + React + TypeScript ([ADR 0004](adr/0004-vite-react-supabase-claude.md))
+- UI language: Spanish, strings in `src/strings.ts` ([ADR 0006](adr/0006-spanish-ui.md))
 - Backend: Supabase: auth, Postgres, Edge Functions ([ADR 0004](adr/0004-vite-react-supabase-claude.md))
-- AI: Claude via the Anthropic SDK ([ADR 0004](adr/0004-vite-react-supabase-claude.md))
+- AI: `claude-sonnet-5-5` at medium effort via the Anthropic SDK ([ADR 0007](adr/0007-sonnet-for-chat.md))
 - Hosting: Cloudflare Worker serving the static build ([ADR 0005](adr/0005-cloudflare-workers.md))
 - Prices: supermarket websites and SIPC ([ADR 0003](adr/0003-price-sources.md))

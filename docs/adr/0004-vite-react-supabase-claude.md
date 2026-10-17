@@ -1,6 +1,6 @@
 # 0004. Vite React, Supabase and Claude
 
-- Status: Accepted
+- Status: Accepted (model superseded by 0007)
 - Date: 2026-10-17
 
 ## Context

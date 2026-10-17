@@ -1,8 +1,11 @@
 import { useEffect, useState, type FormEvent } from 'react'
 import type { Session } from '@supabase/supabase-js'
 import { supabase } from './supabase'
+import { t } from './strings'
+import Chat from './Chat'
+import Profile from './Profile'
 
-const tabs = ['Chat', 'Menu', 'List', 'Profile'] as const
+const tabs = ['chat', 'menu', 'list', 'profile'] as const
 type Tab = (typeof tabs)[number]
 
 export default function App() {
@@ -44,10 +47,10 @@ function SignIn() {
 
   return (
     <main className="signin">
-      <h1>Sign in</h1>
+      <h1>{t.signIn.title}</h1>
       <form onSubmit={submit}>
         <label>
-          Email
+          {t.signIn.email}
           <input
             type="email"
             required
@@ -57,14 +60,10 @@ function SignIn() {
             onChange={(e) => setEmail(e.target.value)}
           />
         </label>
-        {sent ? (
-          <p>Check your email and tap the link to sign in.</p>
-        ) : (
-          <button disabled={busy}>Email me a sign-in link</button>
-        )}
+        {sent ? <p>{t.signIn.sent}</p> : <button disabled={busy}>{t.signIn.send}</button>}
         {sent && (
           <button type="button" className="link" onClick={() => setSent(false)}>
-            Use another email
+            {t.signIn.otherEmail}
           </button>
         )}
         {error && <p role="alert">{error}</p>}
@@ -74,27 +73,22 @@ function SignIn() {
 }
 
 function Shell({ session }: { session: Session }) {
-  const [tab, setTab] = useState<Tab>('Chat')
+  const [tab, setTab] = useState<Tab>('chat')
 
   return (
     <div className="shell">
       <header>
-        <h1>{tab}</h1>
+        <h1>{t.tabs[tab]}</h1>
       </header>
       <main>
-        {tab === 'Profile' ? (
-          <>
-            <p>{session.user.email}</p>
-            <button onClick={() => supabase.auth.signOut()}>Sign out</button>
-          </>
-        ) : (
-          <p>Coming soon.</p>
-        )}
+        {tab === 'chat' && <Chat session={session} />}
+        {tab === 'profile' && <Profile session={session} />}
+        {(tab === 'menu' || tab === 'list') && <p className="soon">{t.soon}</p>}
       </main>
       <nav>
-        {tabs.map((t) => (
-          <button key={t} aria-current={t === tab ? 'page' : undefined} onClick={() => setTab(t)}>
-            {t}
+        {tabs.map((key) => (
+          <button key={key} aria-current={key === tab ? 'page' : undefined} onClick={() => setTab(key)}>
+            {t.tabs[key]}
           </button>
         ))}
       </nav>

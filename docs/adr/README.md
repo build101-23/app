@@ -7,8 +7,10 @@ One file per decision: `NNNN-short-title.md`. ADRs are append-only: never rewrit
 | 0001 | [Record architecture decisions](0001-record-architecture-decisions.md) | Accepted | 2026-10-17 |
 | 0002 | [Installable web app now, Capacitor later](0002-pwa-now-capacitor-later.md) | Accepted | 2026-10-17 |
 | 0003 | [Prices from supermarket websites and SIPC](0003-price-sources.md) | Accepted | 2026-10-17 |
-| 0004 | [Vite React, Supabase and Claude](0004-vite-react-supabase-claude.md) | Accepted | 2026-10-17 |
+| 0004 | [Vite React, Supabase and Claude](0004-vite-react-supabase-claude.md) | Accepted (model superseded by 0007) | 2026-10-17 |
 | 0005 | [Host the web app on Cloudflare Workers](0005-cloudflare-workers.md) | Accepted | 2026-10-17 |
+| 0006 | [Spanish UI, English everything else](0006-spanish-ui.md) | Accepted | 2026-10-17 |
+| 0007 | [Claude Sonnet 5.5 at medium effort for the chat](0007-sonnet-for-chat.md) | Accepted | 2026-10-17 |
 
 ## Template
 

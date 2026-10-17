@@ -93,7 +93,7 @@ button.link {
 .shell {
   display: flex;
   flex-direction: column;
-  min-height: 100svh;
+  height: 100svh;
 }
 
 .shell header {
@@ -103,12 +103,16 @@ button.link {
 
 .shell main {
   flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+.soon,
+.profile {
   padding: 16px;
 }
 
 .shell nav {
-  position: sticky;
-  bottom: 0;
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   padding-bottom: env(safe-area-inset-bottom);
@@ -125,4 +129,87 @@ button.link {
 .shell nav button[aria-current='page'] {
   color: var(--accent);
   font-weight: 600;
+}
+
+.muted {
+  color: var(--muted);
+}
+
+textarea {
+  font: inherit;
+  flex: 1;
+  resize: none;
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--bg);
+  color: var(--text);
+}
+
+.chat {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.chat .messages {
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 16px;
+}
+
+.bubble {
+  max-width: 85%;
+  margin: 0;
+  padding: 10px 14px;
+  border-radius: 16px;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.bubble.user {
+  align-self: flex-end;
+  background: var(--accent);
+  color: var(--on-accent);
+}
+
+.bubble.assistant {
+  align-self: flex-start;
+  background: var(--surface);
+  border: 1px solid var(--border);
+}
+
+.chat form {
+  display: flex;
+  gap: 8px;
+  align-items: flex-end;
+  padding: 8px 16px;
+  border-top: 1px solid var(--border);
+  background: var(--surface);
+}
+
+.profile dl {
+  margin: 0 0 16px;
+}
+
+.profile dt {
+  color: var(--muted);
+  font-size: 0.875rem;
+}
+
+.profile dd {
+  margin: 0 0 12px;
+}
+
+.profile h2 {
+  font-size: 1rem;
+  margin: 16px 0 4px;
+}
+
+.profile ul {
+  margin: 0;
+  padding-left: 20px;
 }
