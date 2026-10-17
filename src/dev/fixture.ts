@@ -138,7 +138,7 @@ const menuData = {
   })),
 }
 
-// A saved menu at the end of the sample chat: the chat shows it as a menu card under the reply.
+// The end of the sample chat: a saved menu, then the list, which the chat shows as a menu card and a list card.
 const menuTurn = [
   {
     role: 'assistant',
@@ -148,6 +148,15 @@ const menuTurn = [
     ],
   },
   { role: 'user', content: [{ type: 'tool_result', tool_use_id: 'save-1' }] },
+  text('user', '¿Me pasás la lista?'),
+  {
+    role: 'assistant',
+    content: [
+      { type: 'text', text: 'Acá está lo que te falta comprar para la semana.' },
+      { type: 'tool_use', id: 'list-1', name: 'show_shopping_list', input: {} },
+    ],
+  },
+  { role: 'user', content: [{ type: 'tool_result', tool_use_id: 'list-1' }] },
 ]
 
 const updatedAt = '2026-10-17T12:00:00Z'
@@ -156,16 +165,12 @@ const conversations = [
   { id: 'c2', title: 'Ideas de meriendas sin gluten', updated_at: '2026-10-15T18:30:00Z' },
 ]
 
-// The menu row both Menu and List read. ?menu=draft leaves it unconfirmed, ?menu=none has no menu yet.
+// The menu row the chat, Menu and List read. ?menu=none has no menu yet.
 let menuRow: Record<string, unknown> | null =
-  scenario('menu', 'confirmed') === 'none'
-    ? null
-    : {
-        data: menuData,
-        confirmed_at: scenario('menu', 'confirmed') === 'draft' ? null : updatedAt,
-        have: { oats: 100 },
-        updated_at: updatedAt,
-      }
+  scenario('menu', 'saved') === 'none' ? null : { data: menuData, have: { oats: 100 }, updated_at: updatedAt }
+
+// The numbers switch: ?numbers=on starts with calories and macros shown.
+let showNumbers = scenario('numbers', 'off') === 'on'
 
 async function load(table: string) {
   if (scenario('loading', '') === 'data') return never()
@@ -181,10 +186,10 @@ async function load(table: string) {
   if (table === 'menus') return { data: menuRow, error: null }
   const profile = scenario('profile', 'full')
   if (profile === 'error') return { data: null, error: { message: 'fixture error' } }
-  return { data: profile === 'empty' ? null : { data: fullProfile }, error: null }
+  return { data: { data: profile === 'empty' ? { show_numbers: showNumbers } : { ...fullProfile, show_numbers: showNumbers } }, error: null }
 }
 
-// What the screens write: a new chat's row, the menu's confirmation and what you have at home.
+// What the screens write: a new chat's row and what you have at home.
 function write(table: string, values: Record<string, unknown>) {
   if (table === 'menus' && menuRow) menuRow = { ...menuRow, ...values }
   const done = Promise.resolve({ data: [{ updated_at: updatedAt }], error: null })
@@ -235,6 +240,13 @@ export const supabase = {
       insert: (values: Record<string, unknown>) => write(table, values),
       update: (values: Record<string, unknown>) => write(table, values),
     }
+  },
+  // The numbers switch's only write. ?numbers=error makes it fail, so the switch flips back with an alert.
+  async rpc(_name: string, args: { show_numbers: boolean }) {
+    await wait(300)
+    if (scenario('numbers', 'off') === 'error') return { error: { message: 'fixture error' } }
+    showNumbers = args.show_numbers
+    return { error: null }
   },
 }
 

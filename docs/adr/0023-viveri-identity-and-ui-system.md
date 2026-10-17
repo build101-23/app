@@ -1,6 +1,6 @@
-# 0021. VIVERI identity and a token-based UI system
+# 0023. VIVERI identity and a token-based UI system
 
-- Status: Superseded by [0022](0022-coral-identity-and-glass-dock.md)
+- Status: Superseded by [0024](0024-coral-identity-and-glass-dock.md)
 - Date: 2026-10-17
 
 ## Context

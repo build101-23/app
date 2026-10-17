@@ -838,9 +838,19 @@ textarea {
   text-transform: capitalize;
 }
 
-.menu-preview .button {
+.menu-preview .button,
+.list-preview .button {
   min-height: 44px;
   margin-top: 12px;
+}
+
+/* The list as it stands, with its total and the example-prices line, as an assistant bubble. */
+.list-preview p + p {
+  margin-top: 12px;
+}
+
+.list-preview small {
+  font-size: 0.8125rem;
 }
 
 /* The chat's scroll edge: strong from the bottom up to the composer (gap, gutters and below the dock
@@ -1080,6 +1090,15 @@ textarea {
   display: grid;
 }
 
+/* Calories and macros, with the numbers switch on. */
+.menu .macros {
+  display: block;
+  margin: 0 0 4px;
+  color: var(--ink-muted);
+  font-size: 0.875rem;
+  font-variant-numeric: tabular-nums;
+}
+
 .menu details {
   padding: 12px 0;
   border-bottom: 1px solid var(--line);
@@ -1263,6 +1282,59 @@ textarea {
   background: var(--surface-sunk);
   font-size: 0.9375rem;
   overflow-wrap: anywhere;
+}
+
+/* The numbers switch: a card with the label and a toggle, the toggle on the accent when on. */
+.switch-card {
+  display: grid;
+  gap: 8px;
+  padding: 4px 16px;
+}
+
+.switch {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  min-height: 56px;
+}
+
+.switch input {
+  flex: none;
+  appearance: none;
+  position: relative;
+  width: 52px;
+  height: 32px;
+  margin: 0;
+  border-radius: 999px;
+  background: var(--line-strong);
+  cursor: pointer;
+  transition: background-color var(--dur-fast) var(--ease);
+}
+
+.switch input::after {
+  content: '';
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: var(--surface);
+  box-shadow: 0 1px 3px rgb(18 18 18 / 0.3);
+  transition: transform var(--dur-fast) var(--ease);
+}
+
+.switch input:checked {
+  background: var(--accent);
+}
+
+.switch input:checked::after {
+  transform: translateX(20px);
+}
+
+.switch-card .alert {
+  margin-bottom: 12px;
 }
 
 .account-card {

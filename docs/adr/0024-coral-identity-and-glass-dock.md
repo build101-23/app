@@ -1,10 +1,10 @@
-# 0022. Coral and aquamarine identity, floating glass dock
+# 0024. Coral and aquamarine identity, floating glass dock
 
-- Status: Proposed (colors superseded by 0024)
+- Status: Proposed (colors superseded by 0026)
 - Date: 2026-10-17
 
 ## Context
-[ADR 0021](0021-viveri-identity-and-ui-system.md) gave the app the approved VIVERI mark with its muted green and tangerine, a deep-green tab bar, and a left rail on desktop. Reviewing the result, the product owner rejected the palette as boring and asked for:
+[ADR 0023](0023-viveri-identity-and-ui-system.md) gave the app the approved VIVERI mark with its muted green and tangerine, a deep-green tab bar, and a left rail on desktop. Reviewing the result, the product owner rejected the palette as boring and asked for:
 - a more vivid, unconventional identity, including new colors for the logo with the same geometry;
 - one translucent bottom dock at every width.
 
@@ -33,7 +33,7 @@ The product owner chose coral and aquamarine with coral leading, and black inste
   - **Material:** `backdrop-filter` blur and saturation, a light-catching edge, a shadow, all static.
   - **Fallback:** solid when unsupported, or when the user asks for reduced transparency or more contrast.
   - **Active tab:** a solid aquamarine pill and bold text.
-- **Kept from 0021:** the name, the approved mark and wordmark geometry, and plain CSS with tokens (no framework).
+- **Kept from 0023:** the name, the approved mark and wordmark geometry, and plain CSS with tokens (no framework).
 - **Dev picker:** a dev-only control compares the default with two close variants ("Aguamarina manda", "Trópico"); production never includes it.
 
 ## Consequences
@@ -41,4 +41,4 @@ The product owner chose coral and aquamarine with coral leading, and black inste
 - **Cost:** the logo needs its black tile everywhere, so a bare mark on white is not an option.
 - **Approximation:** the web material only approximates the native one; real devices (iOS Safari, Android) still need checking.
 - **Error color:** coral sits close to red, so errors use a deeper crimson with an icon, never coral alone.
-- **Superseded:** 0021's color rules and the desktop rail.
+- **Superseded:** 0023's color rules and the desktop rail.

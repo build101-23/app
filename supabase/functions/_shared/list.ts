@@ -62,6 +62,20 @@ export function toBuy(item: Item, have: Have): number {
   return Math.ceil(left(item, have) / step) * step
 }
 
+// The list as the chat model gets it: per item, what the menu uses, what they have at home and what the card buys.
+// Only numbers reach Claude: the browser can write any JSON into have, so a mark that isn't null or 0+ counts as none.
+export function listLines(menu: MenuData, have: Have): string {
+  return buildList(menu)
+    .map((item) => {
+      const mark = Object.hasOwn(have, item.id) ? have[item.id] : 0
+      const atHome = mark === null || (typeof mark === 'number' && Number.isFinite(mark) && mark >= 0) ? mark : 0
+      const buy = toBuy(item, { [item.id]: atHome })
+      const unit = item.pack ? `${item.unit}, pack ${item.pack}` : item.unit
+      return `${item.id} (${unit}): week ${item.amount}, have ${atHome ?? 'enough'}, buy ${buy}`
+    })
+    .join('\n')
+}
+
 // One step less (-1) or more (1) to buy. Nothing left to buy is stored as null; back at the menu's amount, the mark goes.
 export function stepHave(item: Item, have: Have, dir: 1 | -1): Have {
   const next = { ...have }

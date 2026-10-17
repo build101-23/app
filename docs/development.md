@@ -52,7 +52,7 @@ Vite reads `.env`, then `.env.local` (gitignored), which overrides it.
 - The database password lives in the team's shared password vault. Never commit it.
 - The secret key and the Anthropic API key (`ANTHROPIC_API_KEY`, created inside an Anthropic Console workspace: org-level keys are rejected without a workspace header) are stored only as Supabase Edge Function secrets (dashboard → Edge Functions → Secrets, or `supabase secrets set`), so Edge Functions can read them. They never go in `.env.local` or the repo. Supabase also gives every Edge Function `SUPABASE_SERVICE_ROLE_KEY`, which `chat` writes with.
 - The one exception is the price scraper's own secret key, named `scraper` (dashboard → Project Settings → API Keys → Secret keys). Like any secret key it acts as `service_role`; it's a separate key only so it can be revoked on its own. It lives only in `scraper/.env.local` (gitignored) on the machine that runs the scraper.
-- Every table enables row-level security in its migration, with an owner policy (`auth.uid() = user_id`) that only allows `select`, unless the browser has to write that table. Today the browser writes only `conversations`, and `menus.confirmed_at` through a column grant. Edge Functions write everything else with the service-role key ([ADR 0014](adr/0014-client-reads-chat-function-writes.md)). The price catalog is the exception: every signed-in user reads all of it, and only the scraper writes it ([ADR 0016](adr/0016-price-catalog-one-row-per-product-per-chain.md)). Check Database → Advisors → Security after each milestone.
+- Every table enables row-level security in its migration, with an owner policy (`auth.uid() = user_id`) that only allows `select`, unless the browser has to write that table. Today the browser writes only `conversations` and `menus.have` (through a column grant), and the profile's `show_numbers` through the `set_show_numbers` function ([ADR 0021](adr/0021-numbers-switch-in-the-profile.md)). Edge Functions write everything else with the service-role key ([ADR 0014](adr/0014-client-reads-chat-function-writes.md)). The price catalog is the exception: every signed-in user reads all of it, and only the scraper writes it ([ADR 0016](adr/0016-price-catalog-one-row-per-product-per-chain.md)). Check Database → Advisors → Security after each milestone.
 
 ## Testing
 
@@ -63,7 +63,7 @@ Vite reads `.env`, then `.env.local` (gitignored), which overrides it.
 - Scraper: `scraper/.venv/bin/python -m unittest discover -s scraper/tests -t .`. Hand-written fixtures, no network.
 
 ### Screens with synthetic data
-`npm run dev:fixture` runs the app with `src/dev/fixture.ts` in place of the Supabase client (`vite.config.ts` swaps it in fixture mode only; the production build never includes it). You're signed in as `persona@ejemplo.com` with sample chats, a confirmed menu with its shopping list, and a profile, so every screen can be checked without an account. Pick states with query parameters, combined freely:
+`npm run dev:fixture` runs the app with `src/dev/fixture.ts` in place of the Supabase client (`vite.config.ts` swaps it in fixture mode only; the production build never includes it). You're signed in as `persona@ejemplo.com` with sample chats (ending in a menu card and a list card), a saved menu with its shopping list, and a profile, so every screen can be checked without an account. Pick states with query parameters, combined freely:
 
 | Parameter | Values (default first) | What it shows |
 | --- | --- | --- |
@@ -72,7 +72,8 @@ Vite reads `.env`, then `.env.local` (gitignored), which overrides it.
 | `google` | `ok`, `error`, `unreachable` | The simulated Google button signs you in, Supabase rejects its token, or the button can't load (the email form takes over) |
 | `chat` | `long`, `empty`, `error` | Sample conversation, no messages, or a load error |
 | `reply` | `ok`, `error`, `slow` | The streamed reply to a sent message |
-| `menu` | `confirmed`, `draft`, `none` | A confirmed menu with its shopping list, a menu still to confirm, or no menu yet |
+| `menu` | `saved`, `none` | A saved menu with its shopping list, or no menu yet |
+| `numbers` | `off`, `on`, `error` | The numbers switch off, on (calories and macros in Menu), or failing to save |
 | `profile` | `full`, `empty`, `error` | Saved profile, nothing saved, or a load error |
 | `loading` | `session`, `data` | Stuck on the splash, or on the chat and profile skeletons |
 | `safe` | `iphone` | Simulated 47 px top and 34 px bottom safe areas |

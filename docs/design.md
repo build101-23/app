@@ -155,7 +155,7 @@ components:
 
 # Design System: VIVERI
 
-Living doc: how the interface looks *now*. Tokens live as CSS custom properties at the top of [`src/index.css`](../src/index.css); this file explains them. The colors come from [ADR 0024](adr/0024-naranja-zapallo-colors.md); the dock, layout and everything else from [ADR 0022](adr/0022-coral-identity-and-glass-dock.md), which replaced the green and tangerine identity and the desktop rail of [ADR 0021](adr/0021-viveri-identity-and-ui-system.md).
+Living doc: how the interface looks *now*. Tokens live as CSS custom properties at the top of [`src/index.css`](../src/index.css); this file explains them. The colors come from [ADR 0026](adr/0026-naranja-zapallo-colors.md); the dock, layout and everything else from [ADR 0024](adr/0024-coral-identity-and-glass-dock.md), which replaced the green and tangerine identity and the desktop rail of [ADR 0023](adr/0023-viveri-identity-and-ui-system.md).
 
 ## Overview
 
@@ -322,7 +322,7 @@ Sunk-surface pills with ink text: the can't-eat, dislikes, likes and wants lists
 - **Google first:** Google's official button is the one primary action: pill, "Continuar con Google", black (`filled_black`) in light mode and white (`outline`) in dark mode, up to 400 px wide. Its look and text are Google's; we only pick theme, shape, size and language. A 44 px box holds its place while Google's script loads.
 - **Email behind a link:** a quiet "Entrar con tu email" link under it. Pressing it opens the form in place, below a hairline, with its own hint, and moves focus to the email field. The form's button is secondary, so the card never has two primary actions.
 - **Email only:** with no Google client ID, or when Google's script can't load, the card is the email form with a primary button, and the header gives the email hint. If the script failed, an inline alert says Google isn't available and to use email.
-- Why: [ADR 0023](adr/0023-google-leads-sign-in.md).
+- Why: [ADR 0025](adr/0025-google-leads-sign-in.md).
 
 ### Chat bubbles
 - **User:** orange with black text, tail corner bottom right.
@@ -330,13 +330,15 @@ Sunk-surface pills with ink text: the can't-eat, dislikes, likes and wants lists
 - **Waiting for a reply:** a black bubble with the mark.
 - **Arrival:** messages that arrive while you're in the chat rise 6 px and fade in over 160 ms (`.bubble.fresh`). The loaded history doesn't animate, so coming back to the chat from another tab never replays it.
 - **Menu card:** a saved or shown menu is an assistant bubble with the week (day in bold, meals on one line) and a primary "Ver menú" button.
+- **List card:** the list as it stands, by section, with the total in bold, the example-prices line in small muted text, and a primary "Ver lista" button.
 - **Chats bar:** "Chats" and "Nuevo chat" as quiet links above the messages, with a hairline under them. The chat list replaces the messages and scrolls behind the composer and dock the same way.
 - **Voice input:** a 48 px round button beside send, surface with a strong line; while listening it takes the orange fill and pulses.
 
 ### Menu and List
 - Both are `.page` screens: the same column and gutters as Perfil, and bottom room for the dock.
-- **Buttons:** one primary action per screen ("Confirmar menú", "Compartir"), secondary for the next ("Copiar"), and quiet links for "Cambiar" and "Lista nueva". Never orange.
-- **Menu:** each day is a heading with "Cambiar", then its meals as rows that open to the ingredients and how to make it, separated by hairlines.
+- **Buttons:** one primary action per screen ("Compartir"), secondary for the next ("Copiar"), and quiet links for "Cambiar" and "Lista nueva". Never orange.
+- **Menu:** each day is a heading with "Cambiar", then its meals as rows that open to the ingredients and how to make it, separated by hairlines. With the numbers switch on, the day's total and each meal's calories and macros sit under them in small muted text.
+- **Numbers switch** (Perfil): a card with the label and a 52 × 32 px toggle, orange when on. If saving fails it flips back and shows an inline alert.
 - **List:** "Dónde comprar" is a card on top. The items are hairline rows with a checkbox, the amount to buy (what the menu needs under it, muted) and round 44 px − and + buttons. Crossed-out items are muted and struck through.
 - **Prices:** only the example prices of [ADR 0019](adr/0019-example-prices-until-matched.md), always with their muted "Precios de ejemplo del …, no son reales." line.
 

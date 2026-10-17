@@ -10,7 +10,7 @@ import { supabase } from './supabase'
 import { t } from './strings'
 
 // updated_at is the menu's version: writing have doesn't touch it.
-type MenuRow = { data: MenuData; confirmed_at: string | null; have: Have; updated_at: string }
+export type MenuRow = { data: MenuData; have: Have; updated_at: string }
 
 const sections = Object.keys(t.list.sections) as (keyof typeof t.list.sections)[]
 
@@ -36,6 +36,25 @@ const nameOf = (item: Item) => item.other_name ?? t.foods[item.food as CatalogKe
 const buyText = (item: Item, buy: number) =>
   item.pack ? `${buy / item.pack} × ${qty(item.pack, item.unit)}` : qty(buy, item.unit)
 
+// What's left to buy, by section: what Share and Copy send, and the chat's card shows.
+const listText = (items: Item[], have: Have) =>
+  [
+    t.list.title,
+    ...sections.flatMap((section) => {
+      const lines = items
+        .filter((item) => item.section === section && toBuy(item, have) > 0)
+        .map((item) => `- ${nameOf(item)}: ${buyText(item, toBuy(item, have))}`)
+      return lines.length ? ['', t.list.sections[section], ...lines] : []
+    }),
+  ].join('\n')
+
+// Priced on what's left to buy, unrounded; crossed-out items have nothing left.
+function priceList(items: Item[], have: Have) {
+  const toPrice = items.map((item) => ({ id: item.id, amount: left(item, have) })).filter((need) => need.amount > 0)
+  const plan = planStores(toPrice, examplePrices)
+  return { plan, priced: toPrice.length > plan.notFound.length }
+}
+
 const money = new Intl.NumberFormat('es-UY', { style: 'currency', currency: 'UYU', maximumFractionDigits: 0 }).format
 const pricesDay = new Date(pricesDate).toLocaleDateString('es-UY', { day: 'numeric', month: 'long' })
 const optionText = ({ stores, total }: Option) =>
@@ -53,7 +72,36 @@ function readPick() {
   }
 }
 
-export default function List({ session, onOpenMenu }: { session: Session; onOpenMenu: () => void }) {
+// The list as it stands, with its total: the chat's card under a list tool call. Live, like the List tab.
+export function ListPreview({ row, busy, onOpen }: { row: MenuRow; busy: boolean; onOpen: () => void }) {
+  const items = buildList(row.data)
+  const { plan, priced } = priceList(items, row.have)
+  const { single, split, notFound } = plan
+  const chosen = (readPick() === row.updated_at && split) || single || split
+  const nothingToBuy = items.every((item) => toBuy(item, row.have) === 0)
+  const total = chosen
+    ? `${optionText(chosen)}${single ? '' : ` ${t.prices.noOneStore}`}`
+    : `${t.prices.noOneStore} ${plan.perStore.map(({ store, total }) => `${t.stores[store]} ${money(total)}`).join(' · ')}`
+  return (
+    <div className="bubble assistant list-preview">
+      <p>{nothingToBuy ? t.list.nothingLeft : listText(items, row.have)}</p>
+      {priced && (
+        <p>
+          <strong>{total}</strong>
+          <small className="muted">
+            {notFound.length > 0 && `\n${t.prices.missing(notFound.length)}`}
+            {`\n${t.prices.sample(pricesDay)}`}
+          </small>
+        </p>
+      )}
+      <button type="button" className="button primary" disabled={busy} onClick={onOpen}>
+        {t.chat.openList}
+      </button>
+    </div>
+  )
+}
+
+export default function List({ session }: { session: Session }) {
   // undefined while loading, null when the AI hasn't saved a menu yet.
   const [menu, setMenu] = useState<MenuRow | null | undefined>(undefined)
   const [error, setError] = useState('')
@@ -65,7 +113,7 @@ export default function List({ session, onOpenMenu }: { session: Session; onOpen
   useEffect(() => {
     const load = () => {
       const before = saves
-      return inTurn(() => supabase.from('menus').select('data, confirmed_at, have, updated_at').maybeSingle()).then(
+      return inTurn(() => supabase.from('menus').select('data, have, updated_at').maybeSingle()).then(
         ({ data, error }) => {
           if (error) setError(t.menu.loadError)
           // A tap made while this read was in flight is newer than the `have` it read, and that save writes it.
@@ -81,35 +129,14 @@ export default function List({ session, onOpenMenu }: { session: Session; onOpen
 
   if (menu === undefined) return error ? <p role="alert" className="page list">{error}</p> : null
   if (!menu) return <p className="page list">{t.menu.empty}</p>
-  if (!menu.confirmed_at) {
-    return (
-      <div className="page list">
-        <p>{t.list.confirmFirst}</p>
-        <button type="button" className="button primary" onClick={onOpenMenu}>
-          {t.chat.openMenu}
-        </button>
-      </div>
-    )
-  }
 
   const { have, updated_at } = menu
   const items = buildList(menu.data)
-  const text = [
-    t.list.title,
-    ...sections.flatMap((section) => {
-      const lines = items
-        .filter((item) => item.section === section && toBuy(item, have) > 0)
-        .map((item) => `- ${nameOf(item)}: ${buyText(item, toBuy(item, have))}`)
-      return lines.length ? ['', t.list.sections[section], ...lines] : []
-    }),
-  ].join('\n')
+  const text = listText(items, have)
   const nothingToBuy = items.every((item) => toBuy(item, have) === 0)
 
-  // Priced on what's left to buy, unrounded; crossed-out items have nothing left.
-  const toPrice = items.map((item) => ({ id: item.id, amount: left(item, have) })).filter((need) => need.amount > 0)
-  const plan = planStores(toPrice, examplePrices)
+  const { plan, priced } = priceList(items, have)
   const { single, split } = plan
-  const priced = toPrice.length > plan.notFound.length
   const chosen = (pickedFor === updated_at && split) || single || split
 
   function pick(toSplit: boolean) {

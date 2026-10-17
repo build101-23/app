@@ -1,6 +1,6 @@
 # VIVERI v2: more palette options in the dev picker
 
-Status: **done**: the user chose Naranja zapallo, slightly darker ([ADR 0024](../adr/0024-naranja-zapallo-colors.md)). Isolated preview, not merged.
+Status: **done**: the user chose Naranja zapallo, slightly darker ([ADR 0026](../adr/0026-naranja-zapallo-colors.md)). Isolated preview, not merged.
 
 ## Context
 After seeing v2 running, the user said: "La menu bar me gusta. Los colores no", and asked for options they can try in the app the way the "Paleta (dev)" picker already offers three. So the dock, layout and logo geometry stay; only color changes, and only in development until the user picks one.

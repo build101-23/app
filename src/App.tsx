@@ -191,18 +191,23 @@ function Shell({ session }: { session: Session }) {
       </header>
       <main>
         {tab === 'chat' && (
-          <Chat session={session} initialDraft={chatDraft} onBusy={setChatBusy} onOpenMenu={() => setTab('menu')} />
+          <Chat
+            session={session}
+            initialDraft={chatDraft}
+            onBusy={setChatBusy}
+            onOpenMenu={() => setTab('menu')}
+            onOpenList={() => setTab('list')}
+          />
         )}
         {tab === 'menu' && (
           <Menu
-            session={session}
             onChange={(draft) => {
               setChatDraft(draft)
               setTab('chat')
             }}
           />
         )}
-        {tab === 'list' && <List session={session} onOpenMenu={() => setTab('menu')} />}
+        {tab === 'list' && <List session={session} />}
         {tab === 'profile' && <Profile session={session} onOpenChat={() => setTab('chat')} />}
       </main>
       <nav aria-label={t.nav}>
