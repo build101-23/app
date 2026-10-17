@@ -12,6 +12,9 @@ One file per decision: `NNNN-short-title.md`. ADRs are append-only: never rewrit
 | 0006 | [Spanish UI, English everything else](0006-spanish-ui.md) | Accepted | 2026-10-17 |
 | 0007 | [Claude Sonnet 5.5 at medium effort for the chat](0007-sonnet-for-chat.md) | Accepted | 2026-10-17 |
 | 0008 | [How we read supermarket sites](0008-how-we-read-supermarket-sites.md) | Accepted | 2026-10-17 |
+| 0009 | [The AI nutritionist uses judgment, not gatekeeping](0009-judgment-not-gatekeeping.md) | Accepted | 2026-10-17 |
+| 0010 | [Voice dictation with the browser's speech recognition](0010-browser-speech-recognition.md) | Accepted | 2026-10-17 |
+| 0011 | [The saved profile travels into each chat](0011-profile-in-each-chat.md) | Accepted | 2026-10-17 |
 
 ## Template
 

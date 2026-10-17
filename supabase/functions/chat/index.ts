@@ -1,6 +1,6 @@
 import Anthropic from 'npm:@anthropic-ai/sdk@0.135.0'
 import { createClient } from 'npm:@supabase/supabase-js@2.118.0'
-import { SYSTEM_PROMPT } from './prompt.ts'
+import { PROFILE_TAG, SYSTEM_PROMPT } from './prompt.ts'
 
 type MessageParam = Anthropic.Beta.BetaMessageParam
 
@@ -67,12 +67,33 @@ Deno.serve(async (req) => {
   const body = await req.json().catch(() => null)
   const text = typeof body?.text === 'string' ? body.text.trim() : ''
   if (!text || text.length > 4000) return json(400, { error: 'text must be 1 to 4000 characters' })
+  const conversationId = typeof body?.conversation_id === 'string' ? body.conversation_id : ''
 
-  const { data: history, error } = await supabase.from('messages').select('role, content').order('id')
+  const { data: conversation } = await supabase.from('conversations').select('id').eq('id', conversationId).maybeSingle()
+  if (!conversation) return json(404, { error: 'conversation not found' })
+
+  const [{ data: history, error }, { data: profile }] = await Promise.all([
+    supabase.from('messages').select('role, content').eq('conversation_id', conversationId).order('id'),
+    supabase.from('profiles').select('data').maybeSingle(),
+  ])
   if (error) return json(500, { error: error.message })
 
+  // The profile can change in another chat. Show it again whenever it differs from the last copy
+  // this chat saw, so save_profile never overwrites newer data with a stale view.
+  const profileText = profile ? `${PROFILE_TAG}${JSON.stringify(profile.data)}</saved_profile>` : ''
+  const lastProfile = history
+    .flatMap((row: MessageParam) => (typeof row.content === 'string' ? [] : row.content))
+    .findLast(
+      (block): block is Anthropic.Beta.BetaTextBlockParam =>
+        block.type === 'text' && block.text.startsWith(PROFILE_TAG),
+    )
+  const content: Anthropic.Beta.BetaTextBlockParam[] = [{ type: 'text', text }]
+  if (profileText && profileText !== lastProfile?.text) {
+    content.unshift({ type: 'text', text: profileText })
+  }
+
   const messages: MessageParam[] = history
-  const newRows: MessageParam[] = [{ role: 'user', content: [{ type: 'text', text }] }]
+  const newRows: MessageParam[] = [{ role: 'user', content }]
   messages.push(newRows[0])
 
   const encoder = new TextEncoder()
@@ -132,8 +153,11 @@ Deno.serve(async (req) => {
         }
 
         // Stored only once the whole exchange worked, so a failed turn can simply be resent.
-        const { error } = await supabase.from('messages').insert(newRows)
+        const { error } = await supabase
+          .from('messages')
+          .insert(newRows.map((row) => ({ ...row, conversation_id: conversationId })))
         if (error) throw new Error(error.message)
+        await supabase.from('conversations').update({ updated_at: new Date().toISOString() }).eq('id', conversationId)
         controller.close()
       } catch (err) {
         console.error(err)

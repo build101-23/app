@@ -152,6 +152,53 @@ textarea {
   height: 100%;
 }
 
+.chat-bar {
+  display: flex;
+  justify-content: space-between;
+  padding: 4px 8px;
+  border-bottom: 1px solid var(--border);
+}
+
+.chats {
+  flex: 1;
+  overflow-y: auto;
+  margin: 0;
+  padding: 8px 16px;
+  list-style: none;
+}
+
+.chats li.muted {
+  padding: 12px 0;
+}
+
+.chats button {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--border);
+  border-radius: 0;
+  background: none;
+  color: var(--text);
+  text-align: left;
+}
+
+.chats button span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.chats button small {
+  flex-shrink: 0;
+  color: var(--muted);
+}
+
+.chats button[aria-current='true'] {
+  font-weight: 600;
+}
+
 .chat .messages {
   flex: 1;
   overflow-y: auto;
@@ -189,6 +236,31 @@ textarea {
   padding: 8px 16px;
   border-top: 1px solid var(--border);
   background: var(--surface);
+}
+
+.chat button.mic {
+  display: flex;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--muted);
+}
+
+.chat button.mic.listening {
+  background: var(--accent);
+  color: var(--on-accent);
+  animation: pulse 1.2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  50% {
+    opacity: 0.6;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .chat button.mic.listening {
+    animation: none;
+  }
 }
 
 .profile dl {

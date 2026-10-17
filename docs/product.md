@@ -37,10 +37,13 @@ The first version goes from a chat to a priced shopping list, in Montevideo only
 #### 1. Chat with the AI nutritionist
 
 - Text chat, in normal language.
-- Voice as dictation: you speak, it becomes text in the chat. No live voice conversation.
+- Several chats: start a new one, or go back to an old one and keep going. Your profile is shared by all of them.
+- Enter sends; Shift+Enter adds a new line.
+- Voice as dictation: tap the mic, speak, and the text appears in the box for you to check and send. It uses the browser's speech recognition ([ADR 0010](adr/0010-browser-speech-recognition.md)); where that's missing, the keyboard's dictation still works. No live voice conversation.
 - If you don't have a plan, it builds one from scratch.
 - If you have a nutritionist's plan, it follows what you tell it about that plan.
-- It asks for what's missing: your goal, meals per day, time to cook.
+- It asks as little as possible: your goal and what you can't eat. It doesn't ask whether you have a nutritionist's plan; if you mention one, it follows it. Everything else it assumes, tells you, and lets you correct. Then it proposes meals right away.
+- Normal, everyday food you can buy at any supermarket in Montevideo.
 
 #### 2. Likes and restrictions
 
@@ -114,16 +117,16 @@ Left out so we can first check that people use the plan and the list every week,
 
 ## How the AI nutritionist behaves
 
-It helps you follow a plan. It doesn't replace your nutritionist.
+It helps you follow a plan. It doesn't replace your nutritionist. It only talks about food, diets, cooking, groceries and the app; anything else it declines in one line. Replies are short: a few sentences, or a short list for meals.
 
 1. If you follow a nutritionist's plan, the plan wins. The AI only swaps things the plan allows.
 2. If you ask for something outside the plan, it tells you and suggests checking with your nutritionist.
 3. To save money it only swaps foods within the plan. It never cuts amounts to make the list cheaper.
 4. Foods you can't eat never show up, unless you change your profile.
 5. If something important is missing, it asks. If it's minor, it picks and tells you what it picked.
-6. When it builds a plan from scratch, it uses safe limits: minimum calories, no extreme cuts.
+6. You choose your goal, including an aggressive deficit. Its only hard limit is crash dieting: a calorie floor, no fasting for days. It mentions a risk once, without lecturing ([ADR 0009](adr/0009-judgment-not-gatekeeping.md)).
 7. It doesn't build plans for pregnancy, medical conditions or minors; it sends those people to a professional.
-8. If it sees warning signs, like extreme restriction or a lot of guilt around food, it drops the numbers and suggests professional help.
+8. If it sees warning signs, like extreme restriction or a lot of guilt around food, it drops the numbers and suggests professional help. Wanting to lose weight fast is not a warning sign by itself.
 9. It never diagnoses or gives medical advice.
 
 ## What we want to learn
