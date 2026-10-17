@@ -1,7 +1,7 @@
 import Anthropic from 'npm:@anthropic-ai/sdk@0.135.0'
 import { createClient } from 'npm:@supabase/supabase-js@2.118.0'
 import { catalog, type CatalogKey } from '../_shared/catalog.ts'
-import { buildList, itemId, type Have } from '../_shared/list.ts'
+import { buildList, itemId, listLines, type Have } from '../_shared/list.ts'
 import { days, foodProblems, menuProblems, type Ingredient, type MenuData } from '../_shared/menu.ts'
 import { nutritionText } from '../_shared/nutrition.ts'
 import { MENU_TAG, PROFILE_TAG, SYSTEM_PROMPT } from './prompt.ts'
@@ -118,12 +118,12 @@ const saveMenu: Anthropic.Beta.BetaTool = {
   }),
 }
 
-// Partial on purpose: only the foods sent change, so the model never needs to see the saved marks.
+// Partial on purpose: only the foods sent change, so marks made in the List tab meanwhile stay.
 // Strict can't check that a food is on this week's list: runTool does.
 const updateShoppingList: Anthropic.Beta.BetaTool = {
   name: 'update_shopping_list',
   description:
-    "Record what the user already has at home, so the shopping list in the List tab buys less. Only the foods sent change. Send each food exactly as the saved menu has it: food, unit and other_name.",
+    "Record what the user already has at home, so the shopping list buys less, and show the updated list as a card in the chat. Only the foods sent change. Send each food exactly as the saved menu has it: food, unit and other_name.",
   strict: true,
   input_schema: object({
     reset: { type: 'boolean', description: 'true clears every earlier mark first, for a new week.' },
@@ -135,7 +135,8 @@ const updateShoppingList: Anthropic.Beta.BetaTool = {
         unit: { type: 'string', enum: ['g', 'ml', 'un'] },
         have: {
           ...nullable('number'),
-          description: "How much they have at home, in unit. null: enough, or they don't want to buy it. 0: none, buy all of it again.",
+          description:
+            "How much they have at home now, raw as bought, in unit, not an addition: two bananas in g is about 300. null: enough, or they don't want to buy it. 0: none, buy all of it again.",
         },
       }),
     },
@@ -146,6 +147,15 @@ const updateShoppingList: Anthropic.Beta.BetaTool = {
 const showMenu: Anthropic.Beta.BetaTool = {
   name: 'show_menu',
   description: "Show the user's saved weekly menu as a card in the chat.",
+  strict: true,
+  input_schema: object({}),
+}
+
+// Writes nothing: the web app shows the list, with its total, as a card under the call.
+const showShoppingList: Anthropic.Beta.BetaTool = {
+  name: 'show_shopping_list',
+  description:
+    "Show the user's shopping list (the saved menu added up, minus what they have at home), with its total, as a card in the chat.",
   strict: true,
   input_schema: object({}),
 }
@@ -214,8 +224,8 @@ Deno.serve(async (req) => {
   const newRows: MessageParam[] = [{ role: 'user', content }]
   messages.push(newRows[0])
 
-  // Runs one tool call for the user. Returns what went wrong, or '' once it's saved. show_menu only reports,
-  // so its answer is never an error: the web app shows the card whenever the chat has a menu.
+  // Runs one tool call for the user. Returns what went wrong, or '' once it's done. show_menu only reports, so its
+  // answer is never an error: the web app shows the card whenever the chat has a menu. A list card needs a menu.
   async function runTool(name: string, input: unknown): Promise<string> {
     const updated_at = new Date().toISOString()
     if (name === 'save_profile') {
@@ -229,7 +239,7 @@ Deno.serve(async (req) => {
       if (problems.length) return `Not saved. Fix this and call save_menu again:\n${problems.join('\n')}`
       const { error } = await admin
         .from('menus')
-        .upsert({ user_id: userId, data: menu, confirmed_at: null, updated_at })
+        .upsert({ user_id: userId, data: menu, updated_at })
       return error ? `Could not save: ${error.message}` : ''
     }
     if (name === 'update_shopping_list') {
@@ -246,7 +256,7 @@ Deno.serve(async (req) => {
         if (item.have !== null && !(item.have >= 0)) return [`${where}: have must be null, 0 or more.`]
         if (onList.has(itemId(item.food, item.other_name, item.unit))) return []
         return [
-          `${where}: ${item.other_name ?? item.food} in ${item.unit} is not on this week's list. Use the food, unit and other_name exactly as in <saved_menu>.`,
+          `${where}: ${item.other_name ?? item.food} in ${item.unit} is not on this week's list. If the menu has it, use the food, unit and other_name exactly as in <saved_menu>. If not, leave it out, send the rest again and tell the user in a few words.`,
         ]
       })
       if (problems.length) return `Not saved. Fix this and call update_shopping_list again:\n${problems.join('\n')}`
@@ -261,13 +271,21 @@ Deno.serve(async (req) => {
       const { error: saveError } = await admin.from('menus').update({ have }).eq('user_id', userId)
       return saveError ? `Could not save: ${saveError.message}` : ''
     }
-    if (name === 'show_menu') {
-      const { data: row, error } = await supabase.from('menus').select('confirmed_at').maybeSingle()
+    if (name === 'show_menu' || name === 'show_shopping_list') {
+      const { data: row, error } = await supabase.from('menus').select('user_id').maybeSingle()
       if (error) return `Could not check the menu: ${error.message}`
-      if (!row) return 'No menu yet. Build the menu first.'
-      return row.confirmed_at ? 'Shown. The user already confirmed it.' : 'Shown. Not confirmed yet.'
+      return row ? '' : 'No menu yet. Build the menu first.'
     }
     return `Unknown tool ${name}.`
+  }
+
+  // The list as it stands, for the model's next edit: "la mitad" or "comprá solo 500 g" start from real numbers.
+  async function listState(): Promise<string> {
+    const { data: row, error } = await supabase.from('menus').select('data, have').maybeSingle()
+    if (error) return `\nCould not read the list: ${error.message}`
+    const intro =
+      "The list card with the total is in the chat. Don't write the list or prices. The list now (week: what the menu uses; have: at home; buy: what the card buys):"
+    return row ? `\n${intro}\n${listLines(row.data, row.have)}` : ''
   }
 
   const encoder = new TextEncoder()
@@ -290,7 +308,7 @@ Deno.serve(async (req) => {
             max_tokens: 16000,
             cache_control: { type: 'ephemeral' },
             system: SYSTEM_PROMPT,
-            tools: [saveProfile, saveMenu, showMenu, updateShoppingList],
+            tools: [saveProfile, saveMenu, showMenu, updateShoppingList, showShoppingList],
             // No tools in the last round, so the turn ends on a reply about the earlier calls, not on tool results.
             tool_choice: { type: round < 4 ? 'auto' : 'none' },
             messages,
@@ -321,13 +339,24 @@ Deno.serve(async (req) => {
           // Before the last round, say so: otherwise the model may promise or report a save it can no longer make.
           const note =
             round === 3 ? "\nNo more tool calls this turn: tell the user in one line what was saved and what wasn't." : ''
-          const results: Anthropic.Beta.BetaToolResultBlockParam[] = []
+          const calls: { id: string; content: string; is_error: boolean; list: boolean }[] = []
           for (const block of message.content) {
             if (block.type !== 'tool_use') continue
             const problem = await runTool(block.name, block.input)
+            const show = block.name.startsWith('show_')
+            const list = !problem && (block.name === 'show_shopping_list' || block.name === 'update_shopping_list')
             const is_error = !!problem && block.name !== 'show_menu'
-            results.push({ type: 'tool_result', tool_use_id: block.id, content: (problem || 'Saved.') + note, is_error })
+            calls.push({ id: block.id, content: problem || (show ? 'Shown.' : 'Saved.'), is_error, list })
           }
+          // Read once every call has run, so a save_menu in the same message is already in the list.
+          const lastList = calls.findLast((call) => call.list)
+          if (lastList) lastList.content += await listState()
+          const results: Anthropic.Beta.BetaToolResultBlockParam[] = calls.map(({ id, content, is_error }) => ({
+            type: 'tool_result' as const,
+            tool_use_id: id,
+            content: content + note,
+            is_error,
+          }))
           const toolTurn: MessageParam = { role: 'user', content: results }
           messages.push(toolTurn)
           newRows.push(toolTurn)

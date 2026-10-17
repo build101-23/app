@@ -27,15 +27,12 @@ export const t = {
     noChats: 'Todavía no tenés chats.',
     noReply: 'No pude responder eso. Probá decirlo de otra forma.',
     openMenu: 'Ver menú',
+    openList: 'Ver lista',
   },
   menu: {
     empty: 'Todavía no hay menú. Pedíselo al chat.',
     loadError: 'No se pudo cargar el menú.',
     change: 'Cambiar',
-    confirm: 'Confirmar menú',
-    confirmed: 'Menú confirmado.',
-    confirmError: 'No se pudo confirmar. Probá de nuevo.',
-    changed: 'El menú cambió desde que lo abriste: este es el nuevo.',
     // Lowercase to fit inside a sentence; headings capitalize them with CSS.
     days: {
       monday: 'lunes',
@@ -59,7 +56,8 @@ export const t = {
   },
   list: {
     hint: 'Tachá lo que ya tenés en casa.',
-    confirmFirst: 'Confirmá el menú y acá te armo la lista de compras.',
+    // The chat's list card when everything is crossed out.
+    nothingLeft: 'No te falta comprar nada.',
     share: 'Compartir',
     copy: 'Copiar',
     copied: 'Lista copiada.',
