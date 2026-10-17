@@ -86,7 +86,9 @@ function Shell({ session }: { session: Session }) {
         <h1>{t.tabs[tab]}</h1>
       </header>
       <main>
-        {tab === 'chat' && <Chat session={session} initialDraft={chatDraft} onBusy={setChatBusy} />}
+        {tab === 'chat' && (
+          <Chat session={session} initialDraft={chatDraft} onBusy={setChatBusy} onOpenMenu={() => setTab('menu')} />
+        )}
         {tab === 'menu' && (
           <Menu
             session={session}

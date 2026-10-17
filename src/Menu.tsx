@@ -6,6 +6,26 @@ import { t } from './strings'
 
 type MenuRow = { data: MenuData; confirmed_at: string | null }
 
+const byDay = (days: MenuData['days']) => [...days].sort((a, b) => order.indexOf(a.day) - order.indexOf(b.day))
+
+// The week as a save_menu call saved it, shown in the chat under that reply.
+export function MenuPreview({ menu, onOpen }: { menu: MenuData; onOpen: () => void }) {
+  const names = new Map(menu.recipes.map((recipe) => [recipe.id, recipe.name]))
+  return (
+    <div className="bubble assistant menu-preview">
+      <ul>
+        {byDay(menu.days).map(({ day, meals }) => (
+          <li key={day}>
+            <strong>{t.menu.days[day]}</strong>
+            {meals.map((meal) => names.get(meal.recipe_id)).join(' · ')}
+          </li>
+        ))}
+      </ul>
+      <button onClick={onOpen}>{t.chat.openMenu}</button>
+    </div>
+  )
+}
+
 export default function Menu({ session, onChange }: { session: Session; onChange: (draft: string) => void }) {
   // undefined while loading, null when the AI hasn't saved a menu yet.
   const [menu, setMenu] = useState<MenuRow | null | undefined>(undefined)
@@ -37,7 +57,7 @@ export default function Menu({ session, onChange }: { session: Session; onChange
   if (!menu) return <p className="menu">{t.menu.empty}</p>
 
   const recipes = new Map(menu.data.recipes.map((recipe) => [recipe.id, recipe]))
-  const days = [...menu.data.days].sort((a, b) => order.indexOf(a.day) - order.indexOf(b.day))
+  const days = byDay(menu.data.days)
 
   return (
     <div className="menu">

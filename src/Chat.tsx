@@ -1,11 +1,22 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react'
 import type { Session } from '@supabase/supabase-js'
+import type { MenuData } from '../supabase/functions/_shared/menu.ts'
 import { supabase } from './supabase'
 import { t } from './strings'
+import { MenuPreview } from './Menu'
 
 type Role = 'user' | 'assistant'
-type Bubble = { role: Role; text: string }
-type Row = { role: Role; content: { type: string; text?: string }[] }
+type Bubble = { role: Role; text: string; menu?: MenuData }
+type Block = {
+  type: string
+  text?: string
+  id?: string
+  name?: string
+  input?: unknown
+  tool_use_id?: string
+  is_error?: boolean
+}
+type Row = { role: Role; content: Block[] }
 type Conversation = { id: string; title: string; updated_at: string }
 
 // lib.dom has the speech events but not the recognizer itself; only the fields used here.
@@ -28,15 +39,25 @@ declare global {
 // Missing in Firefox and some installed iPhone apps: there the keyboard's dictation still works.
 const Recognition = window.SpeechRecognition ?? window.webkitSpeechRecognition
 
-// Only text is shown; thinking, tool calls, tool results and the server's profile and menu copies stay hidden.
-const toBubbles = (rows: Row[]): Bubble[] =>
-  rows.flatMap((row) => {
+// Shows text, plus a preview after each save_menu call that saved. Thinking, other tool calls, tool results
+// and the server's profile and menu copies stay hidden.
+function toBubbles(rows: Row[]): Bubble[] {
+  const saved = new Set(
+    rows
+      .flatMap((row) => row.content)
+      .flatMap((block) => (block.type === 'tool_result' && !block.is_error ? [block.tool_use_id] : [])),
+  )
+  return rows.flatMap((row) => {
     const text = row.content
       .filter((block) => block.type === 'text' && !block.text?.startsWith('<saved_'))
       .map((block) => block.text)
       .join('\n')
-    return text ? [{ role: row.role, text }] : []
+    const menus = row.content
+      .filter((block) => block.type === 'tool_use' && block.name === 'save_menu' && saved.has(block.id))
+      .map((block) => ({ role: row.role, text: '', menu: block.input as MenuData }))
+    return [...(text ? [{ role: row.role, text }] : []), ...menus]
   })
+}
 
 const day = (iso: string) => new Date(iso).toLocaleDateString('es-UY', { day: 'numeric', month: 'short' })
 
@@ -44,10 +65,12 @@ export default function Chat({
   session,
   initialDraft,
   onBusy,
+  onOpenMenu,
 }: {
   session: Session
   initialDraft: string
   onBusy: (busy: boolean) => void
+  onOpenMenu: () => void
 }) {
   const [conversations, setConversations] = useState<Conversation[]>([])
   // null is a new chat that has no row yet: it gets one with its first message.
@@ -100,11 +123,15 @@ export default function Chat({
     return data ?? []
   }
 
-  async function open(id: string) {
+  function open(id: string) {
     setConversationId(id)
     setShowList(false)
     setBubbles([])
     setError('')
+    return loadMessages(id)
+  }
+
+  async function loadMessages(id: string) {
     const { data, error } = await supabase
       .from('messages')
       .select('role, content')
@@ -159,7 +186,7 @@ export default function Chat({
           .select('id')
           .single()
         if (error) throw error
-        id = data.id
+        id = data.id as string
         // Kept even if the reply fails, so a retry goes to the same chat.
         setConversationId(id)
       }
@@ -184,6 +211,9 @@ export default function Chat({
         setReply(reply)
       }
       if (!reply) setReply(t.chat.noReply)
+      // The stream is text only: the stored turn also has the save_menu calls, for the preview.
+      // Awaited while the box is locked, so it can't overwrite the next message's bubbles.
+      if (reply) await loadMessages(id)
       loadConversations()
     } catch {
       // The server stores nothing from a failed turn, so drop both bubbles and give the text back.
@@ -220,11 +250,15 @@ export default function Chat({
       ) : (
         <div className="messages">
           {bubbles.length === 0 && !error && <p className="bubble assistant">{t.chat.welcome}</p>}
-          {bubbles.map((bubble, i) => (
-            <p key={i} className={`bubble ${bubble.role}`}>
-              {bubble.text || '…'}
-            </p>
-          ))}
+          {bubbles.map((bubble, i) =>
+            bubble.menu ? (
+              <MenuPreview key={i} menu={bubble.menu} onOpen={onOpenMenu} />
+            ) : (
+              <p key={i} className={`bubble ${bubble.role}`}>
+                {bubble.text || '…'}
+              </p>
+            ),
+          )}
           {error && <p role="alert">{error}</p>}
           <div ref={end} />
         </div>
