@@ -1,6 +1,6 @@
 # 0015. The price scraper is a Python job with a time budget
 
-- Status: Accepted
+- Status: Accepted (coverage and write path superseded by 0018)
 - Date: 2026-10-17
 
 ## Context
