@@ -11,5 +11,6 @@ Build order for the first version ([scope](../product.md#scope)). Each milestone
 - [ ] **5. Prices and store rule**: the shopping list priced from the real price catalog, the store rule and savings with tests, and CI on Tenki runners.
   - [x] The store rule, savings and CI, on example prices for Disco, Géant and Ta-Ta ([plan](../plans/2026-10-17-prices-and-store-rule.md)).
   - [ ] Price the list from the catalog: match catalog foods to `store_products`, then remove the example prices ([ADR 0019](../adr/0019-example-prices-until-matched.md), checklist there).
+- [ ] **Sign in with Google** ([plan](../plans/2026-10-17-google-sign-in.md)): Google's own button next to the magic link, so sign-in stays inside an installed iOS app. Code done; waiting on the Google Cloud and Supabase setup and an iPhone test.
 - [ ] **6. Pilot ready**: health-data consent, numbers switch, "Order it for me" button, events for the learning table, real app icons, our own SMTP sender and sign-in with an emailed code (a magic link opens Safari, outside an installed iOS app).
 - [ ] **Later**: SIPC prices, to fill gaps and check ours ([ADR 0003](../adr/0003-price-sources.md)).

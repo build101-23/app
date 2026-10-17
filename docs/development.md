@@ -10,7 +10,9 @@ Living doc: how to work on the app *now*.
 4. Only if you change the database or Edge Functions: `npx supabase login`, then `npx supabase link --project-ref eqqrqkgabfjhfynsuwzj` (the project's ID, as in its URL). `link` asks for the database password from the shared vault.
 5. Only if you run the [price scraper](#price-scraper): `python3 -m venv scraper/.venv && scraper/.venv/bin/pip install -r scraper/requirements.txt` (Python 3.13).
 
-Sign-in uses Supabase's default magic link email. The link only sends you back to URLs listed under Authentication → URL Configuration → Redirect URLs, so that list must include `http://localhost:5173/**` and the [deployed URL](#deploy). Supabase's built-in email sender is rate-limited and meant for testing. The pilot needs our own SMTP ([milestones](notes/milestones.md)).
+Sign-in has two ways in:
+- **Google**: the button only shows when `VITE_GOOGLE_CLIENT_ID` is set. The OAuth client is a web application client in Google Cloud Console → Google Auth Platform → Clients. Its authorized JavaScript origins must list `http://localhost`, `http://localhost:5173` and the [deployed URL](#deploy). In Supabase, the same client ID goes under Authentication → Sign In / Providers → Google → Client IDs. While the Google app is in Testing, only its listed test users can sign in. Setup steps: [plan](plans/2026-10-17-google-sign-in.md#prerequisites-you-run-these-they-need-your-google-and-supabase-logins).
+- **Magic link**: Supabase's default email. The link only sends you back to URLs listed under Authentication → URL Configuration → Redirect URLs, so that list must include `http://localhost:5173/**` and the [deployed URL](#deploy). Supabase's built-in email sender is rate-limited and meant for testing. The pilot needs our own SMTP ([milestones](notes/milestones.md)).
 
 ## Commands
 
@@ -38,6 +40,7 @@ There's no local Supabase (that needs Docker), so Edge Functions are tested agai
 | --- | --- | --- |
 | `VITE_SUPABASE_URL` | `.env` (committed) | Project URL, e.g. `https://<ref>.supabase.co` (without `/rest/v1/`) |
 | `VITE_SUPABASE_PUBLISHABLE_KEY` | `.env` (committed) | Publishable key (`sb_publishable_...`) |
+| `VITE_GOOGLE_CLIENT_ID` | `.env` (committed) | Google OAuth client ID (`...apps.googleusercontent.com`). Empty hides the Google button. |
 | `SUPABASE_DB_PASSWORD` | `.env.local`, only if you run migrations | Database password, from the shared vault |
 | `SUPABASE_SECRET_KEY` | `scraper/.env.local`, only if you run the scraper | The scraper's own secret key ([below](#secrets)). The project URL comes from `.env`. |
 
@@ -45,7 +48,7 @@ Vite reads `.env`, then `.env.local` (gitignored), which overrides it.
 
 ### Secrets
 
-- The URL and the publishable key are public: they end up in the JavaScript every visitor downloads, so they're committed. Row-level security protects the data, not the key.
+- The URL, the publishable key and the Google client ID are public: they end up in the JavaScript every visitor downloads, so they're committed. Row-level security protects the data, not the key.
 - The database password lives in the team's shared password vault. Never commit it.
 - The secret key and the Anthropic API key (`ANTHROPIC_API_KEY`, created inside an Anthropic Console workspace: org-level keys are rejected without a workspace header) are stored only as Supabase Edge Function secrets (dashboard → Edge Functions → Secrets, or `supabase secrets set`), so Edge Functions can read them. They never go in `.env.local` or the repo. Supabase also gives every Edge Function `SUPABASE_SERVICE_ROLE_KEY`, which `chat` writes with.
 - The one exception is the price scraper's own secret key, named `scraper` (dashboard → Project Settings → API Keys → Secret keys). Like any secret key it acts as `service_role`; it's a separate key only so it can be revoked on its own. It lives only in `scraper/.env.local` (gitignored) on the machine that runs the scraper.

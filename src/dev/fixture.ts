@@ -275,6 +275,13 @@ export const supabase = {
       listeners.forEach((listener) => listener('SIGNED_OUT', null))
       return { error: null }
     },
+    // Google's button hands over an ID token; here any token signs the fixture user in.
+    async signInWithIdToken(_credentials: unknown) {
+      await wait(400)
+      current = session
+      listeners.forEach((listener) => listener('SIGNED_IN', session))
+      return { error: null }
+    },
   },
   from: (table: string) => new Query(table),
 }

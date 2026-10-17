@@ -3,6 +3,7 @@ import type { Session } from '@supabase/supabase-js'
 import { supabase } from './supabase'
 import { t } from './strings'
 import Chat from './Chat'
+import GoogleSignIn from './GoogleSignIn'
 import List from './List'
 import Menu from './Menu'
 import Profile from './Profile'
@@ -64,10 +65,10 @@ function SignIn() {
     <main className="signin">
       <img className="signin-logo" src={logo} alt="VIVERI" width={159} height={44} />
       <div className="signin-body">
-        <header>
-          <h1>{t.signIn.title}</h1>
-          <p className="muted">{t.signIn.hint}</p>
-        </header>
+        <h1>{t.signIn.title}</h1>
+        {/* Google first when it's configured; it renders nothing otherwise. */}
+        {!sent && <GoogleSignIn />}
+        {!sent && <p className="muted">{t.signIn.hint}</p>}
         {sent ? (
           <div className="sent" role="status">
             <MailIcon />
@@ -148,8 +149,10 @@ function Shell({ session }: { session: Session }) {
 
   return (
     <div className="shell" data-keyboard={keyboardOpen ? 'open' : undefined}>
+      {/* The app's name on every screen; the dock shows the section, so its name is for screen readers. */}
       <header>
-        <h1>{t.tabs[tab]}</h1>
+        <img className="brand" src={logo} alt="VIVERI" width={101} height={28} />
+        <h1 className="sr-only">{t.tabs[tab]}</h1>
       </header>
       <main>
         {tab === 'chat' && (

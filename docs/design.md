@@ -16,8 +16,6 @@ colors:
   on-deep: "#ffffff"
   on-deep-muted: "#b6c5be"
   one: "#e85d2a"
-  field: "#2fcb7e"
-  on-field: "#14211b"
   glass: "#ffffff80"
   glass-solid: "#ffffff"
   capsule: "#ffffff"
@@ -34,8 +32,6 @@ colors:
   brand-ink-dark: "#5cc495"
   primary-hover-dark: "#7bd3aa"
   bubble-user-dark: "#1d5a42"
-  field-dark: "#14684a"
-  on-field-dark: "#e6eee9"
   glass-dark: "#0d1613ad"
   glass-solid-dark: "#0d1613"
   capsule-dark: "#16221d"
@@ -165,9 +161,8 @@ components:
     backgroundColor: "{colors.surface}"
     rounded: "{rounded.card}"
   title-bar:
-    backgroundColor: "{colors.field}"
-    textColor: "{colors.on-field}"
-    typography: "{typography.title}"
+    backgroundColor: "{colors.ground}"
+    content: "the horizontal logo, 28px tall"
     height: "56px"
   tab-bar:
     backgroundColor: "{colors.glass}"
@@ -195,8 +190,8 @@ Living doc: how the interface looks *now*. Tokens live as CSS custom properties 
 
 The approved mark is seven dots: six in a V, the week, converging on one tangerine dot, the one list and the one next step. The interface uses that idea as its notation instead of decorating with it. Green and deep green carry the everyday work, and tangerine appears only where there is exactly one thing: the screen you're on, the action that sends, the apex of the mark.
 
-It is a working tool for people planning meals on a phone, at home or in a supermarket aisle, so it reads first as a familiar app: a title bar, a tab bar, a chat, standard controls. The identity lives in the content, not in the navigation:
-- a flat, vivid green field at the top of every screen;
+It is a working tool for people planning meals on a phone, at home or in a supermarket aisle, so it reads first as a familiar app: a top bar, a tab bar, a chat, standard controls. The identity lives in the content, not in the navigation:
+- the logo at the top of every screen;
 - the deep-green bubbles and buttons;
 - the tangerine dot;
 - the mark as the state glyph;
@@ -205,7 +200,7 @@ It is a working tool for people planning meals on a phone, at home or in a super
 The navigation is a neutral glass dock floating over that content ([ADR 0022](adr/0022-glass-navigation-layer.md)): it takes no color of its own, so it never repeats the content's green. The app deliberately avoids the category's wellness look (sage, cream, leaf illustrations) and the AI look (gradients, sparkles).
 
 **Key Characteristics:**
-- Living color in the content: a flat green field heads each screen, with no gradients.
+- The app's name on every screen: the approved logo in a light top bar. The dock, not a title, says which section you're in.
 - Neutral glass navigation: a floating dock in translucent white (or near-black in dark mode), the only element with depth.
 - Tangerine marks "the one" and nothing else.
 - Round forms taken from the dots: pills, capsules, a circular send button, soft bubbles.
@@ -214,11 +209,10 @@ The navigation is a neutral glass dock floating over that content ([ADR 0022](ad
 
 ## Colors
 
-A green-tinted neutral ground, the icon's deep green for the user's words and actions, a vivid green field heading each screen, neutral glass for the navigation, and one tangerine accent, each with a dark-theme counterpart. Contrast was computed for every text pair (all ≥ 4.5:1) and every UI graphic (≥ 3:1) in both themes. The glass was measured on real pixels instead (see [Navigation](#navigation)).
+A green-tinted neutral ground, the icon's deep green for the user's words and actions, neutral glass for the navigation, and one tangerine accent, each with a dark-theme counterpart. Contrast was computed for every text pair (all ≥ 4.5:1) and every UI graphic (≥ 3:1) in both themes. The glass was measured on real pixels instead (see [Navigation](#navigation)).
 
 ### Primary
 - **Deep green** (#0B3D2B): the icon tile's color. The user's chat bubbles, primary buttons in light mode. White on it is 12.2:1.
-- **Field green** (#2FCB7E light, #14684A dark): the flat color field of the title bar. Its text is ink in light mode (7.9:1) and #E6EEE9 in dark mode (5.7:1). It is a surface for titles only: never text, never a gradient, and never behind the mark.
 - **Brand green** (#1E8A5E): the logo's dots and wordmark; focus rings in light mode. Never body text (3.97:1 on the ground).
 - **Green ink** (#156B49 light, #5CC495 dark): text-safe green for links and quiet buttons. In dark mode #5CC495 is also the primary button fill, with deep-green text (5.7:1).
 
@@ -226,7 +220,7 @@ A green-tinted neutral ground, the icon's deep green for the user's words and ac
 - **Tangerine** (#E85D2A): a graphic, never text. The active-tab dot, the send button (white arrow, 3.5:1), the mark's apex.
 
 ### Neutral
-- **Ground** (#F3F6F2 / #0D1613): the page, the chat bar and the splash.
+- **Ground** (#F3F6F2 / #0D1613): the page, the top bar, the chat bar and the splash.
 - **Surface** (#FFFFFF / #16221D): cards, assistant bubbles, fields.
 - **Sunk surface** (#E8EEE9 / #1D2B25): chips, the status pill, skeletons, the disabled send button.
 - **Line** (#D8E1DB / #26352E): hairlines and card borders. **Strong line** (#74877D / #5C7067): field borders and the secondary button outline, ≥ 3:1 against both surfaces.
@@ -239,7 +233,7 @@ A green-tinted neutral ground, the icon's deep green for the user's words and ac
 
 **The Mark Keeps Its Colors Rule.** The logo and the mark are always drawn in their approved colors (green dots, tangerine apex, green wordmark), on light and dark grounds alike, and always on `ground` or `surface`: never on a color field or on glass. No white or recolored wordmark exists; don't invent one.
 
-**The Flat Field Rule.** Color fields are flat, opaque fills. No gradients, glows or images behind content.
+**The Flat Fill Rule.** Every fill outside the glass is flat and opaque. No gradients, glows or images behind content.
 
 ## Typography
 
@@ -251,7 +245,7 @@ A green-tinted neutral ground, the icon's deep green for the user's words and ac
 ### Hierarchy
 - **Title large** (650, 1.75rem, 1.2): the sign-in heading.
 - **Headline** (650, 1.4375rem, 1.25): reserved for page headings; no current screen uses it.
-- **Title** (650, 1.25rem, 1.3): the screen title on the title bar's field.
+- **Title** (650, 1.25rem, 1.3): sheet titles (the health-data dialog). Screens have no visible title: the top bar shows the logo, and the section's name is a screen-reader-only `h1`.
 - **Body** (400, 1rem, 1.5; 1.45 in bubbles): messages, values, hints.
 - **Label** (550, 0.9375rem): field labels, chips, alerts, profile section headings, and Menu days and List sections (at 1rem, 650).
 - **Meta** (400, 0.875rem): definition-list labels above profile values.
@@ -270,7 +264,8 @@ A green-tinted neutral ground, the icon's deep green for the user's words and ac
   - Content scrolls under the dock. Every scroller pads its bottom, and sets `scroll-padding-bottom`, to the dock's clearance: `--dock-clear`, which is the dock's 64 px, its bottom offset, and 16 px of air.
   - In chat, the clearance also includes the composer accessory's height, `--accessory-h`. A `ResizeObserver` measures it, so the last message and any focused control always sit above the glass.
 - **Wide screens:**
-  - Content stays in a 720px column centered in the window. The title bar's title, the messages and the composer accessory align to that column, and the dock stays centered below at most 440px wide.
+  - Content stays in a 720px column centered in the window. The chat bar, the messages and the composer accessory align to that column, and the dock stays centered below at most 440px wide.
+  - The top bar's logo and the sign-in screen sit at the window's left edge instead, `--edge` from it: 16px, and 32px from 960px up (24px at least on sign-in).
   - Scrolling pages reserve their scrollbar on both edges (`scrollbar-gutter: stable both-edges` on the main area), so the column doesn't drift when content starts to scroll. The chat view opts out, because its message list is the scroller.
 - **Spacing:**
   - A 4px base and a 16px gutter.
@@ -318,6 +313,15 @@ Round, from the dots. Pills (999px) for buttons, chips, the status pill and the 
 - **Quiet:** underlined green-ink text, 44px tall ("Usar otro email").
 - **Disabled:** 55% opacity.
 - **Busy:** full color, a progress cursor, a changed label ("Enviando…") and `aria-busy`. Busy means working, not unavailable.
+
+### Top bar
+- Every signed-in screen opens with the app's name: the approved horizontal logo (`src/assets/viveri-logo.svg`, `alt="VIVERI"`), 28px tall, on `ground`, at the window's left edge (`--edge`), with a hairline under it. It's opaque and flat.
+- The section's name (Chat, Menú, Lista, Perfil) is the screen's `h1`, visible only to screen readers; the dock's active capsule and dot show it to everyone else.
+
+### Sign-in
+- At the window's left edge at every width: the logo (44px) in the corner, then a column of at most 400px with the title "Ingresar", Google's button, an "o con tu email" divider (a hairline on each side), the email hint and the form.
+- **Google's button** is Google's own (Google Identity Services, [ADR 0023](adr/0023-google-sign-in-button.md)): we choose only its theme (outline, or dark when the system is dark), large size, the pill shape that matches our buttons, "Continuar con Google" and the `es-419` locale. Its 44px slot is reserved so the form doesn't jump while Google's script loads. Without a client ID it isn't shown, and neither is the divider.
+- A failed Google sign-in shows the inline alert under the button, and the email form stays available.
 
 ### Send button
 A 44px tangerine circle with a white up arrow. Disabled: sunk surface with a muted arrow. Its accessible name is "Enviar".
@@ -375,7 +379,7 @@ Sunk-surface pills (6px 14px) listing what the chat saved: can't eat, dislikes, 
 ### Navigation
 - **Dock (every width):**
   - **Shape and placement:** a floating glass capsule, 64px tall and at most 440px wide, centered, with four equal items (a 24px icon and a 13px label). It doesn't compact on scroll, and the labels never disappear.
-  - **No rail:** the dock looks the same on a phone and a desktop, and there's no side rail. The app icon isn't repeated in the shell, because there it would sit on the title bar's field.
+  - **No rail:** the dock looks the same on a phone and a desktop, and there's no side rail. The logo is in the top bar instead.
   - **Labels:** every item is ink (#14211B / #E6EEE9) at weight 550; the active one is at 650.
   - **Active item:** an opaque inner capsule (#FFFFFF / #16221D) with a 6px tangerine dot above the icon, plus `aria-current="page"`. The dot always sits inside the capsule, never on the glass.
   - **Why three signals:** against glass over dark content, the capsule alone is too faint. So "active" is told by the capsule, the dot and the weight together.
@@ -425,7 +429,7 @@ Drawn for this app on a 24px grid: 1.75px round strokes, `currentColor` (the sen
 
 ### Do:
 - **Do** take colors, sizes and radii from the tokens in `src/index.css`; add a token before adding a one-off value.
-- **Do** keep tangerine for "the one" (see The One Rule): the active-tab dot, send and the mark's apex. Never a field, a capsule or a call to action.
+- **Do** keep tangerine for "the one" (see The One Rule): the active-tab dot, send and the mark's apex. Never a fill, a capsule or a call to action.
 - **Do** reserve the dock's clearance (`--dock-clear`, plus `--accessory-h` in chat) at the bottom of any new scrolling view, as padding and `scroll-padding-bottom`.
 - **Do** re-measure the glass on real pixels, against the worst content beneath, after changing the tint, the dock colors or the content colors.
 - **Do** give every new screen its loading, empty and error states, with the skeleton, empty-state and alert patterns above.
@@ -436,7 +440,7 @@ Drawn for this app on a 24px grid: 1.75px round strokes, `currentColor` (the sen
 - **Don't** recolor, redraw or rearrange the mark or the wordmark, or set "VIVERI" in a font as a stand-in logo.
 - **Don't** use shadows or blur for depth outside the navigation layer, or stack a border, a fill change and a shadow on one element.
 - **Don't** put glass anywhere but the dock and the chat's composer accessory: not on the title bar, cards or sheets.
-- **Don't** use gradients, or put a color field behind the mark.
+- **Don't** use gradients, or put the logo or the mark on anything but `ground` or `surface`.
 - **Don't** give any screen but the Chat an accessory, or float a second action bar over the dock: a screen's main action goes in its content.
 - **Don't** use muted ink on glass; every label on glass is ink.
 - **Don't** add a display typeface; the logo is the brand's lettering.

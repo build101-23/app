@@ -26,6 +26,7 @@ One file per decision: `NNNN-short-title.md`. ADRs are append-only: never rewrit
 | 0020 | [CI on Tenki runners](0020-ci-on-tenki-runners.md) | Accepted | 2026-10-17 |
 | 0021 | [VIVERI identity and a token-based UI system](0021-viveri-identity-and-ui-system.md) | Proposed (navigation and depth amended by 0022) | 2026-10-17 |
 | 0022 | [Glass navigation layer](0022-glass-navigation-layer.md) | Proposed | 2026-10-17 |
+| 0023 | [Sign in with Google's own button](0023-google-sign-in-button.md) | Accepted | 2026-10-17 |
 
 ## Template
 

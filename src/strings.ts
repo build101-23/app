@@ -14,6 +14,8 @@ export const t = {
     sent: 'Revisá tu email y tocá el link para entrar.',
     otherEmail: 'Usar otro email',
     error: 'No pudimos mandar el link. Probá de nuevo en unos minutos.',
+    orEmail: 'o con tu email',
+    googleError: 'No se pudo entrar con Google. Probá de nuevo o usá tu email.',
   },
   nav: 'Secciones',
   tabs: { chat: 'Chat', menu: 'Menú', list: 'Lista', profile: 'Perfil' },

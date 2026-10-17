@@ -26,10 +26,6 @@
   --danger-surface: #fcedea;
   --success-surface: #e3f1e8;
 
-  /* Living color: the flat field at the top of each screen (no gradients, never behind the mark) */
-  --field: #2fcb7e;
-  --on-field: #14211b;
-
   /* Navigation layer (ADR 0022): neutral glass, its opaque fallback, the active capsule */
   /* Tints measured on real pixels against the worst content beneath (docs/design.md, Navigation) */
   --glass: rgb(255 255 255 / 0.5);
@@ -43,6 +39,8 @@
 
   /* Space, shape, layout */
   --gutter: 16px;
+  /* The window's edge margin for the logo in the top bar and on sign-in (wider on big screens, below). */
+  --edge: var(--gutter);
   --column: 720px;
   --radius-card: 16px;
   --radius-field: 14px;
@@ -99,8 +97,6 @@
     --danger: #ff8a7a;
     --danger-surface: #2a1715;
     --success-surface: #13291f;
-    --field: #14684a;
-    --on-field: #e6eee9;
     --glass: rgb(13 22 19 / 0.68);
     --glass-solid: #0d1613;
     --glass-line: rgb(230 238 233 / 0.12);
@@ -401,16 +397,16 @@ textarea {
 
 /* Sign-in */
 
+/* Aligned to the window's left edge at every width: the logo in the corner, then the title and the form
+   in a column of at most 400px. */
 .signin {
   display: flex;
   flex-direction: column;
   width: 100%;
-  max-width: 440px;
   min-height: 100svh;
   min-height: 100dvh;
-  margin: 0 auto;
-  padding: calc(var(--safe-top) + 32px) calc(24px + var(--safe-right)) calc(var(--safe-bottom) + 32px)
-    calc(24px + var(--safe-left));
+  padding: calc(var(--safe-top) + 32px) calc(max(24px, var(--edge)) + var(--safe-right))
+    calc(var(--safe-bottom) + 32px) calc(max(24px, var(--edge)) + var(--safe-left));
 }
 
 .signin-logo {
@@ -422,19 +418,43 @@ textarea {
 
 .signin-body {
   display: grid;
-  gap: 24px;
+  gap: 16px;
+  width: 100%;
+  max-width: 400px;
   margin-top: clamp(48px, 16vh, 160px);
 }
 
-.signin-body header {
-  display: grid;
-  gap: 8px;
-}
-
 .signin h1 {
+  margin-bottom: 8px;
   font-size: 1.75rem;
   line-height: 1.2;
   letter-spacing: -0.02em;
+}
+
+/* Google's own button (its look is Google's; we pick theme, size, shape and locale), then the divider. */
+.google {
+  display: grid;
+  gap: 16px;
+}
+
+/* Reserves the button's height, so the form doesn't jump when Google's script loads. */
+.google-button {
+  min-height: 44px;
+}
+
+.divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: var(--ink-muted);
+  font-size: 0.875rem;
+}
+
+.divider::before,
+.divider::after {
+  content: '';
+  flex: 1;
+  border-top: 1px solid var(--line);
 }
 
 .signin form {
@@ -483,22 +503,28 @@ textarea {
   height: 100dvh;
 }
 
-/* The title bar is the screen's flat color field: opaque, no glass, no line under it. */
+/* The top bar shows the app's name on every screen: the approved logo on the ground, at the window's left
+   edge, opaque and flat. The section's name is its screen-reader-only h1. */
 .shell > header {
   grid-area: header;
   display: flex;
   align-items: center;
-  gap: 10px;
   min-height: calc(var(--safe-top) + 56px);
-  padding: calc(var(--safe-top) + 8px) max(calc(var(--gutter) + var(--safe-right)), calc((100% - var(--column)) / 2)) 8px
-    max(calc(var(--gutter) + var(--safe-left)), calc((100% - var(--column)) / 2));
-  background: var(--field);
-  color: var(--on-field);
+  padding: calc(var(--safe-top) + 8px) calc(var(--edge) + var(--safe-right)) 8px calc(var(--edge) + var(--safe-left));
+  border-bottom: 1px solid var(--line);
+  background: var(--ground);
 }
 
-.shell > header h1 {
-  font-size: 1.25rem;
-  line-height: 1.3;
+.brand {
+  display: block;
+  width: auto;
+  height: 28px;
+}
+
+@media (min-width: 960px) {
+  :root {
+    --edge: 32px;
+  }
 }
 
 /* The page area runs under the dock and reserves its height, so the last line and any focused control
