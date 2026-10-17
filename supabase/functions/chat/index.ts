@@ -136,6 +136,14 @@ const updateShoppingList: Anthropic.Beta.BetaTool = {
   }),
 }
 
+// Writes nothing: the web app shows the saved week as a card under the call.
+const showMenu: Anthropic.Beta.BetaTool = {
+  name: 'show_menu',
+  description: "Show the user's saved weekly menu as a card in the chat.",
+  strict: true,
+  input_schema: object({}),
+}
+
 const json = (status: number, body: unknown) =>
   new Response(JSON.stringify(body), { status, headers: { ...cors, 'Content-Type': 'application/json' } })
 
@@ -200,7 +208,8 @@ Deno.serve(async (req) => {
   const newRows: MessageParam[] = [{ role: 'user', content }]
   messages.push(newRows[0])
 
-  // Runs one tool call for the user. Returns what went wrong, or '' once it's saved.
+  // Runs one tool call for the user. Returns what went wrong, or '' once it's saved. show_menu only reports,
+  // so its answer is never an error: the web app shows the card whenever the chat has a menu.
   async function runTool(name: string, input: unknown): Promise<string> {
     const updated_at = new Date().toISOString()
     if (name === 'save_profile') {
@@ -246,6 +255,12 @@ Deno.serve(async (req) => {
       const { error: saveError } = await admin.from('menus').update({ have }).eq('user_id', userId)
       return saveError ? `Could not save: ${saveError.message}` : ''
     }
+    if (name === 'show_menu') {
+      const { data: row, error } = await supabase.from('menus').select('confirmed_at').maybeSingle()
+      if (error) return `Could not check the menu: ${error.message}`
+      if (!row) return 'No menu yet. Build the menu first.'
+      return row.confirmed_at ? 'Shown. The user already confirmed it.' : 'Shown. Not confirmed yet.'
+    }
     return `Unknown tool ${name}.`
   }
 
@@ -269,7 +284,7 @@ Deno.serve(async (req) => {
             max_tokens: 16000,
             cache_control: { type: 'ephemeral' },
             system: SYSTEM_PROMPT,
-            tools: [saveProfile, saveMenu, updateShoppingList],
+            tools: [saveProfile, saveMenu, showMenu, updateShoppingList],
             messages,
             // Prompt changes during development drop old reasoning instead of failing with a 400.
             thinking: { type: 'adaptive', block_binding: { prefix_mismatch_behavior: 'drop_block' } },
@@ -299,7 +314,8 @@ Deno.serve(async (req) => {
           for (const block of message.content) {
             if (block.type !== 'tool_use') continue
             const problem = await runTool(block.name, block.input)
-            results.push({ type: 'tool_result', tool_use_id: block.id, content: problem || 'Saved.', is_error: !!problem })
+            const is_error = !!problem && block.name !== 'show_menu'
+            results.push({ type: 'tool_result', tool_use_id: block.id, content: problem || 'Saved.', is_error })
           }
           const toolTurn: MessageParam = { role: 'user', content: results }
           messages.push(toolTurn)

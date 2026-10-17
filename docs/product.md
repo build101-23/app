@@ -41,7 +41,7 @@ The first version goes from a chat to a priced shopping list, in Montevideo only
 - Voice as dictation: tap the mic, speak, and the text appears in the box for you to check and send. It uses the browser's speech recognition ([ADR 0010](adr/0010-browser-speech-recognition.md)); where that's missing, the keyboard's dictation still works. No live voice conversation.
 - If you don't have a plan, it builds one from scratch.
 - If you have a nutritionist's plan, it follows what you tell it about that plan.
-- It asks as little as possible: your goal and what you can't eat. It doesn't ask whether you have a nutritionist's plan; if you mention one, it follows it. Everything else it assumes, tells you, and lets you correct. Then it builds your weekly menu right away and shows a preview of the week in the chat, with a button to the Menu tab.
+- It asks as little as possible: your goal and what you can't eat. It doesn't ask whether you have a nutritionist's plan; if you mention one, it follows it. Everything else it assumes, tells you, and lets you correct. Then it builds your weekly menu right away and shows a preview of the week in the chat, with a button to the Menu tab, and tells you to confirm it there to get the shopping list. Ask it to see the menu and it shows the same preview.
 - Tell it what you already have at home ("ya tengo arroz", "tengo medio kilo de pollo") and the shopping list buys less. "Arranco semana nueva" clears it.
 - Normal, everyday food you can buy at any supermarket in Montevideo.
 
@@ -68,7 +68,7 @@ The first version goes from a chat to a priced shopping list, in Montevideo only
 - Day by day, each meal with amounts and short instructions.
 - Change a meal or a day ("swap Tuesday's dinner") by chat or by tapping it.
 - A few recipes that repeat, on purpose: too much variety makes the shopping list huge and expensive.
-- Saved as soon as the AI proposes it. A button confirms it as your plan; any later change needs confirming again.
+- Saved as soon as the AI proposes it. A button at the top confirms it as your plan; any later change needs confirming again.
 - Ingredients come from a fixed list of everyday foods, with amounts raw as bought; anything else is named as is ([ADR 0013](adr/0013-menu-saved-by-a-chat-tool.md)).
 
 #### 5. Shopping list

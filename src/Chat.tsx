@@ -39,22 +39,30 @@ declare global {
 // Missing in Firefox and some installed iPhone apps: there the keyboard's dictation still works.
 const Recognition = window.SpeechRecognition ?? window.webkitSpeechRecognition
 
-// Shows text, plus a preview after each save_menu call that saved. Thinking, other tool calls, tool results
-// and the server's profile and menu copies stay hidden.
+// Shows text, plus a preview after each save_menu call that saved and each show_menu call. Thinking, other
+// tool calls, tool results and the server's profile and menu copies stay hidden.
 function toBubbles(rows: Row[]): Bubble[] {
   const saved = new Set(
     rows
       .flatMap((row) => row.content)
       .flatMap((block) => (block.type === 'tool_result' && !block.is_error ? [block.tool_use_id] : [])),
   )
+  // The menu as it stood at each point of the chat: the server adds its copy whenever the saved one changed.
+  let latest: MenuData | undefined
   return rows.flatMap((row) => {
     const text = row.content
       .filter((block) => block.type === 'text' && !block.text?.startsWith('<saved_'))
       .map((block) => block.text)
       .join('\n')
-    const menus = row.content
-      .filter((block) => block.type === 'tool_use' && block.name === 'save_menu' && saved.has(block.id))
-      .map((block) => ({ role: row.role, text: '', menu: block.input as MenuData }))
+    const menus: Bubble[] = []
+    for (const block of row.content) {
+      if (block.text?.startsWith('<saved_menu>')) {
+        latest = JSON.parse(block.text.slice('<saved_menu>'.length, -'</saved_menu>'.length))
+      }
+      const savedMenu = block.name === 'save_menu' && saved.has(block.id)
+      if (savedMenu) latest = block.input as MenuData
+      if (savedMenu || (block.name === 'show_menu' && latest)) menus.push({ role: row.role, text: '', menu: latest })
+    }
     return [...(text ? [{ role: row.role, text }] : []), ...menus]
   })
 }

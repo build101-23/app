@@ -61,6 +61,14 @@ export default function Menu({ session, onChange }: { session: Session; onChange
 
   return (
     <div className="menu">
+      {menu.confirmed_at ? (
+        <p className="muted">{t.menu.confirmed}</p>
+      ) : (
+        <button disabled={busy} onClick={confirm}>
+          {t.menu.confirm}
+        </button>
+      )}
+      {error && <p role="alert">{error}</p>}
       {days.map(({ day, meals }) => (
         <section key={day}>
           <div className="menu-day">
@@ -102,14 +110,6 @@ export default function Menu({ session, onChange }: { session: Session; onChange
           })}
         </section>
       ))}
-      {menu.confirmed_at ? (
-        <p className="muted">{t.menu.confirmed}</p>
-      ) : (
-        <button disabled={busy} onClick={confirm}>
-          {t.menu.confirm}
-        </button>
-      )}
-      {error && <p role="alert">{error}</p>}
     </div>
   )
 }

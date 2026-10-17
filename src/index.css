@@ -343,10 +343,6 @@ textarea {
   margin: 0 0 8px;
 }
 
-.menu > button {
-  margin-top: 16px;
-}
-
 .list-actions {
   display: flex;
   align-items: center;
