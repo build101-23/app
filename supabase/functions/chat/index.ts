@@ -1,6 +1,8 @@
 import Anthropic from 'npm:@anthropic-ai/sdk@0.135.0'
 import { createClient } from 'npm:@supabase/supabase-js@2.118.0'
-import { PROFILE_TAG, SYSTEM_PROMPT } from './prompt.ts'
+import { catalog } from '../_shared/catalog.ts'
+import { days, menuProblems, type MenuData } from '../_shared/menu.ts'
+import { MENU_TAG, PROFILE_TAG, SYSTEM_PROMPT } from './prompt.ts'
 
 type MessageParam = Anthropic.Beta.BetaMessageParam
 
@@ -48,6 +50,61 @@ const saveProfile: Anthropic.Beta.BetaTool = {
   },
 }
 
+const object = (properties: Record<string, unknown>) => ({
+  type: 'object',
+  properties,
+  required: Object.keys(properties),
+  additionalProperties: false,
+})
+
+// A few recipes that repeat, referenced by id from the days. Recipes come first so they're written
+// before the days that point at them. Strict can't check ids, units or the 7 days:
+// menuProblems (../_shared/menu.ts) does.
+const saveMenu: Anthropic.Beta.BetaTool = {
+  name: 'save_menu',
+  description:
+    "Save the user's weekly menu, Monday to Sunday. Each call replaces the saved menu, so always send the whole week.",
+  strict: true,
+  input_schema: object({
+    recipes: {
+      type: 'array',
+      items: object({
+        id: { type: 'string' },
+        name: { type: 'string' },
+        how: { type: 'string', description: 'One line of instructions.' },
+        ingredients: {
+          type: 'array',
+          items: object({
+            food: {
+              type: 'string',
+              enum: [...Object.keys(catalog), 'other'],
+              description: `A catalog food, or 'other' for anything else. Catalog foods and their units:\n${Object.entries(
+                catalog,
+              )
+                .map(([key, food]) => `${key} (${food.unit})`)
+                .join('\n')}`,
+            },
+            other_name: { ...nullable('string'), description: "The food's name when food is 'other', otherwise null." },
+            amount: { type: 'number', description: 'Per serving, raw as bought, in unit.' },
+            unit: {
+              type: 'string',
+              enum: ['g', 'ml', 'un'],
+              description: "The catalog food's unit. For 'other', the unit it's measured in.",
+            },
+          }),
+        },
+      }),
+    },
+    days: {
+      type: 'array',
+      items: object({
+        day: { type: 'string', enum: [...days] },
+        meals: { type: 'array', items: object({ slot: { type: 'string' }, recipe_id: { type: 'string' } }) },
+      }),
+    },
+  }),
+}
+
 const json = (status: number, body: unknown) =>
   new Response(JSON.stringify(body), { status, headers: { ...cors, 'Content-Type': 'application/json' } })
 
@@ -72,29 +129,52 @@ Deno.serve(async (req) => {
   const { data: conversation } = await supabase.from('conversations').select('id').eq('id', conversationId).maybeSingle()
   if (!conversation) return json(404, { error: 'conversation not found' })
 
-  const [{ data: history, error }, { data: profile }] = await Promise.all([
+  const [{ data: history, error }, { data: profile }, { data: menu }] = await Promise.all([
     supabase.from('messages').select('role, content').eq('conversation_id', conversationId).order('id'),
     supabase.from('profiles').select('data').maybeSingle(),
+    supabase.from('menus').select('data').maybeSingle(),
   ])
   if (error) return json(500, { error: error.message })
 
-  // The profile can change in another chat. Show it again whenever it differs from the last copy
-  // this chat saw, so save_profile never overwrites newer data with a stale view.
-  const profileText = profile ? `${PROFILE_TAG}${JSON.stringify(profile.data)}</saved_profile>` : ''
-  const lastProfile = history
+  // The profile and the menu can change in another chat. Each is shown again whenever it differs from
+  // the last copy this chat saw, so a save never overwrites newer data with a stale view.
+  const seen = history
     .flatMap((row: MessageParam) => (typeof row.content === 'string' ? [] : row.content))
-    .findLast(
-      (block): block is Anthropic.Beta.BetaTextBlockParam =>
-        block.type === 'text' && block.text.startsWith(PROFILE_TAG),
-    )
-  const content: Anthropic.Beta.BetaTextBlockParam[] = [{ type: 'text', text }]
-  if (profileText && profileText !== lastProfile?.text) {
-    content.unshift({ type: 'text', text: profileText })
+    .flatMap((block) => (block.type === 'text' ? [block.text] : []))
+  const content: Anthropic.Beta.BetaTextBlockParam[] = []
+  const profileText = profile ? `${PROFILE_TAG}${JSON.stringify(profile.data)}</saved_profile>` : ''
+  if (profileText && profileText !== seen.findLast((t) => t.startsWith(PROFILE_TAG))) {
+    content.push({ type: 'text', text: profileText })
   }
+  const menuText = menu ? `${MENU_TAG}${JSON.stringify(menu.data)}</saved_menu>` : ''
+  if (menuText && menuText !== seen.findLast((t) => t.startsWith(MENU_TAG))) {
+    content.push({ type: 'text', text: menuText })
+  }
+  content.push({ type: 'text', text })
 
   const messages: MessageParam[] = history
   const newRows: MessageParam[] = [{ role: 'user', content }]
   messages.push(newRows[0])
+
+  // Runs one tool call as the user. Returns what went wrong, or '' once it's saved.
+  async function runTool(name: string, input: unknown): Promise<string> {
+    const updated_at = new Date().toISOString()
+    if (name === 'save_profile') {
+      const { error } = await supabase.from('profiles').upsert({ user_id: userId, data: input, updated_at })
+      return error ? `Could not save: ${error.message}` : ''
+    }
+    if (name === 'save_menu') {
+      // A copy: the stored assistant turn must keep the input exactly as the model wrote it.
+      const menu = structuredClone(input) as MenuData
+      const problems = menuProblems(menu)
+      if (problems.length) return `Not saved. Fix this and call save_menu again:\n${problems.join('\n')}`
+      const { error } = await supabase
+        .from('menus')
+        .upsert({ user_id: userId, data: menu, confirmed_at: null, updated_at })
+      return error ? `Could not save: ${error.message}` : ''
+    }
+    return `Unknown tool ${name}.`
+  }
 
   const encoder = new TextEncoder()
   const stream = new ReadableStream({
@@ -116,7 +196,7 @@ Deno.serve(async (req) => {
             max_tokens: 16000,
             cache_control: { type: 'ephemeral' },
             system: SYSTEM_PROMPT,
-            tools: [saveProfile],
+            tools: [saveProfile, saveMenu],
             messages,
             // Prompt changes during development drop old reasoning instead of failing with a 400.
             thinking: { type: 'adaptive', block_binding: { prefix_mismatch_behavior: 'drop_block' } },
@@ -128,29 +208,34 @@ Deno.serve(async (req) => {
           const message = await reply.finalMessage()
           breakBeforeNext = wrote
 
+          // Either of these, stored, would make every later request in this chat fail.
+          // A tool call with no result (cut off at max_tokens, or a refusal): store nothing, so the user can resend.
+          if (message.stop_reason !== 'tool_use' && message.content.some((block) => block.type === 'tool_use')) {
+            throw new Error(`tool call without a result (${message.stop_reason})`)
+          }
+          // An empty reply (it can follow a tool result): leave it out and end the turn here.
+          if (!message.content.length) break
+
           const turn: MessageParam = { role: 'assistant', content: message.content }
           messages.push(turn)
           newRows.push(turn)
-          // end_turn, refusal, or a tool call cut off at max_tokens: nothing more to run.
+          // end_turn, refusal or max_tokens: nothing more to run.
           if (message.stop_reason !== 'tool_use') break
 
           const results: Anthropic.Beta.BetaToolResultBlockParam[] = []
           for (const block of message.content) {
             if (block.type !== 'tool_use') continue
-            const { error } = await supabase
-              .from('profiles')
-              .upsert({ user_id: userId, data: block.input, updated_at: new Date().toISOString() })
-            results.push({
-              type: 'tool_result',
-              tool_use_id: block.id,
-              content: error ? `Could not save: ${error.message}` : 'Saved.',
-              is_error: !!error,
-            })
+            const problem = await runTool(block.name, block.input)
+            results.push({ type: 'tool_result', tool_use_id: block.id, content: problem || 'Saved.', is_error: !!problem })
           }
           const toolTurn: MessageParam = { role: 'user', content: results }
           messages.push(toolTurn)
           newRows.push(toolTurn)
         }
+
+        // Nothing came back at all (a refusal before any output): store nothing and fail, so the client
+        // gives the text back to rephrase.
+        if (newRows.length === 1) throw new Error('empty reply')
 
         // Stored only once the whole exchange worked, so a failed turn can simply be resent.
         const { error } = await supabase

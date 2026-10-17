@@ -108,6 +108,7 @@ button.link {
 }
 
 .soon,
+.menu,
 .profile {
   padding: 16px;
 }
@@ -284,4 +285,39 @@ textarea {
 .profile ul {
   margin: 0;
   padding-left: 20px;
+}
+
+.menu-day {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-top: 16px;
+}
+
+.menu h2 {
+  font-size: 1rem;
+  margin: 0 0 4px;
+  text-transform: capitalize;
+}
+
+.menu details {
+  padding: 8px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.menu summary {
+  cursor: pointer;
+}
+
+.menu details ul {
+  margin: 8px 0;
+  padding-left: 20px;
+}
+
+.menu details p {
+  margin: 0 0 8px;
+}
+
+.menu > button {
+  margin-top: 16px;
 }

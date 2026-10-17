@@ -3,6 +3,7 @@ import type { Session } from '@supabase/supabase-js'
 import { supabase } from './supabase'
 import { t } from './strings'
 import Chat from './Chat'
+import Menu from './Menu'
 import Profile from './Profile'
 
 const tabs = ['chat', 'menu', 'list', 'profile'] as const
@@ -74,6 +75,10 @@ function SignIn() {
 
 function Shell({ session }: { session: Session }) {
   const [tab, setTab] = useState<Tab>('chat')
+  // A draft the Menu tab hands to the chat ("Cambiar ..."); Chat reads it when it mounts.
+  const [chatDraft, setChatDraft] = useState('')
+  // Leaving Chat mid-reply would unmount it and hide a turn that's still being saved.
+  const [chatBusy, setChatBusy] = useState(false)
 
   return (
     <div className="shell">
@@ -81,13 +86,30 @@ function Shell({ session }: { session: Session }) {
         <h1>{t.tabs[tab]}</h1>
       </header>
       <main>
-        {tab === 'chat' && <Chat session={session} />}
+        {tab === 'chat' && <Chat session={session} initialDraft={chatDraft} onBusy={setChatBusy} />}
+        {tab === 'menu' && (
+          <Menu
+            session={session}
+            onChange={(draft) => {
+              setChatDraft(draft)
+              setTab('chat')
+            }}
+          />
+        )}
         {tab === 'profile' && <Profile session={session} />}
-        {(tab === 'menu' || tab === 'list') && <p className="soon">{t.soon}</p>}
+        {tab === 'list' && <p className="soon">{t.soon}</p>}
       </main>
       <nav>
         {tabs.map((key) => (
-          <button key={key} aria-current={key === tab ? 'page' : undefined} onClick={() => setTab(key)}>
+          <button
+            key={key}
+            aria-current={key === tab ? 'page' : undefined}
+            disabled={chatBusy}
+            onClick={() => {
+              setTab(key)
+              setChatDraft('')
+            }}
+          >
             {t.tabs[key]}
           </button>
         ))}

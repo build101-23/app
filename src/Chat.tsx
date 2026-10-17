@@ -28,11 +28,11 @@ declare global {
 // Missing in Firefox and some installed iPhone apps: there the keyboard's dictation still works.
 const Recognition = window.SpeechRecognition ?? window.webkitSpeechRecognition
 
-// Only text is shown; thinking, tool calls, tool results and the server's profile copies stay hidden.
+// Only text is shown; thinking, tool calls, tool results and the server's profile and menu copies stay hidden.
 const toBubbles = (rows: Row[]): Bubble[] =>
   rows.flatMap((row) => {
     const text = row.content
-      .filter((block) => block.type === 'text' && !block.text?.startsWith('<saved_profile>'))
+      .filter((block) => block.type === 'text' && !block.text?.startsWith('<saved_'))
       .map((block) => block.text)
       .join('\n')
     return text ? [{ role: row.role, text }] : []
@@ -40,13 +40,21 @@ const toBubbles = (rows: Row[]): Bubble[] =>
 
 const day = (iso: string) => new Date(iso).toLocaleDateString('es-UY', { day: 'numeric', month: 'short' })
 
-export default function Chat({ session }: { session: Session }) {
+export default function Chat({
+  session,
+  initialDraft,
+  onBusy,
+}: {
+  session: Session
+  initialDraft: string
+  onBusy: (busy: boolean) => void
+}) {
   const [conversations, setConversations] = useState<Conversation[]>([])
   // null is a new chat that has no row yet: it gets one with its first message.
   const [conversationId, setConversationId] = useState<string | null>(null)
   const [showList, setShowList] = useState(false)
   const [bubbles, setBubbles] = useState<Bubble[]>([])
-  const [draft, setDraft] = useState('')
+  const [draft, setDraft] = useState(initialDraft)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
   const [listening, setListening] = useState(false)
@@ -136,6 +144,7 @@ export default function Chat({ session }: { session: Session }) {
       recognizer.current.stop()
     }
     setBusy(true)
+    onBusy(true)
     setError('')
     setDraft('')
     setBubbles((b) => [...b, { role: 'user', text }, { role: 'assistant', text: '' }])
@@ -162,6 +171,8 @@ export default function Chat({ session }: { session: Session }) {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({ text, conversation_id: id }),
+        // Above the function's 150 s wall clock: a stalled connection must not keep the tabs locked.
+        signal: AbortSignal.timeout(200_000),
       })
       if (!res.ok || !res.body) throw new Error(`chat failed: ${res.status}`)
       const reader = res.body.pipeThrough(new TextDecoderStream()).getReader()
@@ -181,6 +192,7 @@ export default function Chat({ session }: { session: Session }) {
       setError(t.chat.error)
     }
     setBusy(false)
+    onBusy(false)
   }
 
   return (
@@ -220,6 +232,7 @@ export default function Chat({ session }: { session: Session }) {
       <form onSubmit={send}>
         <textarea
           rows={2}
+          autoFocus={!!initialDraft}
           value={draft}
           placeholder={t.chat.placeholder}
           aria-label={t.chat.placeholder}

@@ -22,11 +22,10 @@ This app starts from your diet. It knows what you need, how much, and which swap
 ## How it works
 
 1. You chat with the AI nutritionist. If you have a nutritionist's plan, you describe it in the chat.
-2. The app combines that with your likes and restrictions, and you confirm the plan.
-3. You get a weekly menu.
-4. You get a shopping list, priced at each supermarket, with the cheapest way to buy it on top.
-5. You share the list on WhatsApp or copy it.
-6. *(Later)* The app places the order for you.
+2. The app combines that with your likes and restrictions and proposes a weekly menu. You change it and confirm it. Your plan is your profile plus that menu.
+3. You get a shopping list, priced at each supermarket, with the cheapest way to buy it on top.
+4. You share the list on WhatsApp or copy it.
+5. *(Later)* The app places the order for you.
 
 ## Scope
 
@@ -42,7 +41,7 @@ The first version goes from a chat to a priced shopping list, in Montevideo only
 - Voice as dictation: tap the mic, speak, and the text appears in the box for you to check and send. It uses the browser's speech recognition ([ADR 0010](adr/0010-browser-speech-recognition.md)); where that's missing, the keyboard's dictation still works. No live voice conversation.
 - If you don't have a plan, it builds one from scratch.
 - If you have a nutritionist's plan, it follows what you tell it about that plan.
-- It asks as little as possible: your goal and what you can't eat. It doesn't ask whether you have a nutritionist's plan; if you mention one, it follows it. Everything else it assumes, tells you, and lets you correct. Then it proposes meals right away.
+- It asks as little as possible: your goal and what you can't eat. It doesn't ask whether you have a nutritionist's plan; if you mention one, it follows it. Everything else it assumes, tells you, and lets you correct. Then it builds your weekly menu right away and points you to the Menu tab.
 - Normal, everyday food you can buy at any supermarket in Montevideo.
 
 #### 2. Likes and restrictions
@@ -68,6 +67,8 @@ The first version goes from a chat to a priced shopping list, in Montevideo only
 - Day by day, each meal with amounts and short instructions.
 - Change a meal or a day ("swap Tuesday's dinner") by chat or by tapping it.
 - A few recipes that repeat, on purpose: too much variety makes the shopping list huge and expensive.
+- Saved as soon as the AI proposes it. A button confirms it as your plan; any later change needs confirming again.
+- Ingredients come from a fixed list of everyday foods, with amounts raw as bought; anything else is named as is ([ADR 0013](adr/0013-menu-saved-by-a-chat-tool.md)).
 
 #### 5. Shopping list
 
@@ -117,7 +118,7 @@ Left out so we can first check that people use the plan and the list every week,
 
 ## How the AI nutritionist behaves
 
-It helps you follow a plan. It doesn't replace your nutritionist. It only talks about food, diets, cooking, groceries and the app; anything else it declines in one line. Replies are short: a few sentences, or a short list for meals.
+It helps you follow a plan. It doesn't replace your nutritionist. It only talks about food, diets, cooking, groceries and the app; anything else it declines in one line. Replies are short: a few sentences; the meals go to the Menu tab.
 
 1. If you follow a nutritionist's plan, the plan wins. The AI only swaps things the plan allows.
 2. If you ask for something outside the plan, it tells you and suggests checking with your nutritionist.

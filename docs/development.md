@@ -18,6 +18,7 @@ Sign-in uses Supabase's default magic link email. The link only sends you back t
 | `npm run dev` | Dev server at http://localhost:5173 |
 | `npm run build` | Type-check and build to `dist/` |
 | `npm run lint` | Lint with oxlint |
+| `npm test` | Run the tests (Node's test runner) |
 | `npx supabase migration new <name>` | Create an empty migration in `supabase/migrations/` |
 | `npx supabase db push` | Apply new migrations to the hosted database (asks for the database password) |
 | `npx supabase functions deploy chat` | Deploy the `chat` Edge Function. Functions aren't deployed by pushing to `main`. |
@@ -44,6 +45,9 @@ Vite reads `.env`, then `.env.local` (gitignored), which overrides it.
 - Every table enables row-level security in its migration, with an owner policy (`auth.uid() = user_id`). Check Database → Advisors → Security after each milestone.
 
 ## Testing
+
+- `npm test` runs Node's built-in test runner on `supabase/functions/_shared/*.test.ts`. That code is plain TS, so it runs without Deno.
+- The `chat` function itself has no tests: try it against the hosted project after deploying.
 
 ## Deploy
 
