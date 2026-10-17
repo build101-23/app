@@ -11,6 +11,7 @@ Once a decision is made, record it where it belongs (an ADR in [adr/](../adr/), 
 - [ ] Where the price scraper runs, and in what language: Supabase Edge Functions or a Cloudflare Worker in batches, or a scheduled job outside both, which [ADR 0004](../adr/0004-vite-react-supabase-claude.md) ("no servers of our own") doesn't cover yet. Trade-offs in [price-sources-research.md](price-sources-research.md#where-scraping-should-run).
 - [ ] What counts as "most similar" when a store doesn't have the exact product: another brand, another size, or both? The spike uses a [provisional rule](price-sources-research.md#matching-across-chains).
 - [ ] How often prices are refreshed for the pilot: daily or weekly.
+- [ ] Legal read of the chains' terms and `robots.txt` (both ask bots to stay out of cart and checkout) before cart automation reaches users.
 - [ ] Safe limits for plans the AI builds from scratch: minimum calories, maximum deficit, minimum protein. Have a nutritionist review them.
 - [ ] Sending health data to an AI provider abroad: check what Law 18.331 requires for international transfers, and say it in the consent.
 - [ ] App name.

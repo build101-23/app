@@ -1,0 +1,12 @@
+{
+  "_comment": "The user's answers to the questions GDU chains ask before the first add to cart. In the app, the user would answer these once. Options mapped on Disco 2026-10-17.",
+  "mode": "normal",
+  "_mode_options": ["normal", "ya (order in under 60 minutes)"],
+  "delivery": "home",
+  "_delivery_options": ["pickup", "home"],
+  "pickup_zone": "Montevideo",
+  "_pickup_zone_options": ["Montevideo", "Maldonado y Punta del Este", "Costa de Oro", "Canelones", "Libertad"],
+  "pickup_branch": "Disco Fresh Market Plaza Italia",
+  "home_address_index": 0,
+  "_home_address_index": "Which of the addresses saved in the user's account to use (0 = first). No address is stored here."
+}

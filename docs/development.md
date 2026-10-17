@@ -56,3 +56,4 @@ Vite reads `.env`, then `.env.local` (gitignored), which overrides it.
 ## Spikes
 
 - Supermarket prices (`spikes/supermarket-prices/`, Python 3.13, not part of the app): see [price-sources-research.md](notes/price-sources-research.md#running-the-spike).
+- Cart handoff (`spikes/cart-handoff/`, Python 3.13 + Playwright, not part of the app): see [cart-handoff-feasibility.md](notes/cart-handoff-feasibility.md#running-the-spike).

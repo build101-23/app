@@ -8,6 +8,7 @@ Ideas for after the first version ([scope](../product.md#scope)). Grouped by are
 - Before using it, the app shows what it understood so you can confirm or fix it.
 
 **Ordering**
+- Fill the cart of the cheapest supermarket from the user's computer, weekly if they want, with a warning and a proposed substitute when a product isn't available ([ADR 0012](../adr/0012-fill-carts-from-the-users-computer.md)).
 - Send the list on WhatsApp straight to a chosen store: grocery, butcher or produce shop.
 - A deal with a supermarket chain or PedidosYa Market to fill the cart directly.
 - Find nearby stores by address and what they sell.

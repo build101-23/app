@@ -1,0 +1,46 @@
+{
+  "_comment": "Stand-in for the app's suggestion: 3 items picked by hand once on each site.",
+  "tata": [
+    {
+      "name": "Leche Ultrapasteurizada Entera Conaprole Sachet 1 L",
+      "sku": "2638",
+      "seller": "1",
+      "quantity": 2,
+      "product_url": "https://www.tata.com.uy/leche-ultrapasteurizada-entera-conaprole-sachet-1-l-2638/p"
+    },
+    {
+      "name": "Arroz Blanco Saman 1 Kg",
+      "sku": "299",
+      "seller": "1",
+      "quantity": 1,
+      "product_url": "https://www.tata.com.uy/arroz-blanco-saman-1-kg-299/p"
+    },
+    {
+      "name": "Avena Puritas Laminada 800 G",
+      "sku": "138622",
+      "seller": "1",
+      "quantity": 1,
+      "product_url": "https://www.tata.com.uy/avena-puritas-laminada-800-g-138622/p"
+    }
+  ],
+  "disco": [
+    {
+      "name": "Leche ultra CONAPROLE extra calcio descremada 1 L",
+      "sku": "241082",
+      "quantity": 2,
+      "product_url": "https://www.disco.com.uy/product/leche-ultra-conaprole-extra-calcio-descremada-1-l/241082"
+    },
+    {
+      "name": "Arroz blanco SAMAN 5 kg",
+      "sku": "523099",
+      "quantity": 1,
+      "product_url": "https://www.disco.com.uy/product/arroz-blanco-saman-5-kg/523099"
+    },
+    {
+      "name": "Avena Laminada Instantánea RIO DE LA PLATA 400 g",
+      "sku": "774692",
+      "quantity": 1,
+      "product_url": "https://www.disco.com.uy/product/avena-laminada-instantanea-rio-de-la-plata-400-g/774692"
+    }
+  ]
+}
