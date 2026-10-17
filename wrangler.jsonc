@@ -1,0 +1,13 @@
+// Cloudflare Worker that serves the static Vite build (ADR 0005).
+// `main` deploys to production; every other branch gets a Preview (`npx wrangler preview`),
+// which needs the `previews` block even when, as here, it's empty.
+{
+  "name": "app",
+  "compatibility_date": "2026-10-17",
+  "assets": {
+    "directory": "./dist",
+    // Any path that isn't a file returns index.html, as production does today.
+    "not_found_handling": "single-page-application"
+  },
+  "previews": {}
+}
