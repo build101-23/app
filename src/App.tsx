@@ -6,9 +6,12 @@ import Chat from './Chat'
 import List from './List'
 import Menu from './Menu'
 import Profile from './Profile'
+import logo from './assets/viveri-logo.svg'
+import { AlertIcon, ChatIcon, ListIcon, MailIcon, Mark, MenuIcon, ProfileIcon } from './ui'
 
 const tabs = ['chat', 'menu', 'list', 'profile'] as const
 type Tab = (typeof tabs)[number]
+const icons = { chat: ChatIcon, menu: MenuIcon, list: ListIcon, profile: ProfileIcon }
 
 export default function App() {
   const [session, setSession] = useState<Session | null>(null)
@@ -23,8 +26,18 @@ export default function App() {
     return () => data.subscription.unsubscribe()
   }, [])
 
-  if (loading) return null
+  if (loading) return <Splash />
   return session ? <Shell session={session} /> : <SignIn />
+}
+
+// Shows up only if the session takes more than a moment (the fade-in is delayed in CSS).
+function Splash() {
+  return (
+    <div className="splash" role="status">
+      <Mark size={64} animated />
+      <span className="sr-only">{t.loading}</span>
+    </div>
+  )
 }
 
 // shortcut: the magic link opens Safari on an installed iOS PWA, switch to an emailed code once we have our own SMTP (milestone 6)
@@ -49,29 +62,80 @@ function SignIn() {
 
   return (
     <main className="signin">
-      <h1>{t.signIn.title}</h1>
-      <form onSubmit={submit}>
-        <label>
-          {t.signIn.email}
-          <input
-            type="email"
-            required
-            autoComplete="email"
-            value={email}
-            disabled={sent}
-            onChange={(e) => setEmail(e.target.value)}
-          />
-        </label>
-        {sent ? <p>{t.signIn.sent}</p> : <button disabled={busy}>{t.signIn.send}</button>}
-        {sent && (
-          <button type="button" className="link" onClick={() => setSent(false)}>
-            {t.signIn.otherEmail}
-          </button>
+      <img className="signin-logo" src={logo} alt="VIVERI" width={159} height={44} />
+      <div className="signin-body">
+        <header>
+          <h1>{t.signIn.title}</h1>
+          <p className="muted">{t.signIn.hint}</p>
+        </header>
+        {sent ? (
+          <div className="sent" role="status">
+            <MailIcon />
+            <p>{t.signIn.sent}</p>
+            <p className="sent-email">{email}</p>
+            <button type="button" className="button quiet" onClick={() => setSent(false)}>
+              {t.signIn.otherEmail}
+            </button>
+          </div>
+        ) : (
+          <form onSubmit={submit}>
+            <label className="field">
+              {t.signIn.email}
+              <input
+                type="email"
+                required
+                autoComplete="email"
+                inputMode="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+              />
+            </label>
+            <button className="button primary" disabled={busy} aria-busy={busy}>
+              {busy ? t.signIn.sending : t.signIn.send}
+            </button>
+            {error && (
+              // Supabase's message is in English; keep it as a detail under the Spanish one.
+              <div role="alert" className="alert">
+                <AlertIcon />
+                <div>
+                  <p>{t.signIn.error}</p>
+                  <p className="alert-detail">{error}</p>
+                </div>
+              </div>
+            )}
+          </form>
         )}
-        {error && <p role="alert">{error}</p>}
-      </form>
+      </div>
     </main>
   )
+}
+
+// True while the on-screen keyboard takes up part of the screen, read from the visual viewport
+// (zoom-independent). The CSS uses it to move the dock aside only while you're actually typing.
+function useKeyboardOpen() {
+  const [open, setOpen] = useState(false)
+
+  useEffect(() => {
+    const viewport = window.visualViewport
+    if (!viewport) return
+    let width = viewport.width * viewport.scale
+    let full = viewport.height * viewport.scale
+    const update = () => {
+      const w = viewport.width * viewport.scale
+      const h = viewport.height * viewport.scale
+      // A rotation changes the full height, so start over.
+      if (Math.abs(w - width) > 1) {
+        width = w
+        full = h
+      }
+      full = Math.max(full, h)
+      setOpen(full - h > 120)
+    }
+    viewport.addEventListener('resize', update)
+    return () => viewport.removeEventListener('resize', update)
+  }, [])
+
+  return open
 }
 
 function Shell({ session }: { session: Session }) {
@@ -80,9 +144,10 @@ function Shell({ session }: { session: Session }) {
   const [chatDraft, setChatDraft] = useState('')
   // Leaving Chat mid-reply would unmount it and hide a turn that's still being saved.
   const [chatBusy, setChatBusy] = useState(false)
+  const keyboardOpen = useKeyboardOpen()
 
   return (
-    <div className="shell">
+    <div className="shell" data-keyboard={keyboardOpen ? 'open' : undefined}>
       <header>
         <h1>{t.tabs[tab]}</h1>
       </header>
@@ -99,23 +164,30 @@ function Shell({ session }: { session: Session }) {
             }}
           />
         )}
-        {tab === 'profile' && <Profile session={session} />}
-        {tab === 'list' && <List session={session} onOpenMenu={() => setTab('menu')} />}
+        {tab === 'profile' && <Profile session={session} onOpenChat={() => setTab('chat')} />}
+        {tab === 'list' && (
+          <List session={session} onOpenMenu={() => setTab('menu')} onOpenChat={() => setTab('chat')} />
+        )}
       </main>
-      <nav>
-        {tabs.map((key) => (
-          <button
-            key={key}
-            aria-current={key === tab ? 'page' : undefined}
-            disabled={chatBusy}
-            onClick={() => {
-              setTab(key)
-              setChatDraft('')
-            }}
-          >
-            {t.tabs[key]}
-          </button>
-        ))}
+      <nav aria-label={t.nav}>
+        {tabs.map((key) => {
+          const Icon = icons[key]
+          return (
+            <button
+              key={key}
+              type="button"
+              aria-current={key === tab ? 'page' : undefined}
+              disabled={chatBusy}
+              onClick={() => {
+                setTab(key)
+                setChatDraft('')
+              }}
+            >
+              <Icon />
+              <span>{t.tabs[key]}</span>
+            </button>
+          )
+        })}
       </nav>
     </div>
   )

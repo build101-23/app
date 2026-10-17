@@ -1,9 +1,10 @@
-import { useEffect, useRef, useState, type FormEvent } from 'react'
+import { useEffect, useRef, useState, type FormEvent, type RefObject } from 'react'
 import type { Session } from '@supabase/supabase-js'
 import type { MenuData } from '../supabase/functions/_shared/menu.ts'
 import { supabase } from './supabase'
 import { t } from './strings'
 import { MenuPreview } from './Menu'
+import { Alert, AlertIcon, Mark, SendIcon } from './ui'
 
 type Role = 'user' | 'assistant'
 type Bubble = { role: Role; text: string; menu?: MenuData }
@@ -88,9 +89,22 @@ export default function Chat({
   const [draft, setDraft] = useState(initialDraft)
   // Starts true: sending waits until the latest chat is open (the effect below).
   const [busy, setBusy] = useState(true)
+  // While the chat list or a chat's messages load: the skeleton stands in for the conversation.
+  const [loading, setLoading] = useState(true)
+  // The chat on screen couldn't open (its list or its messages); Reintentar opens it again.
+  const [loadFailed, setLoadFailed] = useState(false)
+  // The last read of the chats list failed; the list view says so and can read it again.
+  const [listFailed, setListFailed] = useState(false)
+  // While a reply streams: the visible status line.
+  const [streaming, setStreaming] = useState(false)
   const [error, setError] = useState('')
   const [listening, setListening] = useState(false)
+  const root = useRef<HTMLDivElement>(null)
+  const log = useRef<HTMLDivElement>(null)
   const end = useRef<HTMLDivElement>(null)
+  const composer = useRef<HTMLFormElement>(null)
+  const input = useRef<HTMLTextAreaElement>(null)
+  const healthData = useRef<HTMLDialogElement>(null)
   const recognizer = useRef<Recognizer | null>(null)
 
   // Leaving the screen must not leave the mic on.
@@ -122,14 +136,16 @@ export default function Chat({
     r.start()
   }
 
+  // null when the read failed. Each caller decides how a failure shows.
   async function loadConversations() {
     const { data, error } = await supabase
       .from('conversations')
       .select('id, title, updated_at')
       .order('updated_at', { ascending: false })
-    if (error) setError(t.chat.loadError)
-    else setConversations(data)
-    return data ?? []
+    setListFailed(!!error)
+    if (error) return null
+    setConversations(data)
+    return data
   }
 
   // Sending waits for the messages, so they can't land over the new message's bubbles.
@@ -138,8 +154,15 @@ export default function Chat({
     setShowList(false)
     setBubbles([])
     setError('')
+    setLoadFailed(false)
     setBusy(true)
-    return loadMessages(id).finally(() => setBusy(false))
+    setLoading(true)
+    return loadMessages(id)
+      .then((ok) => ok || setLoadFailed(true))
+      .finally(() => {
+        setBusy(false)
+        setLoading(false)
+      })
   }
 
   async function loadMessages(id: string) {
@@ -148,8 +171,26 @@ export default function Chat({
       .select('role, content')
       .eq('conversation_id', id)
       .order('id')
-    if (error) setError(t.chat.loadError)
-    else setBubbles(toBubbles(data))
+    if (!error) setBubbles(toBubbles(data))
+    return !error
+  }
+
+  // Opens the most recent chat; a fresh start when there is none. Locked until then, like the first load.
+  function start() {
+    setLoadFailed(false)
+    setBusy(true)
+    setLoading(true)
+    return loadConversations()
+      .then((list) => (list ? list[0] && open(list[0].id) : setLoadFailed(true)))
+      .finally(() => {
+        setBusy(false)
+        setLoading(false)
+      })
+  }
+
+  function retry() {
+    if (conversationId) open(conversationId)
+    else start()
   }
 
   function newChat() {
@@ -157,15 +198,14 @@ export default function Chat({
     setShowList(false)
     setBubbles([])
     setError('')
+    setLoadFailed(false)
   }
 
   // Opens on the most recent chat. A message sent before that would start a new chat that this then switches
   // away from, so sending unlocks only here. State is only set once the queries resolve, which the rule can't see.
   useEffect(() => {
     // oxlint-disable-next-line react/set-state-in-effect
-    loadConversations()
-      .then((list) => list[0] && open(list[0].id))
-      .finally(() => setBusy(false))
+    start()
   }, [])
 
   // Braces matter: newer browsers return a Promise from scrollIntoView, and an effect may only return a cleanup.
@@ -173,9 +213,31 @@ export default function Chat({
     end.current?.scrollIntoView({ block: 'end' })
   }, [bubbles])
 
-  async function send(e: FormEvent) {
-    e.preventDefault()
-    const text = draft.trim()
+  // The composer floats over the list (the dock's accessory), so the list reserves its height. When the
+  // composer grows while you're at the end of the conversation, stay at the end.
+  useEffect(() => {
+    const form = composer.current
+    const chat = root.current
+    if (!form || !chat) return
+    const observer = new ResizeObserver(() => {
+      const list = log.current
+      const atEnd = !!list && list.scrollHeight - list.scrollTop - list.clientHeight < 4
+      chat.style.setProperty('--accessory-h', `${form.offsetHeight}px`)
+      if (list && atEnd) list.scrollTop = list.scrollHeight
+    })
+    observer.observe(form)
+    return () => observer.disconnect()
+  }, [])
+
+  // Grow the composer with its text where CSS `field-sizing` isn't supported yet (the CSS caps the height).
+  useEffect(() => {
+    const el = input.current
+    if (!el || CSS.supports('field-sizing', 'content')) return
+    el.style.height = 'auto'
+    el.style.height = `${el.scrollHeight + el.offsetHeight - el.clientHeight}px`
+  }, [draft])
+
+  async function submit(text: string) {
     if (!text || busy) return
     // stop() still delivers the last results, which would refill the box we're about to clear.
     if (recognizer.current) {
@@ -183,8 +245,10 @@ export default function Chat({
       recognizer.current.stop()
     }
     setBusy(true)
+    setStreaming(true)
     onBusy(true)
     setError('')
+    setLoadFailed(false)
     setDraft('')
     setBubbles((b) => [...b, { role: 'user', text }, { role: 'assistant', text: '' }])
     const setReply = (reply: string) => setBubbles((b) => [...b.slice(0, -1), { role: 'assistant', text: reply }])
@@ -224,10 +288,12 @@ export default function Chat({
         reply += value
         setReply(reply)
       }
+      setStreaming(false)
       if (!reply) setReply(t.chat.noReply)
       // The stream is text only: the stored turn also has the save_menu calls, for the preview.
-      // Awaited while the box is locked, so it can't overwrite the next message's bubbles.
-      if (reply) await loadMessages(id)
+      // Awaited while the box is locked, so it can't overwrite the next message's bubbles. The turn is on
+      // screen already, so a failed reload only says so under it; a failed list refresh shows in the list.
+      if (reply && !(await loadMessages(id))) setError(t.chat.loadError)
       loadConversations()
     } catch {
       // The server stores nothing from a failed turn, so drop both bubbles and give the text back.
@@ -235,26 +301,49 @@ export default function Chat({
       setDraft(text)
       setError(failure)
     }
+    setStreaming(false)
     setBusy(false)
     onBusy(false)
   }
 
+  function send(e: FormEvent) {
+    e.preventDefault()
+    submit(draft.trim())
+  }
+
+  const waiting = streaming && bubbles.at(-1)?.text === ''
+
   return (
-    <div className="chat">
+    <div className="chat" ref={root}>
       <div className="chat-bar">
-        <button className="link" disabled={busy} onClick={() => setShowList(!showList)}>
+        <button type="button" className="link" disabled={busy} onClick={() => setShowList(!showList)}>
           {showList ? t.chat.back : t.chat.chats}
         </button>
-        <button className="link" disabled={busy} onClick={newChat}>
+        <button type="button" className="link" disabled={busy} onClick={newChat}>
           {t.chat.newChat}
         </button>
       </div>
       {showList ? (
         <ul className="chats">
-          {conversations.length === 0 && <li className="muted">{t.chat.noChats}</li>}
+          {listFailed ? (
+            <li>
+              <div role="alert" className="alert">
+                <AlertIcon />
+                <div>
+                  <p>{t.chat.listError}</p>
+                  <button type="button" className="button quiet" onClick={() => loadConversations()}>
+                    {t.retry}
+                  </button>
+                </div>
+              </div>
+            </li>
+          ) : (
+            conversations.length === 0 && <li className="muted">{t.chat.noChats}</li>
+          )}
           {conversations.map((c) => (
             <li key={c.id}>
               <button
+                type="button"
                 aria-current={c.id === conversationId ? 'true' : undefined}
                 disabled={busy}
                 onClick={() => open(c.id)}
@@ -266,24 +355,69 @@ export default function Chat({
           ))}
         </ul>
       ) : (
-        <div className="messages">
-          {bubbles.length === 0 && !error && <p className="bubble assistant">{t.chat.welcome}</p>}
+        <div className="messages" ref={log} role="log">
+          {loading && (
+            <div className="chat-skeleton" role="status">
+              <span className="sr-only">{t.chat.loading}</span>
+              <span className="skeleton-line" />
+              <span className="skeleton-line" />
+              <span className="skeleton-line" />
+            </div>
+          )}
+          {loadFailed && (
+            <div role="alert" className="alert">
+              <AlertIcon />
+              <div>
+                <p>{t.chat.loadError}</p>
+                <button type="button" className="button quiet" onClick={retry}>
+                  {t.retry}
+                </button>
+              </div>
+            </div>
+          )}
+          {!loading && !loadFailed && bubbles.length === 0 && !error && (
+            <div className="chat-start">
+              <p className="bubble assistant">{t.chat.welcome}</p>
+              {/* Gone while you type or dictate, so a tap can't replace what you wrote. */}
+              {!draft.trim() && (
+                <ul className="intents" aria-label={t.chat.starters}>
+                  {t.chat.intents.map((intent) => (
+                    <li key={intent}>
+                      <button type="button" className="intent" disabled={busy} onClick={() => submit(intent)}>
+                        {intent}
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          )}
           {bubbles.map((bubble, i) =>
             bubble.menu ? (
               <MenuPreview key={i} menu={bubble.menu} busy={busy} onOpen={onOpenMenu} />
-            ) : (
+            ) : bubble.text ? (
               <p key={i} className={`bubble ${bubble.role}`}>
-                {bubble.text || '…'}
+                {bubble.text}
+              </p>
+            ) : (
+              // The reply's first words haven't arrived yet; the status line below says so.
+              <p key={i} className="bubble assistant typing">
+                <Mark size={26} animated />
               </p>
             ),
           )}
-          {error && <p role="alert">{error}</p>}
+          {/* Always mounted, so screen readers announce each change of its text. */}
+          <p className="chat-status" role="status">
+            {streaming ? (waiting ? t.chat.waiting : t.chat.typing) : ''}
+          </p>
+          {error && <Alert text={error} />}
           <div ref={end} />
         </div>
       )}
-      <form onSubmit={send}>
+      <form className="composer" ref={composer} onSubmit={send}>
         <textarea
-          rows={2}
+          ref={input}
+          rows={1}
           autoFocus={!!initialDraft}
           value={draft}
           placeholder={t.chat.placeholder}
@@ -300,7 +434,8 @@ export default function Chat({
           <button
             type="button"
             className={listening ? 'mic listening' : 'mic'}
-            aria-label={listening ? t.chat.stopListening : t.chat.listen}
+            // A toggle keeps its name; aria-pressed says whether it's on.
+            aria-label={t.chat.listen}
             aria-pressed={listening}
             onClick={toggleListening}
           >
@@ -308,7 +443,7 @@ export default function Chat({
               {listening ? (
                 <rect x="6" y="6" width="12" height="12" rx="2" fill="currentColor" />
               ) : (
-                <g fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                <g fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round">
                   <rect x="9" y="3" width="6" height="11" rx="3" />
                   <path d="M5 11a7 7 0 0 0 14 0M12 18v3" />
                 </g>
@@ -316,8 +451,46 @@ export default function Chat({
             </svg>
           </button>
         )}
-        <button disabled={busy || !draft.trim()}>{t.chat.send}</button>
+        <button
+          className="send"
+          disabled={busy || !draft.trim()}
+          aria-label={t.chat.send}
+          // Keep focus (and the phone keyboard) in the textarea: a blur here would bring the dock back
+          // mid-tap, shift the button out from under the finger and lose the click.
+          onMouseDown={(e) => e.preventDefault()}
+        >
+          <SendIcon />
+        </button>
+        <p className="disclaimer">
+          {t.chat.disclaimer}{' '}
+          <button
+            type="button"
+            className="link"
+            aria-haspopup="dialog"
+            onClick={() => healthData.current?.showModal()}
+          >
+            {t.chat.healthData}
+          </button>
+        </p>
       </form>
+      <HealthData dialog={healthData} />
     </div>
+  )
+}
+
+// What the disclaimer's link opens. The consent itself isn't built yet (milestone 6).
+function HealthData({ dialog }: { dialog: RefObject<HTMLDialogElement | null> }) {
+  return (
+    <dialog className="sheet" ref={dialog} aria-labelledby="health-data-title">
+      <header>
+        <h2 id="health-data-title">{t.healthData.title}</h2>
+        <span className="pill">{t.soon}</span>
+      </header>
+      <p>{t.healthData.soon}</p>
+      <p className="muted">{t.healthData.now}</p>
+      <form method="dialog">
+        <button className="button primary">{t.healthData.close}</button>
+      </form>
+    </dialog>
   )
 }

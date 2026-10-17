@@ -1,8 +1,9 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import type { Session } from '@supabase/supabase-js'
 import { days as order, type MenuData } from '../supabase/functions/_shared/menu.ts'
 import { supabase } from './supabase'
 import { t } from './strings'
+import { Alert, EmptyState, PageSkeleton } from './ui'
 
 // updated_at: the menu's version, which every save_menu changes.
 type MenuRow = { data: MenuData; confirmed_at: string | null; updated_at: string }
@@ -22,7 +23,7 @@ export function MenuPreview({ menu, busy, onOpen }: { menu: MenuData; busy: bool
           </li>
         ))}
       </ul>
-      <button disabled={busy} onClick={onOpen}>
+      <button type="button" className="button secondary" disabled={busy} onClick={onOpen}>
         {t.chat.openMenu}
       </button>
     </div>
@@ -34,6 +35,15 @@ export default function Menu({ session, onChange }: { session: Session; onChange
   const [menu, setMenu] = useState<MenuRow | null | undefined>(undefined)
   const [error, setError] = useState('')
   const [busy, setBusy] = useState(false)
+  // Where focus goes once "Confirmar menú" is replaced by its result, so it isn't dropped on the page.
+  const status = useRef<HTMLParagraphElement>(null)
+  const confirmedNow = useRef(false)
+
+  useEffect(() => {
+    if (!confirmedNow.current || !menu?.confirmed_at) return
+    confirmedNow.current = false
+    status.current?.focus()
+  }, [menu?.confirmed_at])
 
   function load() {
     return supabase
@@ -63,31 +73,51 @@ export default function Menu({ session, onChange }: { session: Session; onChange
       .select('updated_at')
     if (error) setError(t.menu.confirmError)
     else if (!data.length) await load().then(() => setError((e) => e || t.menu.changed))
-    else setMenu((m) => m && { ...m, confirmed_at })
+    else {
+      confirmedNow.current = true
+      setMenu((m) => m && { ...m, confirmed_at })
+    }
     setBusy(false)
   }
 
-  if (menu === undefined) return error ? <p role="alert" className="menu">{error}</p> : null
-  if (!menu) return <p className="menu">{t.menu.empty}</p>
+  if (menu === undefined) {
+    return <div className="page menu">{error ? <Alert text={error} /> : <PageSkeleton label={t.menu.loading} />}</div>
+  }
+  if (!menu) {
+    return (
+      <div className="page menu">
+        <EmptyState text={t.menu.empty} action={t.profile.openChat} onAction={() => onChange('')} />
+      </div>
+    )
+  }
 
   const recipes = new Map(menu.data.recipes.map((recipe) => [recipe.id, recipe]))
   const days = byDay(menu.data.days)
 
   return (
-    <div className="menu">
-      {menu.confirmed_at ? (
-        <p className="muted">{t.menu.confirmed}</p>
-      ) : (
-        <button disabled={busy} onClick={() => confirm(menu.updated_at)}>
-          {t.menu.confirm}
+    <div className="page menu">
+      {/* Always mounted, so the confirmation is announced when its text appears. */}
+      <p className="muted menu-status" role="status" ref={status} tabIndex={-1}>
+        {menu.confirmed_at ? t.menu.confirmed : ''}
+      </p>
+      {!menu.confirmed_at && (
+        <button
+          type="button"
+          className="button primary"
+          disabled={busy}
+          aria-busy={busy}
+          onClick={() => confirm(menu.updated_at)}
+        >
+          {busy ? t.menu.confirming : t.menu.confirm}
         </button>
       )}
-      {error && <p role="alert">{error}</p>}
+      {error && <Alert text={error} />}
       {days.map(({ day, meals }) => (
         <section key={day}>
           <div className="menu-day">
             <h2>{t.menu.days[day]}</h2>
             <button
+              type="button"
               className="link"
               aria-label={t.menu.changeDay(t.menu.days[day]).trim()}
               onClick={() => onChange(t.menu.changeDay(t.menu.days[day]))}
@@ -113,6 +143,7 @@ export default function Menu({ session, onChange }: { session: Session; onChange
                 </ul>
                 <p>{recipe.how}</p>
                 <button
+                  type="button"
                   className="link"
                   aria-label={t.menu.changeMeal(meal.slot, t.menu.days[day]).trim()}
                   onClick={() => onChange(t.menu.changeMeal(meal.slot, t.menu.days[day]))}

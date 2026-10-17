@@ -1,0 +1,135 @@
+import type { ReactNode } from 'react'
+
+// The VIVERI mark as seven circles. Centers and radii are taken unchanged from the approved icon
+// (C:\prompt-lab\assets\logo-app\v1\recommended-icon.svg); the viewBox only crops away the tile.
+// Colors are the horizontal logo's: brand green dots, tangerine apex.
+const pairs = [
+  { r: 4.48, y: 27.05, x: [25.34, 70.66] },
+  { r: 5.12, y: 38.67, x: [32.09, 63.91] },
+  { r: 5.76, y: 51.4, x: [39.48, 56.52] },
+]
+
+export function Mark({ size = 24, animated = false }: { size?: number; animated?: boolean }) {
+  return (
+    <svg
+      className={animated ? 'mark animated' : 'mark'}
+      viewBox="20.86 22.57 54.28 50.86"
+      width={size}
+      height={(size * 50.86) / 54.28}
+      aria-hidden="true"
+    >
+      {pairs.map((pair, i) =>
+        pair.x.map((cx) => <circle key={cx} className={`dot step-${i + 1}`} cx={cx} cy={pair.y} r={pair.r} fill="#1E8A5E" />),
+      )}
+      <circle className="dot step-4" cx={48} cy={66.07} r={7.36} fill="#E85D2A" />
+    </svg>
+  )
+}
+
+// Line icons on a 24 px grid, 1.75 stroke, drawn for this app.
+function Icon({ children }: { children: ReactNode }) {
+  return (
+    <svg
+      className="icon"
+      viewBox="0 0 24 24"
+      width={24}
+      height={24}
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={1.75}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      {children}
+    </svg>
+  )
+}
+
+export const ChatIcon = () => (
+  <Icon>
+    <path d="M4 7a3 3 0 0 1 3-3h10a3 3 0 0 1 3 3v7a3 3 0 0 1-3 3h-6.5L6 20.5V17a2.5 2.5 0 0 1-2-2.5Z" />
+  </Icon>
+)
+
+export const MenuIcon = () => (
+  <Icon>
+    <rect x="3.75" y="5" width="16.5" height="15" rx="3" />
+    <path d="M3.75 9.75h16.5M8 3v3.5M16 3v3.5" />
+    <circle cx="8" cy="14.75" r="0.6" fill="currentColor" />
+    <circle cx="12" cy="14.75" r="0.6" fill="currentColor" />
+    <circle cx="16" cy="14.75" r="0.6" fill="currentColor" />
+  </Icon>
+)
+
+export const ListIcon = () => (
+  <Icon>
+    <path d="M10.5 6.5H20M10.5 12H20M10.5 17.5H20M4 6.5l1.5 1.5L8 5.25M4 12l1.5 1.5L8 10.75" />
+    <circle cx="6" cy="17.5" r="1.75" />
+  </Icon>
+)
+
+export const ProfileIcon = () => (
+  <Icon>
+    <circle cx="12" cy="8.5" r="3.75" />
+    <path d="M4.75 20a7.25 7.25 0 0 1 14.5 0" />
+  </Icon>
+)
+
+export const SendIcon = () => (
+  <Icon>
+    <path d="M12 18.5v-13M6.5 11 12 5.5l5.5 5.5" strokeWidth={2.25} />
+  </Icon>
+)
+
+export const AlertIcon = () => (
+  <Icon>
+    <circle cx="12" cy="12" r="8.75" />
+    <path d="M12 7.75v5" />
+    <circle cx="12" cy="16.1" r="0.6" fill="currentColor" />
+  </Icon>
+)
+
+export const MailIcon = () => (
+  <Icon>
+    <rect x="3.5" y="5.5" width="17" height="13" rx="3" />
+    <path d="m4.5 7.75 7.5 5.25 7.5-5.25" />
+  </Icon>
+)
+
+// An error that needs no action beyond reading it (with an action, compose .alert by hand).
+export function Alert({ text }: { text: string }) {
+  return (
+    <div role="alert" className="alert">
+      <AlertIcon />
+      <p>{text}</p>
+    </div>
+  )
+}
+
+// A page loading: headings and rows in sunk shapes, and the label for screen readers.
+export function PageSkeleton({ label }: { label: string }) {
+  return (
+    <div className="page-skeleton" role="status">
+      <span className="sr-only">{label}</span>
+      <span className="skeleton-line" />
+      <span className="skeleton-line" />
+      <span className="skeleton-line" />
+      <span className="skeleton-line" />
+      <span className="skeleton-line" />
+    </div>
+  )
+}
+
+// Nothing here yet, and the chat is where it comes from: the mark, one line, one way there.
+export function EmptyState({ text, action, onAction }: { text: string; action: string; onAction: () => void }) {
+  return (
+    <div className="empty-state">
+      <Mark size={40} />
+      <p>{text}</p>
+      <button type="button" className="button primary" onClick={onAction}>
+        {action}
+      </button>
+    </div>
+  )
+}

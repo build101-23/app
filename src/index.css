@@ -1,151 +1,620 @@
-:root {
-  --text: #1f2328;
-  --muted: #59636e;
-  --bg: #fff;
-  --surface: #f6f8fa;
-  --border: #d1d9e0;
-  --accent: #1a7f37;
-  --on-accent: #fff;
-  --danger: #cf222e;
+/* VIVERI design tokens and styles. The system is described in docs/design.md. */
 
-  font: 16px/1.5 system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
-  color-scheme: light dark;
-  color: var(--text);
-  background: var(--bg);
+:root {
+  /* Color: light */
+  --ground: #f3f6f2;
+  --surface: #ffffff;
+  --surface-sunk: #e8eee9;
+  --line: #d8e1db;
+  --line-strong: #74877d;
+  --ink: #14211b;
+  --ink-muted: #55645c;
+  --brand: #1e8a5e;
+  --brand-ink: #156b49;
+  --deep: #0b3d2b;
+  --on-deep: #ffffff;
+  --on-deep-muted: #b6c5be;
+  --one: #e85d2a;
+  --on-one: #ffffff;
+  --primary: var(--deep);
+  --primary-hover: #134d38;
+  --on-primary: #ffffff;
+  --bubble-user: var(--deep);
+  --on-bubble-user: #ffffff;
+  --focus: var(--brand);
+  --danger: #b42318;
+  --danger-surface: #fcedea;
+  --success-surface: #e3f1e8;
+
+  /* Living color: the flat field at the top of each screen (no gradients, never behind the mark) */
+  --field: #2fcb7e;
+  --on-field: #14211b;
+
+  /* Navigation layer (ADR 0022): neutral glass, its opaque fallback, the active capsule */
+  /* Tints measured on real pixels against the worst content beneath (docs/design.md, Navigation) */
+  --glass: rgb(255 255 255 / 0.5);
+  --glass-solid: #ffffff;
+  --glass-filter: blur(18px);
+  --glass-line: rgb(20 33 27 / 0.1);
+  --glass-edge: rgb(255 255 255 / 0.75);
+  --glass-shadow: 0 1px 2px rgb(11 61 43 / 0.1), 0 12px 32px -8px rgb(11 61 43 / 0.28);
+  --capsule: #ffffff;
+  --capsule-shadow: 0 1px 3px rgb(11 61 43 / 0.16);
+
+  /* Space, shape, layout */
+  --gutter: 16px;
+  --column: 720px;
+  --radius-card: 16px;
+  --radius-field: 14px;
+  --radius-bubble: 18px;
+
+  /* Safe areas, overridable by the dev fixture */
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-right: env(safe-area-inset-right, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-left: env(safe-area-inset-left, 0px);
+
+  /* The floating dock and what scrolling content must keep clear of it */
+  --dock-h: 64px;
+  --dock-max: 440px;
+  --accessory-max: var(--column);
+  --dock-bottom: max(12px, var(--safe-bottom));
+  --dock-top: calc(var(--dock-bottom) + var(--dock-h));
+  --dock-clear: calc(var(--dock-top) + 16px);
+  --accessory-bottom: calc(var(--dock-top) + 8px);
+
+  /* Motion */
+  --dur-fast: 120ms;
+  --dur: 200ms;
+  --ease: cubic-bezier(0.2, 0.7, 0.2, 1);
+
+  --font: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+
+  color-scheme: light;
+  font: 400 1rem/1.5 var(--font);
+  color: var(--ink);
+  background: var(--ground);
+  accent-color: var(--brand);
   -webkit-font-smoothing: antialiased;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --text: #f0f6fc;
-    --muted: #9198a1;
-    --bg: #0d1117;
-    --surface: #151b23;
-    --border: #3d444d;
-    --accent: #3fb950;
-    --on-accent: #0d1117;
-    --danger: #f85149;
+    --ground: #0d1613;
+    --surface: #16221d;
+    --surface-sunk: #1d2b25;
+    --line: #26352e;
+    --line-strong: #5c7067;
+    --ink: #e6eee9;
+    --ink-muted: #9aaba3;
+    --brand-ink: #5cc495;
+    --primary: #5cc495;
+    --primary-hover: #7bd3aa;
+    --on-primary: #0b3d2b;
+    --bubble-user: #1d5a42;
+    --on-bubble-user: #e6eee9;
+    --focus: #5cc495;
+    --danger: #ff8a7a;
+    --danger-surface: #2a1715;
+    --success-surface: #13291f;
+    --field: #14684a;
+    --on-field: #e6eee9;
+    --glass: rgb(13 22 19 / 0.68);
+    --glass-solid: #0d1613;
+    --glass-line: rgb(230 238 233 / 0.12);
+    --glass-edge: rgb(255 255 255 / 0.08);
+    --glass-shadow: 0 1px 2px rgb(0 0 0 / 0.3), 0 12px 32px -8px rgb(0 0 0 / 0.6);
+    --capsule: #16221d;
+    --capsule-shadow: 0 1px 3px rgb(0 0 0 / 0.5);
+
+    color-scheme: dark;
   }
+}
+
+/* Glass is a progressive enhancement: solid where it can't be drawn, or where people ask for less
+   transparency or more contrast. (prefers-reduced-transparency: Chromium 118+ only; Safari ignores it.) */
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  :root {
+    --glass: var(--glass-solid);
+  }
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  :root {
+    --glass: var(--glass-solid);
+    --glass-filter: none;
+  }
+}
+
+@media (prefers-contrast: more) {
+  :root {
+    --glass: var(--glass-solid);
+    --glass-filter: none;
+    --glass-line: var(--line-strong);
+  }
+}
+
+/* Base */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
 }
 
 body {
   margin: 0;
-  background: var(--bg);
+  background: var(--ground);
+  overscroll-behavior: none;
 }
 
-h1 {
-  font-size: 1.5rem;
+h1,
+h2,
+p {
   margin: 0;
 }
 
-button,
-input {
-  font: inherit;
+h1,
+h2 {
+  font-weight: 650;
+  letter-spacing: -0.01em;
+  text-wrap: balance;
 }
 
-input {
-  width: 100%;
-  box-sizing: border-box;
-  margin-top: 4px;
-  padding: 12px;
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  background: var(--surface);
-  color: var(--text);
+::selection {
+  background: color-mix(in srgb, var(--brand) 30%, transparent);
+}
+
+:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+
+* {
+  scrollbar-color: var(--line-strong) transparent;
+  scrollbar-width: thin;
+}
+
+button,
+input,
+textarea {
+  font: inherit;
+  color: inherit;
 }
 
 button {
-  padding: 12px 16px;
+  margin: 0;
+  padding: 0;
   border: 0;
-  border-radius: 8px;
-  background: var(--accent);
-  color: var(--on-accent);
+  background: none;
   cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
 }
 
 button:disabled {
-  opacity: 0.6;
+  cursor: default;
 }
 
-button.link {
-  background: none;
-  color: var(--muted);
-  text-decoration: underline;
+input,
+textarea {
+  caret-color: var(--brand);
 }
 
-[role='alert'] {
-  color: var(--danger);
-}
-
-.signin {
-  max-width: 400px;
-  margin: 0 auto;
-  padding: 48px 16px;
-}
-
-.signin form {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  margin-top: 24px;
-}
-
-.shell {
-  display: flex;
-  flex-direction: column;
-  height: 100svh;
-}
-
-.shell header {
-  padding: calc(16px + env(safe-area-inset-top)) 16px 16px;
-  border-bottom: 1px solid var(--border);
-}
-
-.shell main {
-  flex: 1;
-  min-height: 0;
-  overflow-y: auto;
-}
-
-.menu,
-.list,
-.profile {
-  padding: 16px;
-}
-
-.shell nav {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  padding-bottom: env(safe-area-inset-bottom);
-  border-top: 1px solid var(--border);
-  background: var(--surface);
-}
-
-.shell nav button {
-  border-radius: 0;
-  background: none;
-  color: var(--muted);
-}
-
-.shell nav button[aria-current='page'] {
-  color: var(--accent);
-  font-weight: 600;
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
 }
 
 .muted {
-  color: var(--muted);
+  color: var(--ink-muted);
 }
 
-textarea {
-  font: inherit;
-  flex: 1;
-  resize: none;
-  padding: 12px;
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  background: var(--bg);
-  color: var(--text);
+/* Buttons */
+
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 48px;
+  padding: 0 22px;
+  border-radius: 999px;
+  font-weight: 600;
+  text-align: center;
+  transition:
+    background-color var(--dur-fast) var(--ease),
+    box-shadow var(--dur-fast) var(--ease),
+    transform var(--dur-fast) var(--ease);
 }
+
+.button:active:not(:disabled) {
+  transform: scale(0.98);
+}
+
+.button:disabled {
+  opacity: 0.55;
+}
+
+/* Busy is "working", not "unavailable": keep full color. */
+.button[aria-busy='true'] {
+  opacity: 1;
+  cursor: progress;
+}
+
+.button.primary {
+  background: var(--primary);
+  color: var(--on-primary);
+}
+
+.button.secondary {
+  box-shadow: inset 0 0 0 1px var(--line-strong);
+  color: var(--ink);
+}
+
+.button.quiet {
+  min-height: 44px;
+  padding: 0 12px;
+  color: var(--brand-ink);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+@media (hover: hover) {
+  .button.primary:hover:not(:disabled) {
+    background: var(--primary-hover);
+  }
+
+  .button.secondary:hover:not(:disabled) {
+    background: var(--surface-sunk);
+  }
+}
+
+/* Fields */
+
+.field {
+  display: grid;
+  gap: 6px;
+  font-size: 0.9375rem;
+  font-weight: 550;
+}
+
+.field input {
+  width: 100%;
+  min-height: 52px;
+  padding: 0 16px;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-field);
+  background: var(--surface);
+  font-size: 1rem;
+  font-weight: 400;
+}
+
+/* Fields draw their focus ring over their own border: one ring, not two. */
+.field input:focus-visible,
+.composer textarea:focus-visible {
+  outline-offset: -1px;
+}
+
+::placeholder {
+  color: var(--ink-muted);
+  opacity: 1;
+}
+
+/* Feedback */
+
+.alert {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 12px 14px;
+  border-radius: var(--radius-field);
+  background: var(--danger-surface);
+  color: var(--danger);
+  font-size: 0.9375rem;
+  overflow-wrap: anywhere;
+}
+
+.alert .icon {
+  flex: none;
+  width: 20px;
+  height: 20px;
+  margin-top: 1px;
+}
+
+/* "Reintentar" lines up with the message text while keeping its 44 px target. */
+.alert .button.quiet {
+  margin: -6px 0 -10px -12px;
+}
+
+.alert-detail {
+  margin-top: 2px;
+  color: var(--ink-muted);
+  font-size: 0.8125rem;
+}
+
+.pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 10px;
+  border-radius: 999px;
+  background: var(--surface-sunk);
+  color: var(--ink-muted);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.card {
+  border: 1px solid var(--line);
+  border-radius: var(--radius-card);
+  background: var(--surface);
+}
+
+.skeleton-line {
+  display: block;
+  border-radius: 999px;
+  background: var(--surface-sunk);
+  animation: pulse 1.4s ease-in-out infinite;
+}
+
+/* The mark */
+
+.mark {
+  display: block;
+  flex: none;
+}
+
+.mark.animated .dot {
+  animation: converge 1.2s ease-in-out infinite both;
+}
+
+.mark.animated .step-2 {
+  animation-delay: 0.15s;
+}
+
+.mark.animated .step-3 {
+  animation-delay: 0.3s;
+}
+
+.mark.animated .step-4 {
+  animation-delay: 0.45s;
+}
+
+.splash {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  background: var(--ground);
+}
+
+.splash .mark {
+  animation: fade-in var(--dur) var(--ease) 400ms both;
+}
+
+/* Sign-in */
+
+.signin {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 440px;
+  min-height: 100svh;
+  min-height: 100dvh;
+  margin: 0 auto;
+  padding: calc(var(--safe-top) + 32px) calc(24px + var(--safe-right)) calc(var(--safe-bottom) + 32px)
+    calc(24px + var(--safe-left));
+}
+
+.signin-logo {
+  display: block;
+  align-self: flex-start;
+  width: auto;
+  height: 44px;
+}
+
+.signin-body {
+  display: grid;
+  gap: 24px;
+  margin-top: clamp(48px, 16vh, 160px);
+}
+
+.signin-body header {
+  display: grid;
+  gap: 8px;
+}
+
+.signin h1 {
+  font-size: 1.75rem;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+}
+
+.signin form {
+  display: grid;
+  gap: 16px;
+}
+
+.signin form .button {
+  width: 100%;
+  min-height: 52px;
+}
+
+.sent {
+  display: grid;
+  justify-items: start;
+  gap: 12px;
+  padding: 20px;
+  border-radius: var(--radius-card);
+  background: var(--success-surface);
+  animation: fade-in var(--dur) var(--ease) both;
+}
+
+.sent .icon {
+  width: 28px;
+  height: 28px;
+  color: var(--brand-ink);
+}
+
+.sent-email {
+  font-weight: 650;
+  overflow-wrap: anywhere;
+}
+
+.sent .button.quiet {
+  margin-left: -12px;
+}
+
+/* Shell */
+
+.shell {
+  position: relative;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  grid-template-areas: 'header' 'main';
+  height: 100svh;
+  height: 100dvh;
+}
+
+/* The title bar is the screen's flat color field: opaque, no glass, no line under it. */
+.shell > header {
+  grid-area: header;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: calc(var(--safe-top) + 56px);
+  padding: calc(var(--safe-top) + 8px) max(calc(var(--gutter) + var(--safe-right)), calc((100% - var(--column)) / 2)) 8px
+    max(calc(var(--gutter) + var(--safe-left)), calc((100% - var(--column)) / 2));
+  background: var(--field);
+  color: var(--on-field);
+}
+
+.shell > header h1 {
+  font-size: 1.25rem;
+  line-height: 1.3;
+}
+
+/* The page area runs under the dock and reserves its height, so the last line and any focused control
+   stay above the glass. It also reserves its scrollbar on both edges, so centered page content stays under
+   the title whether or not it scrolls. (The chat's message list computes its own padding and needs no gutter.) */
+.shell > main {
+  grid-area: main;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable both-edges;
+  /* Top: room for a focus ring when Shift+Tab scrolls a control to the top edge. */
+  scroll-padding-top: 8px;
+  scroll-padding-bottom: var(--dock-clear);
+}
+
+.shell > main:has(> .chat) {
+  scrollbar-gutter: auto;
+}
+
+/* The navigation layer (ADR 0022), at every width: the glass dock, and the chat's composer floating above it.
+   Labels and the focus ring are ink, since muted ink and the green ring don't hold contrast on glass. */
+.shell > nav {
+  --focus: var(--ink);
+
+  position: absolute;
+  z-index: 2;
+  right: calc(12px + var(--safe-right));
+  bottom: var(--dock-bottom);
+  left: calc(12px + var(--safe-left));
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  max-width: var(--dock-max);
+  height: var(--dock-h);
+  margin-inline: auto;
+  padding: 3px;
+  border: 1px solid var(--glass-line);
+  border-radius: 999px;
+  background: var(--glass);
+  box-shadow:
+    inset 0 1px 0 var(--glass-edge),
+    var(--glass-shadow);
+  -webkit-backdrop-filter: var(--glass-filter);
+  backdrop-filter: var(--glass-filter);
+}
+
+.shell > nav button {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
+  min-width: 0;
+  padding: 11px 4px 0;
+  border-radius: 999px;
+  color: var(--ink);
+  font-size: 0.8125rem;
+  font-weight: 550;
+  line-height: 1.2;
+  transition: background-color var(--dur-fast) var(--ease);
+}
+
+/* Active: an opaque capsule, the tangerine dot inside it, and the heavier label. Three signals, because
+   the capsule alone fades against glass over dark content. */
+.shell > nav button[aria-current='page'] {
+  background: var(--capsule);
+  box-shadow: var(--capsule-shadow);
+  font-weight: 650;
+}
+
+.shell > nav button[aria-current='page']::before {
+  content: '';
+  position: absolute;
+  top: 3px;
+  left: 50%;
+  width: 6px;
+  height: 6px;
+  margin-left: -3px;
+  border-radius: 50%;
+  background: var(--one);
+  animation: dot-in 180ms var(--ease) both;
+}
+
+.shell > nav button:focus-visible {
+  outline-offset: -2px;
+}
+
+@media (hover: hover) {
+  .shell > nav button:not([aria-current='page']):not(:disabled):hover {
+    background: color-mix(in srgb, var(--capsule) 45%, transparent);
+  }
+}
+
+/* While the on-screen keyboard is up and you're typing, the dock steps aside so the keyboard doesn't stack
+   on it, and the composer drops to the keyboard. Both come back as soon as the keyboard goes down, even if
+   the composer keeps focus. Touch screens only, so shrinking a desktop window never hides the dock. */
+@media (pointer: coarse) {
+  .shell[data-keyboard='open']:has(.composer:focus-within) {
+    --accessory-bottom: 8px;
+  }
+
+  .shell[data-keyboard='open']:has(.composer:focus-within) > nav {
+    display: none;
+  }
+}
+
+/* Pages */
+
+.page {
+  width: 100%;
+  max-width: calc(var(--column) + 2 * var(--gutter));
+  margin: 0 auto;
+  padding: 20px calc(var(--gutter) + var(--safe-right)) var(--dock-clear) calc(var(--gutter) + var(--safe-left));
+}
+
+/* Chat */
 
 .chat {
   display: flex;
@@ -153,35 +622,59 @@ textarea {
   height: 100%;
 }
 
+/* Above the conversation: switch to the list of chats, or start a new one. Aligned to the content column. */
 .chat-bar {
   display: flex;
   justify-content: space-between;
-  padding: 4px 8px;
-  border-bottom: 1px solid var(--border);
+  align-items: center;
+  min-height: 44px;
+  padding: 4px max(calc(var(--gutter) + var(--safe-right)), calc((100% - var(--column)) / 2)) 4px
+    max(calc(var(--gutter) + var(--safe-left)), calc((100% - var(--column)) / 2));
+  border-bottom: 1px solid var(--line);
+  background: var(--ground);
 }
 
+.chat-bar .link {
+  min-height: 36px;
+  color: var(--brand-ink);
+}
+
+.chat-bar .link:disabled {
+  color: var(--ink-muted);
+  text-decoration: none;
+}
+
+/* The list of chats takes the conversation's place and keeps clear of the composer and the dock. */
 .chats {
+  --clear: calc(var(--accessory-bottom) + var(--accessory-h, 0px) + 16px);
+
   flex: 1;
   overflow-y: auto;
+  overscroll-behavior: contain;
   margin: 0;
-  padding: 8px 16px;
+  padding: 8px max(calc(var(--gutter) + var(--safe-right)), calc((100% - var(--column)) / 2)) var(--clear)
+    max(calc(var(--gutter) + var(--safe-left)), calc((100% - var(--column)) / 2));
+  scroll-padding-bottom: var(--clear);
   list-style: none;
+  scroll-padding-top: 8px;
 }
 
 .chats li.muted {
   padding: 12px 0;
 }
 
+.chats li + li {
+  border-top: 1px solid var(--line);
+}
+
 .chats button {
   display: flex;
+  align-items: baseline;
   justify-content: space-between;
   gap: 12px;
   width: 100%;
-  padding: 12px 0;
-  border-bottom: 1px solid var(--border);
-  border-radius: 0;
-  background: none;
-  color: var(--text);
+  min-height: 48px;
+  padding: 12px 4px;
   text-align: left;
 }
 
@@ -193,186 +686,596 @@ textarea {
 
 .chats button small {
   flex-shrink: 0;
-  color: var(--muted);
+  color: var(--ink-muted);
+  font-size: 0.8125rem;
 }
 
 .chats button[aria-current='true'] {
-  font-weight: 600;
+  font-weight: 650;
 }
 
-.chat .messages {
+@media (hover: hover) {
+  .chats button:not(:disabled):hover {
+    background: var(--surface-sunk);
+  }
+}
+
+/* The list runs under the composer and the dock; --accessory-h is the composer's measured height (Chat.tsx),
+   so the last message and anything focused stay above the glass. */
+.messages {
+  --clear: calc(var(--accessory-bottom) + var(--accessory-h, 0px) + 16px);
+
   flex: 1;
-  overflow-y: auto;
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  padding: 16px;
+  gap: 6px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 16px max(calc(var(--gutter) + var(--safe-right)), calc((100% - var(--column)) / 2)) var(--clear)
+    max(calc(var(--gutter) + var(--safe-left)), calc((100% - var(--column)) / 2));
+  scroll-padding-top: 8px;
+  scroll-padding-bottom: var(--clear);
+}
+
+/* The list is keyboard-scrollable, so it can take focus. Its ring is drawn inside its own edge: the top and
+   sides stay in view, and only the bottom edge runs behind the glass. */
+.messages:focus-visible {
+  outline-offset: -2px;
 }
 
 .bubble {
-  max-width: 85%;
-  margin: 0;
+  max-width: min(85%, 36rem);
   padding: 10px 14px;
-  border-radius: 16px;
+  border-radius: var(--radius-bubble);
+  line-height: 1.45;
   white-space: pre-wrap;
   overflow-wrap: anywhere;
+  animation: rise-in 160ms var(--ease) both;
 }
 
 .bubble.user {
   align-self: flex-end;
-  background: var(--accent);
-  color: var(--on-accent);
+  border-bottom-right-radius: 6px;
+  background: var(--bubble-user);
+  color: var(--on-bubble-user);
 }
 
 .bubble.assistant {
   align-self: flex-start;
+  border: 1px solid var(--line);
+  border-bottom-left-radius: 6px;
   background: var(--surface);
-  border: 1px solid var(--border);
 }
 
+.bubble.user + .bubble.assistant,
+.bubble.assistant + .bubble.user {
+  margin-top: 10px;
+}
+
+.bubble.typing {
+  padding: 13px 16px;
+}
+
+/* The week the chat saved, shown under its reply as a card in the conversation. */
 .menu-preview {
+  display: grid;
+  gap: 12px;
   white-space: normal;
 }
 
 .menu-preview ul {
+  display: grid;
+  gap: 6px;
   margin: 0;
   padding: 0;
   list-style: none;
-  font-size: 0.875rem;
-}
-
-.menu-preview li + li {
-  margin-top: 4px;
+  font-size: 0.9375rem;
 }
 
 .menu-preview strong {
   display: block;
+  font-weight: 650;
   text-transform: capitalize;
 }
 
-.menu-preview button {
-  margin-top: 12px;
-  padding: 8px 14px;
+.menu-preview .button {
+  justify-self: start;
+  min-height: 44px;
 }
 
-.chat form {
+.messages .alert {
+  align-self: stretch;
+  margin-top: 10px;
+}
+
+.chat-skeleton {
   display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.chat-skeleton .skeleton-line {
+  height: 42px;
+  border-radius: var(--radius-bubble);
+}
+
+.chat-skeleton .skeleton-line:nth-child(2) {
+  align-self: flex-end;
+  width: 55%;
+}
+
+.chat-skeleton .skeleton-line:nth-child(3) {
+  width: 75%;
+  height: 64px;
+}
+
+.chat-skeleton .skeleton-line:nth-child(4) {
+  width: 40%;
+}
+
+/* The status line under the last bubble while a reply is on its way. */
+.chat-status {
+  margin-top: 4px;
+  padding-left: 4px;
+  color: var(--ink-muted);
+  font-size: 0.8125rem;
+}
+
+/* Empty chat: the welcome and four ways to start, in the user's voice, low near the composer. */
+.chat-start {
+  display: grid;
+  gap: 12px;
+  margin-top: auto;
+}
+
+.intents {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 8px;
-  align-items: flex-end;
-  padding: 8px 16px;
-  border-top: 1px solid var(--border);
-  background: var(--surface);
+  margin: 0;
+  padding: 0;
+  list-style: none;
 }
 
-.chat button.mic {
+.intent {
   display: flex;
+  align-items: flex-start;
+  width: 100%;
+  height: 100%;
+  min-height: 64px;
+  padding: 12px 14px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-card);
   background: var(--surface);
-  border: 1px solid var(--border);
-  color: var(--muted);
+  font-size: 0.9375rem;
+  font-weight: 550;
+  line-height: 1.35;
+  text-align: left;
+  overflow-wrap: anywhere;
+  transition:
+    background-color var(--dur-fast) var(--ease),
+    transform var(--dur-fast) var(--ease);
 }
 
-.chat button.mic.listening {
-  background: var(--accent);
-  color: var(--on-accent);
+.intent:active {
+  transform: scale(0.98);
+}
+
+@media (hover: hover) {
+  .intent:hover {
+    background: var(--surface-sunk);
+  }
+}
+
+/* The composer is the dock's accessory: a glass capsule floating above it (ADR 0022). It may grow to the
+   content column's width on wide screens, while the dock stays narrow. */
+.composer {
+  --focus: var(--ink);
+
+  position: absolute;
+  z-index: 2;
+  right: calc(12px + var(--safe-right));
+  bottom: var(--accessory-bottom);
+  left: calc(12px + var(--safe-left));
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: end;
+  gap: 6px 8px;
+  max-width: var(--accessory-max);
+  margin-inline: auto;
+  padding: 6px 6px 4px;
+  border: 1px solid var(--glass-line);
+  border-radius: 28px;
+  background: var(--glass);
+  box-shadow:
+    inset 0 1px 0 var(--glass-edge),
+    var(--glass-shadow);
+  -webkit-backdrop-filter: var(--glass-filter);
+  backdrop-filter: var(--glass-filter);
+}
+
+.disclaimer {
+  grid-column: 1 / -1;
+  padding: 0 12px;
+  font-size: 0.8125rem;
+  line-height: 1.4;
+}
+
+/* An inline text control; its padding keeps a 24 px target without changing the line. */
+.link {
+  padding: 3px 0;
+  color: inherit;
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.composer textarea {
+  flex: 1;
+  min-width: 0;
+  min-height: 44px;
+  max-height: 9.75rem;
+  padding: 10px 16px;
+  border: 1px solid var(--line-strong);
+  border-radius: 22px;
+  background: var(--surface);
+  font-size: 1rem;
+  line-height: 1.45;
+  resize: none;
+  field-sizing: content;
+  scrollbar-width: none;
+}
+
+.send {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: var(--one);
+  color: var(--on-one);
+  transition:
+    background-color var(--dur-fast) var(--ease),
+    color var(--dur-fast) var(--ease),
+    transform var(--dur-fast) var(--ease);
+}
+
+.send:active:not(:disabled) {
+  transform: scale(0.94);
+}
+
+.send:disabled {
+  background: var(--surface-sunk);
+  color: var(--ink-muted);
+}
+
+/* Voice dictation, where the browser has it: a third column between the field and send. */
+.composer:has(.mic) {
+  grid-template-columns: minmax(0, 1fr) auto auto;
+}
+
+.mic {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  color: var(--ink);
+  transition: background-color var(--dur-fast) var(--ease);
+}
+
+/* Listening: filled with the primary color (tangerine stays on send), and a slow pulse. */
+.mic.listening {
+  background: var(--primary);
+  color: var(--on-primary);
   animation: pulse 1.2s ease-in-out infinite;
 }
 
-@keyframes pulse {
-  50% {
-    opacity: 0.6;
+@media (hover: hover) {
+  .mic:not(.listening):hover {
+    background: color-mix(in srgb, var(--capsule) 60%, transparent);
   }
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .chat button.mic.listening {
-    animation: none;
-  }
+/* The health-data note behind the disclaimer's link: a flat card over a dimmed page. */
+.sheet {
+  width: min(100% - 32px, 400px);
+  max-height: calc(100% - 32px);
+  padding: 20px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-card);
+  background: var(--surface);
+  color: var(--ink);
 }
 
-.profile dl {
-  margin: 0 0 16px;
+.sheet::backdrop {
+  background: rgb(11 22 19 / 0.45);
 }
 
-.profile dt {
-  color: var(--muted);
+.sheet[open] {
+  display: grid;
+  justify-items: start;
+  gap: 12px;
+  animation: fade-in var(--dur) var(--ease) both;
+}
+
+.sheet header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 10px;
+}
+
+.sheet h2 {
+  font-size: 1.25rem;
+  line-height: 1.3;
+}
+
+.sheet p {
+  max-width: 40ch;
+}
+
+.sheet form {
+  display: grid;
+  justify-self: stretch;
+  margin-top: 4px;
+}
+
+/* Profile */
+
+.profile {
+  display: grid;
+  gap: 28px;
+}
+
+.facts {
+  margin: 0;
+  padding: 0 16px;
+}
+
+.facts > div {
+  padding: 12px 0;
+}
+
+.facts > div + div {
+  border-top: 1px solid var(--line);
+}
+
+.facts dt {
+  color: var(--ink-muted);
   font-size: 0.875rem;
 }
 
-.profile dd {
-  margin: 0 0 12px;
+.facts dd {
+  margin: 2px 0 0;
+  overflow-wrap: anywhere;
+  font-variant-numeric: tabular-nums;
 }
 
-.profile h2 {
+.group h2,
+.account h2 {
+  margin-bottom: 10px;
   font-size: 1rem;
-  margin: 16px 0 4px;
 }
 
-.profile ul {
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
   margin: 0;
-  padding-left: 20px;
+  padding: 0;
+  list-style: none;
+}
+
+.chips li {
+  max-width: 100%;
+  padding: 6px 14px;
+  border-radius: 999px;
+  background: var(--surface-sunk);
+  font-size: 0.9375rem;
+  overflow-wrap: anywhere;
+}
+
+.account-card {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px 16px;
+  padding: 12px 12px 12px 16px;
+}
+
+.account-email {
+  min-width: 0;
+  color: var(--ink-muted);
+  overflow-wrap: anywhere;
+}
+
+/* Empty screens (Profile, Menu, List): the mark, one line, and the way to the chat. */
+.empty-state {
+  display: grid;
+  justify-items: start;
+  gap: 16px;
+  padding: 8px 0;
+}
+
+.empty-state p {
+  max-width: 34ch;
+}
+
+/* A page loading: a heading-sized bar, then rows. */
+.page-skeleton {
+  display: grid;
+  gap: 18px;
+}
+
+.page-skeleton .skeleton-line {
+  width: 85%;
+  height: 14px;
+}
+
+.page-skeleton .skeleton-line:nth-child(2) {
+  width: 40%;
+  height: 20px;
+}
+
+.profile-skeleton {
+  display: grid;
+  gap: 18px;
+  padding: 16px;
+}
+
+.profile-skeleton .skeleton-line {
+  height: 14px;
+}
+
+/* Child 1 is the screen-reader label, so the lines are children 2 to 5: label (even), then value (odd). */
+.profile-skeleton .skeleton-line:nth-child(even) {
+  width: 30%;
+  height: 10px;
+}
+
+.profile-skeleton .skeleton-line:nth-child(odd) {
+  width: 70%;
+}
+
+/* Menu */
+
+.menu {
+  display: grid;
+  align-content: start;
+  gap: 8px;
+}
+
+.menu > .button {
+  justify-self: start;
+}
+
+.menu section {
+  margin-top: 16px;
 }
 
 .menu-day {
   display: flex;
   justify-content: space-between;
   align-items: baseline;
-  margin-top: 16px;
+  gap: 12px;
 }
 
 .menu h2 {
+  margin-bottom: 4px;
   font-size: 1rem;
-  margin: 0 0 4px;
   text-transform: capitalize;
 }
 
+.menu .link {
+  color: var(--brand-ink);
+}
+
 .menu details {
-  padding: 8px 0;
-  border-bottom: 1px solid var(--border);
+  border-bottom: 1px solid var(--line);
 }
 
 .menu summary {
+  min-height: 44px;
+  padding: 10px 0;
   cursor: pointer;
 }
 
 .menu details ul {
-  margin: 8px 0;
+  margin: 0 0 8px;
   padding-left: 20px;
 }
 
 .menu details p {
-  margin: 0 0 8px;
+  max-width: 60ch;
+  margin-bottom: 4px;
+}
+
+.menu details .link {
+  margin-bottom: 8px;
+}
+
+/* List */
+
+.list {
+  display: grid;
+  align-content: start;
+  gap: 8px;
+}
+
+.list > .button {
+  justify-self: start;
+}
+
+/* Where to buy: one flat card at the top, with the example-prices note (ADR 0019). */
+.prices {
+  display: grid;
+  gap: 8px;
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-card);
+  background: var(--surface);
+}
+
+.list .prices h2 {
+  margin: 0;
+}
+
+.prices [role='radiogroup'] {
+  display: grid;
+}
+
+.prices ul {
+  font-size: 0.9375rem;
+}
+
+.list .prices li {
+  border-bottom: 0;
 }
 
 .list-actions {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: 8px;
 }
 
+.list-actions .link {
+  min-height: 44px;
+  padding: 0 8px;
+  color: var(--brand-ink);
+}
+
 .list h2 {
-  font-size: 1rem;
   margin: 16px 0 4px;
+  font-size: 1rem;
 }
 
 .list ul {
-  list-style: none;
   margin: 0;
   padding: 0;
+  list-style: none;
 }
 
 .list li {
   display: flex;
   align-items: center;
   gap: 8px;
-  border-bottom: 1px solid var(--border);
+  border-bottom: 1px solid var(--line);
 }
 
 .list label {
   flex: 1;
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  gap: 8px;
-  min-height: 44px;
+  gap: 4px 10px;
+  min-width: 0;
+  min-height: 48px;
+  padding: 6px 0;
+  overflow-wrap: anywhere;
 }
 
 .list input[type='checkbox'],
@@ -381,28 +1284,130 @@ textarea {
   width: 20px;
   height: 20px;
   margin: 0;
-  accent-color: var(--accent);
+  accent-color: var(--brand);
+}
+
+/* The name shrinks and wraps beside its checkbox; a store or "not found" tag goes on its own line under it. */
+.list label span {
+  flex: 1;
+  min-width: 0;
+}
+
+.list label small {
+  flex-basis: 100%;
+  padding-left: 30px;
+  font-size: 0.8125rem;
 }
 
 .list .qty {
   text-align: right;
+  font-variant-numeric: tabular-nums;
 }
 
 .list .qty small {
   display: block;
+  font-size: 0.8125rem;
 }
 
 .list li.have label span,
 .list li.have .qty {
-  color: var(--muted);
+  color: var(--ink-muted);
   text-decoration: line-through;
 }
 
-.list button.step {
-  min-width: 44px;
-  min-height: 44px;
-  padding: 0;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  color: var(--muted);
+.list .step {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  box-shadow: inset 0 0 0 1px var(--line-strong);
+  color: var(--ink);
+  font-size: 1.125rem;
+}
+
+.list .step:disabled {
+  box-shadow: inset 0 0 0 1px var(--line);
+  color: var(--ink-muted);
+  opacity: 0.55;
+}
+
+/* Dock tabs are disabled while the chat saves a turn, since leaving would hide it. The current tab keeps
+   its capsule and dot; the others fade. */
+.shell > nav button:disabled {
+  cursor: progress;
+}
+
+.shell > nav button:disabled:not([aria-current='page']) {
+  opacity: 0.55;
+}
+
+/* Motion */
+
+@keyframes converge {
+  0%,
+  100% {
+    opacity: 0.25;
+  }
+
+  40% {
+    opacity: 1;
+  }
+}
+
+@keyframes rise-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes dot-in {
+  from {
+    transform: scale(0);
+  }
+}
+
+@keyframes pulse {
+  50% {
+    opacity: 0.5;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+
+/* Forced colors: no glass, no shadow; system colors and a hairline. The dot keeps a system color so the
+   active tab still shows three signals. */
+@media (forced-colors: active) {
+  .shell > nav,
+  .composer {
+    border: 1px solid CanvasText;
+    background: Canvas;
+    box-shadow: none;
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+
+  .shell > nav button[aria-current='page'] {
+    border: 2px solid Highlight;
+  }
+
+  .shell > nav button[aria-current='page']::before {
+    forced-color-adjust: none;
+    background: CanvasText;
+  }
 }
