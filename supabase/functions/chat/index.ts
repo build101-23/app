@@ -8,6 +8,12 @@ type MessageParam = Anthropic.Beta.BetaMessageParam
 
 const anthropic = new Anthropic() // reads the ANTHROPIC_API_KEY secret
 
+// Users can only read their rows (ADR 0014), so this function writes with the service role. It skips
+// row-level security: every write names its user_id, or a conversation the user's own client found.
+const admin = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!)
+
+const DAILY_TURNS = 100
+
 const cors = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, apikey, content-type',
@@ -112,7 +118,7 @@ Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response(null, { headers: cors })
   if (req.method !== 'POST') return json(405, { error: 'method not allowed' })
 
-  // The caller's own token and the public key: every query below runs under row-level security.
+  // The caller's own token and the public key: every read below runs under row-level security.
   const token = req.headers.get('Authorization')?.replace('Bearer ', '') ?? ''
   const supabase = createClient(Deno.env.get('SUPABASE_URL')!, req.headers.get('apikey') ?? '', {
     global: { headers: { Authorization: `Bearer ${token}` } },
@@ -126,8 +132,21 @@ Deno.serve(async (req) => {
   if (!text || text.length > 4000) return json(400, { error: 'text must be 1 to 4000 characters' })
   const conversationId = typeof body?.conversation_id === 'string' ? body.conversation_id : ''
 
-  const { data: conversation } = await supabase.from('conversations').select('id').eq('id', conversationId).maybeSingle()
+  const since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()
+  const [{ data: conversation }, { count, error: countError }] = await Promise.all([
+    supabase.from('conversations').select('id').eq('id', conversationId).maybeSingle(),
+    // The user's turns in the last 24 hours. Tool results are stored as user rows too, but start with a tool_result.
+    // shortcut: turns are stored when the reply ends, so parallel requests all pass; use an atomic counter if abused.
+    supabase
+      .from('messages')
+      .select('id', { count: 'exact', head: true })
+      .eq('role', 'user')
+      .eq('content->0->>type', 'text')
+      .gte('created_at', since),
+  ])
   if (!conversation) return json(404, { error: 'conversation not found' })
+  if (countError) return json(500, { error: countError.message })
+  if ((count ?? 0) >= DAILY_TURNS) return json(429, { error: 'daily message limit reached' })
 
   const [{ data: history, error }, { data: profile }, { data: menu }] = await Promise.all([
     supabase.from('messages').select('role, content').eq('conversation_id', conversationId).order('id'),
@@ -156,11 +175,11 @@ Deno.serve(async (req) => {
   const newRows: MessageParam[] = [{ role: 'user', content }]
   messages.push(newRows[0])
 
-  // Runs one tool call as the user. Returns what went wrong, or '' once it's saved.
+  // Runs one tool call for the user. Returns what went wrong, or '' once it's saved.
   async function runTool(name: string, input: unknown): Promise<string> {
     const updated_at = new Date().toISOString()
     if (name === 'save_profile') {
-      const { error } = await supabase.from('profiles').upsert({ user_id: userId, data: input, updated_at })
+      const { error } = await admin.from('profiles').upsert({ user_id: userId, data: input, updated_at })
       return error ? `Could not save: ${error.message}` : ''
     }
     if (name === 'save_menu') {
@@ -168,7 +187,7 @@ Deno.serve(async (req) => {
       const menu = structuredClone(input) as MenuData
       const problems = menuProblems(menu)
       if (problems.length) return `Not saved. Fix this and call save_menu again:\n${problems.join('\n')}`
-      const { error } = await supabase
+      const { error } = await admin
         .from('menus')
         .upsert({ user_id: userId, data: menu, confirmed_at: null, updated_at })
       return error ? `Could not save: ${error.message}` : ''
@@ -238,11 +257,11 @@ Deno.serve(async (req) => {
         if (newRows.length === 1) throw new Error('empty reply')
 
         // Stored only once the whole exchange worked, so a failed turn can simply be resent.
-        const { error } = await supabase
+        const { error } = await admin
           .from('messages')
-          .insert(newRows.map((row) => ({ ...row, conversation_id: conversationId })))
+          .insert(newRows.map((row) => ({ ...row, user_id: userId, conversation_id: conversationId })))
         if (error) throw new Error(error.message)
-        await supabase.from('conversations').update({ updated_at: new Date().toISOString() }).eq('id', conversationId)
+        await admin.from('conversations').update({ updated_at: new Date().toISOString() }).eq('id', conversationId)
         controller.close()
       } catch (err) {
         console.error(err)

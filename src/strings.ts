@@ -19,6 +19,7 @@ export const t = {
     stopListening: 'Dejar de escuchar',
     micError: 'No pude usar el micrófono.',
     error: 'No se pudo enviar. Probá de nuevo.',
+    limit: 'Llegaste al límite de mensajes por hoy. Probá de nuevo mañana.',
     loadError: 'No se pudo cargar la conversación.',
     chats: 'Chats',
     back: 'Volver',

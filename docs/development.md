@@ -23,6 +23,8 @@ Sign-in uses Supabase's default magic link email. The link only sends you back t
 | `npx supabase db push` | Apply new migrations to the hosted database (asks for the database password) |
 | `npx supabase functions deploy chat` | Deploy the `chat` Edge Function. Functions aren't deployed by pushing to `main`. |
 
+When a migration takes away a write that the deployed function still makes with the user's token, deploy the function first, then `db push`. The other way round, the function breaks until it's deployed.
+
 `db push` connects straight to Postgres on ports 5432 and 6543, which some Wi-Fi networks block. If it hangs at "Initialising login role...", switch to another network (a phone hotspot works).
 
 There's no local Supabase (that needs Docker), so Edge Functions are tested against the hosted project after deploying. Their logs are in the dashboard under Edge Functions → chat → Logs.
@@ -41,8 +43,8 @@ Vite reads `.env`, then `.env.local` (gitignored), which overrides it.
 
 - The URL and the publishable key are public: they end up in the JavaScript every visitor downloads, so they're committed. Row-level security protects the data, not the key.
 - The database password lives in the team's shared password vault. Never commit it.
-- The secret key and the Anthropic API key (`ANTHROPIC_API_KEY`, created inside an Anthropic Console workspace: org-level keys are rejected without a workspace header) are stored only as Supabase Edge Function secrets (dashboard → Edge Functions → Secrets, or `supabase secrets set`), so Edge Functions can read them. They never go in `.env.local` or the repo.
-- Every table enables row-level security in its migration, with an owner policy (`auth.uid() = user_id`). Check Database → Advisors → Security after each milestone.
+- The secret key and the Anthropic API key (`ANTHROPIC_API_KEY`, created inside an Anthropic Console workspace: org-level keys are rejected without a workspace header) are stored only as Supabase Edge Function secrets (dashboard → Edge Functions → Secrets, or `supabase secrets set`), so Edge Functions can read them. They never go in `.env.local` or the repo. Supabase also gives every Edge Function `SUPABASE_SERVICE_ROLE_KEY`, which `chat` writes with.
+- Every table enables row-level security in its migration, with an owner policy (`auth.uid() = user_id`) that only allows `select`, unless the browser has to write that table. Today the browser writes only `conversations`, and `menus.confirmed_at` through a column grant. Edge Functions write everything else with the service-role key ([ADR 0014](adr/0014-client-reads-chat-function-writes.md)). Check Database → Advisors → Security after each milestone.
 
 ## Testing
 

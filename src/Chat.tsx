@@ -150,6 +150,7 @@ export default function Chat({
     setBubbles((b) => [...b, { role: 'user', text }, { role: 'assistant', text: '' }])
     const setReply = (reply: string) => setBubbles((b) => [...b.slice(0, -1), { role: 'assistant', text: reply }])
 
+    let failure = t.chat.error
     try {
       let id = conversationId
       if (!id) {
@@ -174,6 +175,7 @@ export default function Chat({
         // Above the function's 150 s wall clock: a stalled connection must not keep the tabs locked.
         signal: AbortSignal.timeout(200_000),
       })
+      if (res.status === 429) failure = t.chat.limit
       if (!res.ok || !res.body) throw new Error(`chat failed: ${res.status}`)
       const reader = res.body.pipeThrough(new TextDecoderStream()).getReader()
       let reply = ''
@@ -189,7 +191,7 @@ export default function Chat({
       // The server stores nothing from a failed turn, so drop both bubbles and give the text back.
       setBubbles((b) => b.slice(0, -2))
       setDraft(text)
-      setError(t.chat.error)
+      setError(failure)
     }
     setBusy(false)
     onBusy(false)

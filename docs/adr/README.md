@@ -17,6 +17,7 @@ One file per decision: `NNNN-short-title.md`. ADRs are append-only: never rewrit
 | 0011 | [The saved profile travels into each chat](0011-profile-in-each-chat.md) | Accepted | 2026-10-17 |
 | 0012 | [Fill supermarket carts from the user's computer](0012-fill-carts-from-the-users-computer.md) | Accepted | 2026-10-17 |
 | 0013 | [Weekly menu saved by a chat tool, keyed to a fixed food catalog](0013-menu-saved-by-a-chat-tool.md) | Accepted | 2026-10-17 |
+| 0014 | [The client only reads; the chat function writes, under a daily cap](0014-client-reads-chat-function-writes.md) | Accepted | 2026-10-17 |
 
 ## Template
 
