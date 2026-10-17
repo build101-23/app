@@ -230,6 +230,31 @@ textarea {
   border: 1px solid var(--border);
 }
 
+.menu-preview {
+  white-space: normal;
+}
+
+.menu-preview ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 0.875rem;
+}
+
+.menu-preview li + li {
+  margin-top: 4px;
+}
+
+.menu-preview strong {
+  display: block;
+  text-transform: capitalize;
+}
+
+.menu-preview button {
+  margin-top: 12px;
+  padding: 8px 14px;
+}
+
 .chat form {
   display: flex;
   gap: 8px;

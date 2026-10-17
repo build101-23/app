@@ -4,7 +4,7 @@ Living doc: how the system is *now*. Reasoning lives in [ADRs](adr/), not here.
 
 ## Components
 
-- **Web app** (`src/`): a single-page app installed on the phone as a PWA. It talks to Supabase with the public key and the user's login token. Screens: Chat, Menu (the week, a Confirm button, and Cambiar buttons that hand a draft to the chat), List (placeholder) and Profile.
+- **Web app** (`src/`): a single-page app installed on the phone as a PWA. It talks to Supabase with the public key and the user's login token. Screens: Chat (with a preview of each menu it saved and a button to the Menu tab), Menu (the week, a Confirm button, and Cambiar buttons that hand a draft to the chat), List (placeholder) and Profile.
 - **Supabase**: one hosted project.
   - Auth: magic link email for now, an emailed code from milestone 6.
   - Postgres (`supabase/migrations/`), with row-level security on every table. Users read only their own rows. They write only `conversations` and `menus.confirmed_at`; the `chat` function writes the rest ([ADR 0014](adr/0014-client-reads-chat-function-writes.md)):
@@ -19,7 +19,7 @@ Living doc: how the system is *now*. Reasoning lives in [ADRs](adr/), not here.
 ## Data flow
 
 1. Sign-in: browser → Supabase Auth → magic link email → back to the app with a session.
-2. Chat: the browser creates a `conversations` row for a new chat, then → `chat` function (user token, conversation id) → Claude (streaming) → text streamed back to the browser. The function writes: `save_profile` calls write `profiles`, `save_menu` calls write `menus`, and the new turns are appended to `messages`.
+2. Chat: the browser creates a `conversations` row for a new chat, then → `chat` function (user token, conversation id) → Claude (streaming) → text streamed back to the browser. The function writes: `save_profile` calls write `profiles`, `save_menu` calls write `menus`, and the new turns are appended to `messages`. When the stream ends, the browser reloads the chat's messages, so it sees the `save_menu` calls it shows as previews.
 3. Screens read `conversations`, `messages`, `profiles` and `menus` directly from Supabase, limited to the user's own rows. The Menu tab's Confirm button writes `menus.confirmed_at`, the only column of `menus` the browser may change.
 
 ## Stack

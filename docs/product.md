@@ -41,7 +41,7 @@ The first version goes from a chat to a priced shopping list, in Montevideo only
 - Voice as dictation: tap the mic, speak, and the text appears in the box for you to check and send. It uses the browser's speech recognition ([ADR 0010](adr/0010-browser-speech-recognition.md)); where that's missing, the keyboard's dictation still works. No live voice conversation.
 - If you don't have a plan, it builds one from scratch.
 - If you have a nutritionist's plan, it follows what you tell it about that plan.
-- It asks as little as possible: your goal and what you can't eat. It doesn't ask whether you have a nutritionist's plan; if you mention one, it follows it. Everything else it assumes, tells you, and lets you correct. Then it builds your weekly menu right away and points you to the Menu tab.
+- It asks as little as possible: your goal and what you can't eat. It doesn't ask whether you have a nutritionist's plan; if you mention one, it follows it. Everything else it assumes, tells you, and lets you correct. Then it builds your weekly menu right away and shows a preview of the week in the chat, with a button to the Menu tab.
 - Normal, everyday food you can buy at any supermarket in Montevideo.
 
 #### 2. Likes and restrictions

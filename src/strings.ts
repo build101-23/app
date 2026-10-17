@@ -26,6 +26,7 @@ export const t = {
     newChat: 'Nuevo chat',
     noChats: 'Todavía no tenés chats.',
     noReply: 'No pude responder eso. Probá decirlo de otra forma.',
+    openMenu: 'Ver menú',
   },
   menu: {
     empty: 'Todavía no hay menú. Pedíselo al chat.',
