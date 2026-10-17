@@ -1,7 +1,8 @@
 import Anthropic from 'npm:@anthropic-ai/sdk@0.135.0'
 import { createClient } from 'npm:@supabase/supabase-js@2.118.0'
 import { catalog } from '../_shared/catalog.ts'
-import { days, menuProblems, type MenuData } from '../_shared/menu.ts'
+import { buildList, itemId, type Have } from '../_shared/list.ts'
+import { days, foodProblems, menuProblems, type Ingredient, type MenuData } from '../_shared/menu.ts'
 import { MENU_TAG, PROFILE_TAG, SYSTEM_PROMPT } from './prompt.ts'
 
 type MessageParam = Anthropic.Beta.BetaMessageParam
@@ -111,6 +112,30 @@ const saveMenu: Anthropic.Beta.BetaTool = {
   }),
 }
 
+// Partial on purpose: only the foods sent change, so the model never needs to see the saved marks.
+// Strict can't check that a food is on this week's list: runTool does.
+const updateShoppingList: Anthropic.Beta.BetaTool = {
+  name: 'update_shopping_list',
+  description:
+    "Record what the user already has at home, so the shopping list in the List tab buys less. Only the foods sent change. Send each food exactly as the saved menu has it: food, unit and other_name.",
+  strict: true,
+  input_schema: object({
+    reset: { type: 'boolean', description: 'true clears every earlier mark first, for a new week.' },
+    items: {
+      type: 'array',
+      items: object({
+        food: { type: 'string', enum: [...Object.keys(catalog), 'other'] },
+        other_name: { ...nullable('string'), description: "The menu's name for an 'other' food, otherwise null." },
+        unit: { type: 'string', enum: ['g', 'ml', 'un'] },
+        have: {
+          ...nullable('number'),
+          description: "How much they have at home, in unit. null: enough, or they don't want to buy it. 0: none, buy all of it again.",
+        },
+      }),
+    },
+  }),
+}
+
 const json = (status: number, body: unknown) =>
   new Response(JSON.stringify(body), { status, headers: { ...cors, 'Content-Type': 'application/json' } })
 
@@ -192,6 +217,35 @@ Deno.serve(async (req) => {
         .upsert({ user_id: userId, data: menu, confirmed_at: null, updated_at })
       return error ? `Could not save: ${error.message}` : ''
     }
+    if (name === 'update_shopping_list') {
+      type Mark = Pick<Ingredient, 'food' | 'other_name' | 'unit'> & { have: number | null }
+      const { reset, items } = structuredClone(input) as { reset: boolean; items: Mark[] }
+      const { data: row, error } = await supabase.from('menus').select('data, have').maybeSingle()
+      if (error) return `Could not save: ${error.message}`
+      if (!row) return 'No menu yet. Build the menu first.'
+      const onList = new Set(buildList(row.data).map((item) => item.id))
+      const problems = items.flatMap((item, i) => {
+        const where = `Item ${i + 1}`
+        const found = foodProblems(item, where)
+        if (found.length) return found
+        if (item.have !== null && !(item.have >= 0)) return [`${where}: have must be null, 0 or more.`]
+        if (onList.has(itemId(item.food, item.other_name, item.unit))) return []
+        return [
+          `${where}: ${item.other_name ?? item.food} in ${item.unit} is not on this week's list. Use the food, unit and other_name exactly as in <saved_menu>.`,
+        ]
+      })
+      if (problems.length) return `Not saved. Fix this and call update_shopping_list again:\n${problems.join('\n')}`
+      const have: Have = reset ? {} : row.have
+      for (const item of items) {
+        const id = itemId(item.food, item.other_name, item.unit)
+        if (item.have === 0) delete have[id]
+        else have[id] = item.have
+      }
+      // shortcut: read then write, and the List tab writes its whole map, so a List tab that hasn't reloaded since
+      // (it reloads when shown) can undo this. Fine for one person on one phone; merge per item if that changes.
+      const { error: saveError } = await admin.from('menus').update({ have }).eq('user_id', userId)
+      return saveError ? `Could not save: ${saveError.message}` : ''
+    }
     return `Unknown tool ${name}.`
   }
 
@@ -215,7 +269,7 @@ Deno.serve(async (req) => {
             max_tokens: 16000,
             cache_control: { type: 'ephemeral' },
             system: SYSTEM_PROMPT,
-            tools: [saveProfile, saveMenu],
+            tools: [saveProfile, saveMenu, updateShoppingList],
             messages,
             // Prompt changes during development drop old reasoning instead of failing with a 400.
             thinking: { type: 'adaptive', block_binding: { prefix_mismatch_behavior: 'drop_block' } },

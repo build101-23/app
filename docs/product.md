@@ -42,6 +42,7 @@ The first version goes from a chat to a priced shopping list, in Montevideo only
 - If you don't have a plan, it builds one from scratch.
 - If you have a nutritionist's plan, it follows what you tell it about that plan.
 - It asks as little as possible: your goal and what you can't eat. It doesn't ask whether you have a nutritionist's plan; if you mention one, it follows it. Everything else it assumes, tells you, and lets you correct. Then it builds your weekly menu right away and shows a preview of the week in the chat, with a button to the Menu tab.
+- Tell it what you already have at home ("ya tengo arroz", "tengo medio kilo de pollo") and the shopping list buys less. "Arranco semana nueva" clears it.
 - Normal, everyday food you can buy at any supermarket in Montevideo.
 
 #### 2. Likes and restrictions
@@ -72,11 +73,12 @@ The first version goes from a chat to a priced shopping list, in Montevideo only
 
 #### 5. Shopping list
 
-- Adds up the whole week and groups it by section: produce, meat, pantry.
-- Converts to how things are sold: "700 g of chicken" becomes "1 kg tray".
-- Accounts for raw vs. cooked (plans often say cooked rice; you buy it dry).
-- Tick off what you already have at home.
-- Share on WhatsApp or copy as text.
+- Shows once the menu is confirmed.
+- Adds up the whole week and groups it by section, in the order you walk the store: fruit and vegetables, pantry, meat and fish, dairy, cold cuts and eggs, and "Otros" for foods outside the catalog.
+- Converts to how things are sold: "1,1 kg of rice" becomes "2 × 1 kg", with what the menu uses next to it. Meat, fish, ham, cheese, fruit and vegetables show a weight (or a count), since they're sold loose or by weight. It always rounds up, never down.
+- Accounts for raw vs. cooked: the menu's amounts are raw as bought, and the chat converts cooked amounts you give it (plans often say cooked rice; you buy it dry).
+- Cross out what you already have at home, or buy less of it with −; or tell the chat. Your marks stay when the menu changes, until you tap "Lista nueva" or tell the chat you're starting a new week.
+- Share (the phone's share sheet, with WhatsApp) or copy as text, with only what's left to buy.
 
 #### 6. Save money
 

@@ -1,4 +1,4 @@
-import type { CatalogKey } from '../supabase/functions/_shared/catalog.ts'
+import type { CatalogKey, Section } from '../supabase/functions/_shared/catalog.ts'
 
 // All user-facing text, in Rioplatense Spanish (ADR 0006).
 export const t = {
@@ -10,7 +10,6 @@ export const t = {
     otherEmail: 'Usar otro email',
   },
   tabs: { chat: 'Chat', menu: 'Menú', list: 'Lista', profile: 'Perfil' },
-  soon: 'Muy pronto.',
   chat: {
     welcome: 'Hola. Contame un poco de vos: ¿qué querés lograr con tu alimentación?',
     placeholder: 'Escribí tu mensaje…',
@@ -45,10 +44,36 @@ export const t = {
       saturday: 'sábado',
       sunday: 'domingo',
     },
-    units: { g: 'g', ml: 'ml', un: 'u.' },
+    units: { g: 'g', ml: 'ml', un: 'u.', kg: 'kg', l: 'L' },
     // Drafts left in the chat box for the user to finish.
     changeDay: (day: string) => `Cambiar el ${day}: `,
     changeMeal: (slot: string, day: string) => `Cambiar ${slot.toLowerCase()} del ${day}: `,
+  },
+  list: {
+    hint: 'Tachá lo que ya tenés en casa.',
+    confirmFirst: 'Confirmá el menú y acá te armo la lista de compras.',
+    share: 'Compartir',
+    copy: 'Copiar',
+    copied: 'Lista copiada.',
+    copyError: 'No se pudo copiar.',
+    saveError: 'No se pudo guardar. Se guarda con tu próximo cambio.',
+    reset: 'Lista nueva',
+    resetConfirm: '¿Desmarcar todo lo que tenés en casa?',
+    // The first line of the shared or copied text.
+    title: 'Lista de compras',
+    // Next to what to buy when it differs from what the menu uses: "2 × 1 kg (menú: 1,1 kg)".
+    menuNeeds: 'menú:',
+    have: (name: string) => `Ya tengo ${name.toLowerCase()}`,
+    less: (name: string) => `Comprar menos ${name.toLowerCase()}`,
+    more: (name: string) => `Comprar más ${name.toLowerCase()}`,
+    // In this order on the list.
+    sections: {
+      produce: 'Frutas y verduras',
+      pantry: 'Almacén',
+      meat: 'Carnes y pescado',
+      dairy: 'Lácteos, fiambres y huevos',
+      other: 'Otros',
+    } satisfies Record<Section | 'other', string>,
   },
   foods: {
     chicken_breast: 'Pechuga de pollo',

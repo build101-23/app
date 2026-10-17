@@ -3,6 +3,7 @@ import type { Session } from '@supabase/supabase-js'
 import { supabase } from './supabase'
 import { t } from './strings'
 import Chat from './Chat'
+import List from './List'
 import Menu from './Menu'
 import Profile from './Profile'
 
@@ -99,7 +100,7 @@ function Shell({ session }: { session: Session }) {
           />
         )}
         {tab === 'profile' && <Profile session={session} />}
-        {tab === 'list' && <p className="soon">{t.soon}</p>}
+        {tab === 'list' && <List session={session} onOpenMenu={() => setTab('menu')} />}
       </main>
       <nav>
         {tabs.map((key) => (

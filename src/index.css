@@ -107,8 +107,8 @@ button.link {
   overflow-y: auto;
 }
 
-.soon,
 .menu,
+.list,
 .profile {
   padding: 16px;
 }
@@ -345,4 +345,67 @@ textarea {
 
 .menu > button {
   margin-top: 16px;
+}
+
+.list-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.list h2 {
+  font-size: 1rem;
+  margin: 16px 0 4px;
+}
+
+.list ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.list li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border-bottom: 1px solid var(--border);
+}
+
+.list label {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+}
+
+.list input[type='checkbox'] {
+  flex: none;
+  width: 20px;
+  height: 20px;
+  margin: 0;
+  accent-color: var(--accent);
+}
+
+.list .qty {
+  text-align: right;
+}
+
+.list .qty small {
+  display: block;
+}
+
+.list li.have label span,
+.list li.have .qty {
+  color: var(--muted);
+  text-decoration: line-through;
+}
+
+.list button.step {
+  min-width: 44px;
+  min-height: 44px;
+  padding: 0;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--muted);
 }

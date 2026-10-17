@@ -20,6 +20,7 @@ One file per decision: `NNNN-short-title.md`. ADRs are append-only: never rewrit
 | 0014 | [The client only reads; the chat function writes, under a daily cap](0014-client-reads-chat-function-writes.md) | Accepted | 2026-10-17 |
 | 0015 | [The price scraper is a Python job with a time budget](0015-price-scraper-python-job-with-time-budget.md) | Accepted | 2026-10-17 |
 | 0016 | [Price catalog: one row per product per chain](0016-price-catalog-one-row-per-product-per-chain.md) | Accepted | 2026-10-17 |
+| 0017 | [The shopping list is derived in the browser; only what you have is stored](0017-shopping-list-derived-in-the-browser.md) | Accepted | 2026-10-17 |
 
 ## Template
 
