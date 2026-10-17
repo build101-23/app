@@ -398,6 +398,15 @@ textarea {
   gap: 8px;
   min-height: 44px;
 }
+/* The name, then the store tag or the product to buy there, one under the other. */
+.list label .item {
+  display: flex;
+  flex-direction: column;
+  padding: 4px 0;
+}
+.list label .item a {
+  color: inherit;
+}
 
 .list input[type='checkbox'],
 .list input[type='radio'],

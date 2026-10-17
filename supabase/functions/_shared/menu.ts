@@ -1,6 +1,7 @@
-// The weekly menu the chat's save_menu tool writes and the Menu tab reads.
+// The menu the chat's save_menu tool writes and the Menu tab reads: one to seven days (ADR 0024).
 // Plain TS shared by the chat function and the web app, so no Deno or DOM globals here.
 import { catalog, type CatalogKey, type Unit } from './catalog.ts'
+import type { StoreKey } from './stores.ts'
 
 export const days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'] as const
 export type Day = (typeof days)[number]
@@ -8,7 +9,16 @@ export type Day = (typeof days)[number]
 // amount is per serving, raw as bought, in unit.
 export type Ingredient = { food: CatalogKey | 'other'; other_name: string | null; amount: number; unit: Unit }
 export type Recipe = { id: string; name: string; how: string; ingredients: Ingredient[] }
-export type MenuData = { recipes: Recipe[]; days: { day: Day; meals: { slot: string; recipe_id: string }[] }[] }
+// For one list item, the product the chat agent picked at each store from search_products: a store_sku, or null where
+// it found none. Menus saved before ADR 0024 have no products and no budget.
+export type ProductPick = Pick<Ingredient, 'food' | 'other_name' | 'unit'> & Record<StoreKey, string | null>
+// budget: whole pesos for this shopping, only when the user gave one.
+export type MenuData = {
+  recipes: Recipe[]
+  days: { day: Day; meals: { slot: string; recipe_id: string }[] }[]
+  budget?: number | null
+  products?: ProductPick[]
+}
 
 // What strict mode can't enforce about one food: a catalog key in its unit, or a named 'other'.
 // Lowercases the key in place. Also used by the chat's update_shopping_list.
@@ -39,8 +49,11 @@ export function menuProblems(menu: MenuData): string[] {
       if (!ids.has(meal.recipe_id)) problems.push(`${entry.day}: recipe ${meal.recipe_id} doesn't exist.`)
     }
   }
+  if (!menu.days.length) problems.push('The menu needs at least one day.')
   for (const day of days) {
-    if (menu.days.filter((entry) => entry.day === day).length !== 1) problems.push(`${day} must appear exactly once.`)
+    if (menu.days.filter((entry) => entry.day === day).length > 1) problems.push(`${day} appears more than once.`)
   }
+  if (menu.budget != null && !(menu.budget > 0)) problems.push('budget must be null or above 0.')
+  for (const [i, pick] of (menu.products ?? []).entries()) problems.push(...foodProblems(pick, `Product ${i + 1}`))
   return problems
 }
