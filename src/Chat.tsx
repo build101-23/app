@@ -39,7 +39,7 @@ declare global {
 // Missing in Firefox and some installed iPhone apps: there the keyboard's dictation still works.
 const Recognition = window.SpeechRecognition ?? window.webkitSpeechRecognition
 
-// Shows text, plus a preview after each save_menu call that saved and each show_menu call. Thinking, other
+// Shows text, plus a preview after each save_menu call that saved and the turn's first show_menu call. Thinking, other
 // tool calls, tool results and the server's profile and menu copies stay hidden.
 function toBubbles(rows: Row[]): Bubble[] {
   const saved = new Set(
@@ -49,11 +49,14 @@ function toBubbles(rows: Row[]): Bubble[] {
   )
   // The menu as it stood at each point of the chat: the server adds its copy whenever the saved one changed.
   let latest: MenuData | undefined
+  // The model may call show_menu right after save_menu, or twice: one card per turn is enough.
+  let shown = false
   return rows.flatMap((row) => {
     const text = row.content
       .filter((block) => block.type === 'text' && !block.text?.startsWith('<saved_'))
       .map((block) => block.text)
       .join('\n')
+    if (row.role === 'user' && text) shown = false
     const menus: Bubble[] = []
     for (const block of row.content) {
       if (block.text?.startsWith('<saved_menu>')) {
@@ -61,7 +64,10 @@ function toBubbles(rows: Row[]): Bubble[] {
       }
       const savedMenu = block.name === 'save_menu' && saved.has(block.id)
       if (savedMenu) latest = block.input as MenuData
-      if (savedMenu || (block.name === 'show_menu' && latest)) menus.push({ role: row.role, text: '', menu: latest })
+      if (savedMenu || (block.name === 'show_menu' && latest && !shown)) {
+        menus.push({ role: row.role, text: '', menu: latest })
+        shown = true
+      }
     }
     return [...(text ? [{ role: row.role, text }] : []), ...menus]
   })
