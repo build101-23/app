@@ -7,11 +7,17 @@ Living doc: how the system is *now*. Reasoning lives in [ADRs](adr/), not here.
 - **Web app** (`src/`): a single-page app installed on the phone as a PWA. It talks to Supabase with the public key and the user's login token. Screens: Chat (with a preview of each menu it saved and a button to the Menu tab), Menu (the week, a Confirm button, and Cambiar buttons that hand a draft to the chat), List (placeholder) and Profile.
 - **Supabase**: one hosted project.
   - Auth: magic link email for now, an emailed code from milestone 6.
-  - Postgres (`supabase/migrations/`), with row-level security on every table. Users read only their own rows. They write only `conversations` and `menus.confirmed_at`; the `chat` function writes the rest ([ADR 0014](adr/0014-client-reads-chat-function-writes.md)):
+  - Postgres (`supabase/migrations/`), with row-level security on every table. Users read only their own rows, except the price catalog below. They write only `conversations` and `menus.confirmed_at`; the `chat` function writes the rest ([ADR 0014](adr/0014-client-reads-chat-function-writes.md)):
     - `conversations`: the user's chats, with a title (the first message) and `updated_at` for sorting.
     - `messages`: the turns of each conversation. `content` holds each message exactly as sent to or returned by Claude, thinking blocks included. The history is append-only and replayed as is.
     - `profiles`: what the AI saved about the user (goal, meals, cooking time, nutritionist's plan, and can't eat / don't like / like / want lists), as one `data` JSON object.
     - `menus`: the weekly menu the AI saved, one per user, as one `data` JSON object (recipes, and the days that point at them), plus `confirmed_at`, set by the Menu tab and cleared by every save.
+  - The price catalog ([ADR 0016](adr/0016-price-catalog-one-row-per-product-per-chain.md)) is readable by any signed-in user, and only the scraper writes it:
+    - `stores`: the four chains (Devoto, Géant, Disco, Ta-Ta).
+    - `scrape_runs`: one per chain per scraper run, with the branch or sales channel its prices belong to (`price_context`) and counters.
+    - `store_products`: one row per product per chain, with the latest price, the package size, `unit_price` (per kg, liter or unit) and `checked_at`.
+    - `price_changes`: each price a product has had, written by a trigger when a product is first read and when its price changes.
+    - `upsert_store_products(rows)`: the scraper's only way to write, callable only with a secret key. It holds the merge rules.
   - Edge Function `chat` (`supabase/functions/chat/`): checks the caller's token, loads that conversation's history, adds the saved profile and menu to the new message when they changed ([ADR 0011](adr/0011-profile-in-each-chat.md), [ADR 0013](adr/0013-menu-saved-by-a-chat-tool.md)), calls Claude, streams the reply as plain text, runs the `save_profile` and `save_menu` tools, and stores the whole exchange at the end. Reads run as the user, under row-level security. Writes use the service-role key and name the user's id from the verified token. After 100 user turns in 24 hours it answers 429 without calling Claude.
 - **Shared code** (`supabase/functions/_shared/`): the food catalog, and the menu's shape and checks. Plain TS imported by both the `chat` function and the web app; `npm test` covers the checks.
 - **Claude**: called only from Edge Functions, never from the browser. The system prompt lives in `supabase/functions/chat/prompt.ts`.
