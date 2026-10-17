@@ -5,7 +5,7 @@ Living doc: how the system is *now*. Reasoning lives in [ADRs](adr/), not here.
 ## Components
 
 - **Web app**: a single-page app installed on the phone as a PWA. It talks to Supabase with the public key only.
-- **Supabase**: one hosted project. Auth (sign-in with an emailed code), Postgres with row-level security on every table, and Edge Functions for anything that needs a secret.
+- **Supabase**: one hosted project. Auth (magic link email for now, an emailed code from milestone 6), Postgres with row-level security on every table, and Edge Functions for anything that needs a secret.
 - **Claude**: called only from Edge Functions, never from the browser.
 
 ## Data flow

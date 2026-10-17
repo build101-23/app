@@ -6,11 +6,18 @@ Living doc: how to work on the app *now*.
 
 1. Install [Homebrew](https://brew.sh), then Node: `brew install node`.
 2. Ask to be invited to the Supabase organization (Organization settings → Team). There is one hosted project, and no local Docker setup.
-3. Create `.env.local` with the [variables below](#environment-variables), filled in from the Supabase dashboard (Project Settings → API Keys).
+3. `npm install`.
+4. Copy `.env.example` to `.env.local` and fill in the [variables below](#environment-variables) from the Supabase dashboard (Project Settings → API Keys).
 
-The project's sign-in email template (Authentication → Email templates → Magic link) must contain `{{ .Token }}`, because the app signs in with a 6-digit code instead of a link.
+Sign-in uses Supabase's default magic link email. The link only sends you back to URLs listed under Authentication → URL Configuration → Redirect URLs, so that list must include `http://localhost:5173`. Supabase's built-in email sender is rate-limited and meant for testing. The pilot needs our own SMTP ([milestones](notes/milestones.md)).
 
 ## Commands
+
+| Command | What |
+| --- | --- |
+| `npm run dev` | Dev server at http://localhost:5173 |
+| `npm run build` | Type-check and build to `dist/` |
+| `npm run lint` | Lint with oxlint |
 
 ## Environment variables
 
