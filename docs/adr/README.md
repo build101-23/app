@@ -24,6 +24,10 @@ One file per decision: `NNNN-short-title.md`. ADRs are append-only: never rewrit
 | 0018 | [The scraper reads GDU through listings and a few food pages](0018-gdu-listings-and-food-pages.md) | Accepted | 2026-10-17 |
 | 0019 | [Example prices bundled with the app until real prices are matched](0019-example-prices-until-matched.md) | Accepted | 2026-10-17 |
 | 0020 | [CI on Tenki runners](0020-ci-on-tenki-runners.md) | Accepted | 2026-10-17 |
+| 0021 | [VIVERI identity and a token-based UI system](0021-viveri-identity-and-ui-system.md) | Superseded by 0022 | 2026-10-17 |
+| 0022 | [Coral and aquamarine identity, floating glass dock](0022-coral-identity-and-glass-dock.md) | Proposed (colors superseded by 0024) | 2026-10-17 |
+| 0023 | [Google's button leads the sign-in screen](0023-google-leads-sign-in.md) | Proposed | 2026-10-17 |
+| 0024 | [Naranja zapallo colors](0024-naranja-zapallo-colors.md) | Proposed | 2026-10-17 |
 
 ## Template
 

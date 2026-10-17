@@ -1,0 +1,378 @@
+/* Dev-only palettes from the color exploration (docs/plans/2026-10-17-viveri-v2-palette-options.md), listed for the
+   picker in src/dev/palettes.ts. Each block overrides the default tokens in src/index.css; dark values follow in the
+   media query below. */
+
+/* Petróleo y azafrán: Deep petrol user bubbles with white text make long chats calm. A saffron tile and active pill bring the vivid punch, with black ink and black buttons. It shares no lead hue with v1's muted green, Coral manda's coral and aqua, or the rejected electric blue, violet, fuchsia and acid sets, and its ground has no peach. */
+:root[data-direction='petroleo-azafran'] {
+  --field-gradient: linear-gradient(135deg, #042731 0%, #07404C 38%, #005B68 66%, #007D78 100%);
+  --on-field: #FFFFFF;
+  --tile: #FE9E26;
+  --logo-dot: #005B68;
+  --logo-dot-2: #024E5A;
+  --logo-dot-3: #04414C;
+  --logo-apex: #0F1517;
+  --field-shade: #021217;
+  --ground: #F6F3EB;
+  --surface: #FFFFFF;
+  --surface-sunk: #EEE8DA;
+  --line: #E5E0D3;
+  --line-strong: #7C776B;
+  --ink: #0F1517;
+  --ink-muted: #555B5C;
+  --primary: #0F1517;
+  --primary-hover: #2B3538;
+  --on-primary: #FFFFFF;
+  --bubble-user: #005B68;
+  --on-bubble-user: #FFFFFF;
+  --accent: #FE9E26;
+  --on-accent: #0F1517;
+  --danger: #B4202A;
+  --danger-surface: #FDEBEB;
+  --week-dot: #FEBB67;
+  --sent-surface: #FFEACB;
+  --tile-edge: #0F1517;
+}
+
+/* Cacao y mburucuyá: A warm kitchen pairing that no earlier round tried: chocolate bubbles with cream text, a passion-fruit gold for 'the one', and warm-black ink on a crisp, non-peach ground. Its gold is darker and more amber than Trópico's sun yellow, and its brown lead shares nothing with the coral, green or blue and violet histories. */
+:root[data-direction='cacao-mburucuya'] {
+  --field-gradient: linear-gradient(135deg, #FFA914 0%, #FFB81F 30%, #FFCB45 62%, #FFDF8A 88%, #FFEBB5 100%);
+  --on-field: #24150D;
+  --tile: #3B2215;
+  --logo-dot: #FFB21A;
+  --logo-dot-2: #FFC845;
+  --logo-dot-3: #FFDE85;
+  --logo-apex: #FFF3DC;
+  --field-shade: #784f09;
+  --ground: #F8F6F2;
+  --surface: #FFFFFF;
+  --surface-sunk: #F1EBE2;
+  --line: #E7E0D6;
+  --line-strong: #86786D;
+  --ink: #18110C;
+  --ink-muted: #5C5048;
+  --primary: #2B1810;
+  --primary-hover: #4A2C1C;
+  --on-primary: #FFFFFF;
+  --bubble-user: #6B3820;
+  --on-bubble-user: #FFF8F0;
+  --accent: #FFB21A;
+  --on-accent: #18110C;
+  --danger: #B3132B;
+  --danger-surface: #FDE8EA;
+  --week-dot: #FFCB57;
+  --sent-surface: #FFEDC4;
+  --tile-edge: #3B2215;
+}
+
+/* Palta: Avocado yellow-green (OKLCH hue 125, chroma 0.15) carries the user's voice, with Hass-skin black for buttons and the active pill and the pit's tan for the apex. In dark mode the bubbles turn deep skin green. It is far from v1's muted teal-green (hue 161), from the acid #DFFF3A (L 0.95, chroma 0.21) and from any peach. */
+:root[data-direction='palta'] {
+  --field-gradient: linear-gradient(135deg, #62AE3F 0%, #8CC84F 30%, #B9DC6C 60%, #E3F0B2 100%);
+  --on-field: #11140E;
+  --tile: #141A0E;
+  --logo-dot: #62AE3F;
+  --logo-dot-2: #ADD45C;
+  --logo-dot-3: #DCEC9C;
+  --logo-apex: #C98A4E;
+  --field-shade: #2e521e;
+  --ground: #F6F7F1;
+  --surface: #FFFFFF;
+  --surface-sunk: #E8EEDA;
+  --line: #DDE4CE;
+  --line-strong: #737D63;
+  --ink: #11140E;
+  --ink-muted: #4C5543;
+  --primary: #11140E;
+  --primary-hover: #2A3124;
+  --on-primary: #FFFFFF;
+  --bubble-user: #ADD45C;
+  --on-bubble-user: #11140E;
+  --accent: #11140E;
+  --on-accent: #ADD45C;
+  --danger: #B3132B;
+  --danger-surface: #FDE8EA;
+  --week-dot: #CBE495;
+  --sent-surface: #E6F2C9;
+  --tile-edge: #141A0E;
+}
+
+/* Tannat y menta: Uruguay's tannat wine colour (a red-wine hue 12 at L 0.36) fills the bubbles, buttons and a deep garnet field, with one mint accent on a cool stone ground. It is a jewel tone, unlike cherry, blush, fuchsia or violet-plum, and the opposite of Coral manda's light, peachy look. */
+:root[data-direction='tannat-menta'] {
+  --field-gradient: linear-gradient(135deg, #B4354E 0%, #B0334C 15%, #8E263D 32%, #6A1A2F 60%, #3D0C19 100%);
+  --on-field: #FFFFFF;
+  --tile: #121212;
+  --logo-dot: #F2E9EA;
+  --logo-dot-2: var(--logo-dot);
+  --logo-dot-3: var(--logo-dot);
+  --logo-apex: #5EE3A2;
+  --field-shade: #551925;
+  --ground: #F2F3F1;
+  --surface: #FFFFFF;
+  --surface-sunk: #E4E8E4;
+  --line: #DADFDA;
+  --line-strong: #7C847F;
+  --ink: #121212;
+  --ink-muted: #515955;
+  --primary: #6B1A2C;
+  --primary-hover: #84253A;
+  --on-primary: #FFFFFF;
+  --bubble-user: #6B1A2C;
+  --on-bubble-user: #FFFFFF;
+  --accent: #5EE3A2;
+  --on-accent: #121212;
+  --danger: #C2290C;
+  --danger-surface: #FFECE6;
+  --week-dot: #A8586A;
+  --sent-surface: #D8F6E7;
+  --tile-edge: rgb(255 255 255 / 0.18);
+}
+
+/* Mandarina y petróleo: A pure, saturated mandarin voice (hue 55, L 0.75) on a crisp cool-white ground, with a deep petrol tile and active pill. It is brighter and yellower than v1's muted tangerine (hue 39), more grounded than Coral manda's salmon and mint, and has no peach. It is also the mirror image of pick 1: there petrol speaks and amber marks the one. */
+:root[data-direction='mandarina-petroleo'] {
+  --field-gradient: linear-gradient(135deg, #FF6E14 0%, #FF8A1F 38%, #FFA52C 72%, #FFC23F 100%);
+  --on-field: #111414;
+  --tile: #004F5C;
+  --logo-dot: #FF8A1F;
+  --logo-dot-2: var(--logo-dot);
+  --logo-dot-3: var(--logo-dot);
+  --logo-apex: #FFFFFF;
+  --field-shade: #783409;
+  --ground: #F3F6F6;
+  --surface: #FFFFFF;
+  --surface-sunk: #E4EBEB;
+  --line: #D9E2E2;
+  --line-strong: #667576;
+  --ink: #111414;
+  --ink-muted: #4A5758;
+  --primary: #111414;
+  --primary-hover: #2E3435;
+  --on-primary: #FFFFFF;
+  --bubble-user: #FF8A1F;
+  --on-bubble-user: #111414;
+  --accent: #006272;
+  --on-accent: #FFFFFF;
+  --danger: #B5123F;
+  --danger-surface: #FCE8EE;
+  --week-dot: #FFBF84;
+  --sent-surface: #D6E6E8;
+  --tile-edge: #004F5C;
+}
+
+/* Sandía: A saturated lettuce green (hue 142, chroma 0.21) carries the user's voice and a watermelon pink marks 'the one', on a clean neutral ground with black ink, buttons and tile. That flips Coral manda's warm-led temperature, and the green is far from v1's muted green and from WhatsApp's hue 150. */
+:root[data-direction='sandia'] {
+  --field-gradient: linear-gradient(135deg, #3FC236 0%, #4DC93E 42%, #A3E894 58%, #FFFFFF 65%, #FFB0C3 71%, #FF6B8B 86%, #FF5C80 100%);
+  --on-field: #111311;
+  --tile: #111311;
+  --logo-dot: #4DC93E;
+  --logo-dot-2: var(--logo-dot);
+  --logo-dot-3: var(--logo-dot);
+  --logo-apex: #FF6B8B;
+  --field-shade: #1e5b19;
+  --ground: #F5F6F3;
+  --surface: #FFFFFF;
+  --surface-sunk: #E8ECE5;
+  --line: #DDE2DA;
+  --line-strong: #6C7769;
+  --ink: #111311;
+  --ink-muted: #4C5549;
+  --primary: #111311;
+  --primary-hover: #2F332E;
+  --on-primary: #FFFFFF;
+  --bubble-user: #4DC93E;
+  --on-bubble-user: #111311;
+  --accent: #FF6B8B;
+  --on-accent: #111311;
+  --danger: #B8350F;
+  --danger-surface: #FCEBE4;
+  --week-dot: #94DF8B;
+  --sent-surface: #FFDEE5;
+  --tile-edge: #111311;
+}
+
+/* Verde lechuga: A loud lettuce green (#2ECC40, chroma 0.22, hue 144) used alone on pure white and black is graphic and market-fresh. It is far from v1's muted #1E8A5E (chroma 0.12), from the aqua, acid and peach of earlier rounds, and has no second brand color to flatten it. */
+:root[data-direction='verde-lechuga'] {
+  --field-gradient: linear-gradient(135deg, #16BD52 0%, #2ECC40 48%, #5ED84A 82%, #86E35E 100%);
+  --on-field: #0A0A0A;
+  --tile: #0A0A0A;
+  --logo-dot: #2ECC40;
+  --logo-dot-2: var(--logo-dot);
+  --logo-dot-3: var(--logo-dot);
+  --logo-apex: #FFFFFF;
+  --field-shade: #0a5927;
+  --ground: #FFFFFF;
+  --surface: #FFFFFF;
+  --surface-sunk: #EDF1EB;
+  --line: #E1E5DE;
+  --line-strong: #848B82;
+  --ink: #0A0A0A;
+  --ink-muted: #575D55;
+  --primary: #0A0A0A;
+  --primary-hover: #2A2E29;
+  --on-primary: #FFFFFF;
+  --bubble-user: #2ECC40;
+  --on-bubble-user: #0A0A0A;
+  --accent: #2ECC40;
+  --on-accent: #0A0A0A;
+  --danger: #C2142B;
+  --danger-surface: #FDE9EA;
+  --week-dot: #97E6A0;
+  --sent-surface: #D1F4D5;
+  --tile-edge: #0A0A0A;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root[data-direction='petroleo-azafran'] {
+    --ground: #0A1315;
+    --surface: #132124;
+    --surface-sunk: #1D2D31;
+    --line: #22353A;
+    --line-strong: #6C8186;
+    --ink: #EEF3F2;
+    --ink-muted: #A6B6B8;
+    --primary: #EEF3F2;
+    --primary-hover: #D4DEDD;
+    --on-primary: #0F1517;
+    --bubble-user: #0A6875;
+    --on-bubble-user: #FFFFFF;
+    --accent: #FFAA33;
+    --on-accent: #0F1517;
+    --danger: #FF8A8A;
+    --danger-surface: #2F1517;
+    --week-dot: #A1732D;
+    --sent-surface: #2E2716;
+    --tile-edge: rgb(255 255 255 / 0.16);
+    --field-rim: rgb(255 255 255 / 0.16);
+  }
+
+  :root[data-direction='cacao-mburucuya'] {
+    --ground: #120D0A;
+    --surface: #1D1612;
+    --surface-sunk: #2A211B;
+    --line: #33291F;
+    --line-strong: #82736A;
+    --ink: #F7EFE6;
+    --ink-muted: #BCAEA3;
+    --primary: #FFB21A;
+    --primary-hover: #FFC54D;
+    --on-primary: #18110C;
+    --bubble-user: #75401F;
+    --on-bubble-user: #F7EFE6;
+    --accent: #FFB21A;
+    --on-accent: #18110C;
+    --danger: #FF8E96;
+    --danger-surface: #2E1416;
+    --week-dot: #A87A1E;
+    --sent-surface: #3A2A12;
+    --tile-edge: rgb(255 255 255 / 0.16);
+  }
+
+  :root[data-direction='palta'] {
+    --ground: #0D0F0B;
+    --surface: #181B15;
+    --surface-sunk: #23281F;
+    --line: #2B3025;
+    --line-strong: #737C67;
+    --ink: #F0F4E7;
+    --ink-muted: #ADB5A0;
+    --primary: #ADD45C;
+    --primary-hover: #BFE07A;
+    --on-primary: #11140E;
+    --bubble-user: #2F5A1B;
+    --on-bubble-user: #F0F4E7;
+    --accent: #ADD45C;
+    --on-accent: #11140E;
+    --danger: #FF8E96;
+    --danger-surface: #2C1214;
+    --week-dot: #6E8A3E;
+    --sent-surface: #2A3420;
+    --tile-edge: rgb(255 255 255 / 0.16);
+  }
+
+  :root[data-direction='tannat-menta'] {
+    --ground: #120E0F;
+    --surface: #1C1617;
+    --surface-sunk: #282122;
+    --line: #322A2C;
+    --line-strong: #7D7174;
+    --ink: #F4EFEF;
+    --ink-muted: #B7ABAD;
+    --primary: #B23A50;
+    --primary-hover: #BE4158;
+    --on-primary: #FFFFFF;
+    --bubble-user: #7A2036;
+    --on-bubble-user: #FFFFFF;
+    --accent: #5EE3A2;
+    --on-accent: #121212;
+    --danger: #FF9473;
+    --danger-surface: #2E1711;
+    --week-dot: #8E3A4E;
+    --sent-surface: #26372E;
+    --tile-edge: rgb(255 255 255 / 0.16);
+    --field-rim: rgb(255 255 255 / 0.16);
+  }
+
+  :root[data-direction='mandarina-petroleo'] {
+    --ground: #0D1011;
+    --surface: #171C1D;
+    --surface-sunk: #212829;
+    --line: #283032;
+    --line-strong: #6C7B7D;
+    --ink: #F0F5F5;
+    --ink-muted: #A8B5B6;
+    --primary: #FF8A1F;
+    --primary-hover: #FFA24D;
+    --on-primary: #111414;
+    --bubble-user: #FF8A1F;
+    --on-bubble-user: #111414;
+    --accent: #2FA4BF;
+    --on-accent: #111414;
+    --danger: #FF7C9C;
+    --danger-surface: #2E1019;
+    --week-dot: #B9691E;
+    --sent-surface: #1C3A41;
+    --tile-edge: rgb(255 255 255 / 0.16);
+  }
+
+  :root[data-direction='sandia'] {
+    --ground: #0E0F0E;
+    --surface: #181A17;
+    --surface-sunk: #232622;
+    --line: #2B2F2A;
+    --line-strong: #737C70;
+    --ink: #F2F5F0;
+    --ink-muted: #ACB4A9;
+    --primary: #4DC93E;
+    --primary-hover: #6FD562;
+    --on-primary: #111311;
+    --bubble-user: #4DC93E;
+    --on-bubble-user: #111311;
+    --accent: #FF6B8B;
+    --on-accent: #111311;
+    --danger: #FF9468;
+    --danger-surface: #2D1710;
+    --week-dot: #3D9532;
+    --sent-surface: #462A2E;
+    --tile-edge: rgb(255 255 255 / 0.16);
+  }
+
+  :root[data-direction='verde-lechuga'] {
+    --ground: #0A0A0A;
+    --surface: #161816;
+    --surface-sunk: #222522;
+    --line: #2A2D2A;
+    --line-strong: #737A72;
+    --ink: #F6F7F4;
+    --ink-muted: #A9AFA7;
+    --primary: #F6F7F4;
+    --primary-hover: #DADDD7;
+    --on-primary: #0A0A0A;
+    --bubble-user: #2ECC40;
+    --on-bubble-user: #0A0A0A;
+    --accent: #2ECC40;
+    --on-accent: #0A0A0A;
+    --danger: #FF8A93;
+    --danger-surface: #2B1215;
+    --week-dot: #24842F;
+    --sent-surface: #1A351D;
+    --tile-edge: rgb(255 255 255 / 0.16);
+  }
+}

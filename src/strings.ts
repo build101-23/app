@@ -3,18 +3,30 @@ import type { StoreKey } from '../supabase/functions/_shared/stores.ts'
 
 // All user-facing text, in Rioplatense Spanish (ADR 0006).
 export const t = {
+  loading: 'Cargando…',
+  retry: 'Reintentar',
   signIn: {
     title: 'Ingresar',
+    hint: 'Te mandamos un link a tu email para entrar, sin contraseña.',
+    googleHint: 'Entrá con tu cuenta de Google, sin contraseña.',
+    googleError: 'No se pudo entrar con Google. Probá de nuevo o usá tu email.',
+    googleUnreachable: 'Google no está disponible ahora. Entrá con tu email.',
+    useEmail: 'Entrar con tu email',
     email: 'Email',
     send: 'Enviame un link para entrar',
+    sending: 'Enviando…',
     sent: 'Revisá tu email y tocá el link para entrar.',
     otherEmail: 'Usar otro email',
+    error: 'No pudimos mandar el link. Probá de nuevo en unos minutos.',
   },
+  nav: 'Secciones',
   tabs: { chat: 'Chat', menu: 'Menú', list: 'Lista', profile: 'Perfil' },
   chat: {
     welcome: 'Hola. Contame un poco de vos: ¿qué querés lograr con tu alimentación?',
     placeholder: 'Escribí tu mensaje…',
     send: 'Enviar',
+    typing: 'Escribiendo…',
+    loading: 'Cargando la conversación…',
     listen: 'Hablar',
     stopListening: 'Dejar de escuchar',
     micError: 'No pude usar el micrófono.',
@@ -148,7 +160,10 @@ export const t = {
     canned_corn: 'Choclo en lata',
   } satisfies Record<CatalogKey, string>,
   profile: {
+    loading: 'Cargando tu perfil…',
+    loadError: 'No se pudo cargar tu perfil.',
     empty: 'Todavía no hay nada guardado. Contáselo al chat.',
+    openChat: 'Ir al chat',
     goal: 'Objetivo',
     meals: 'Comidas por día',
     cookingTime: 'Tiempo para cocinar',
@@ -159,6 +174,7 @@ export const t = {
     dislike: 'No me gusta',
     like: 'Me gusta',
     want: 'Quiero comer',
+    account: 'Cuenta',
     signOut: 'Cerrar sesión',
   },
 }

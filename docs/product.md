@@ -6,7 +6,7 @@ Living doc: how the product is *now*. Future ideas live in [notes/roadmap.md](no
 
 Following a diet means turning a plan into meals, a shopping list and a trip to the store, every week. It's tedious, and it's easy to overspend.
 
-This is a phone app that turns your diet into food at home, with two promises: **it's convenient, and it saves you money.** You build the diet by chatting with an AI nutritionist, and if you already have a nutritionist's plan, you tell it about it in the chat. The app turns it into a weekly menu and a shopping list, finds those products in the supermarkets and tells you where the whole list is cheapest. Later, it will order the food for you every week.
+**VIVERI** is a phone app that turns your diet into food at home, with two promises: **it's convenient, and it saves you money.** You build the diet by chatting with an AI nutritionist, and if you already have a nutritionist's plan, you tell it about it in the chat. The app turns it into a weekly menu and a shopping list, finds those products in the supermarkets and tells you where the whole list is cheapest. Later, it will order the food for you every week.
 
 ### What makes it different
 

@@ -22,7 +22,7 @@ export function MenuPreview({ menu, busy, onOpen }: { menu: MenuData; busy: bool
           </li>
         ))}
       </ul>
-      <button disabled={busy} onClick={onOpen}>
+      <button type="button" className="button primary" disabled={busy} onClick={onOpen}>
         {t.chat.openMenu}
       </button>
     </div>
@@ -67,18 +67,18 @@ export default function Menu({ session, onChange }: { session: Session; onChange
     setBusy(false)
   }
 
-  if (menu === undefined) return error ? <p role="alert" className="menu">{error}</p> : null
-  if (!menu) return <p className="menu">{t.menu.empty}</p>
+  if (menu === undefined) return error ? <p role="alert" className="page menu">{error}</p> : null
+  if (!menu) return <p className="page menu">{t.menu.empty}</p>
 
   const recipes = new Map(menu.data.recipes.map((recipe) => [recipe.id, recipe]))
   const days = byDay(menu.data.days)
 
   return (
-    <div className="menu">
+    <div className="page menu">
       {menu.confirmed_at ? (
         <p className="muted">{t.menu.confirmed}</p>
       ) : (
-        <button disabled={busy} onClick={() => confirm(menu.updated_at)}>
+        <button type="button" className="button primary" disabled={busy} onClick={() => confirm(menu.updated_at)}>
           {t.menu.confirm}
         </button>
       )}
@@ -88,7 +88,7 @@ export default function Menu({ session, onChange }: { session: Session; onChange
           <div className="menu-day">
             <h2>{t.menu.days[day]}</h2>
             <button
-              className="link"
+              className="button quiet"
               aria-label={t.menu.changeDay(t.menu.days[day]).trim()}
               onClick={() => onChange(t.menu.changeDay(t.menu.days[day]))}
             >
@@ -113,7 +113,7 @@ export default function Menu({ session, onChange }: { session: Session; onChange
                 </ul>
                 <p>{recipe.how}</p>
                 <button
-                  className="link"
+                  className="button quiet"
                   aria-label={t.menu.changeMeal(meal.slot, t.menu.days[day]).trim()}
                   onClick={() => onChange(t.menu.changeMeal(meal.slot, t.menu.days[day]))}
                 >

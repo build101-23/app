@@ -79,13 +79,15 @@ export default function List({ session, onOpenMenu }: { session: Session; onOpen
     return () => document.removeEventListener('visibilitychange', onVisible)
   }, [])
 
-  if (menu === undefined) return error ? <p role="alert" className="list">{error}</p> : null
-  if (!menu) return <p className="list">{t.menu.empty}</p>
+  if (menu === undefined) return error ? <p role="alert" className="page list">{error}</p> : null
+  if (!menu) return <p className="page list">{t.menu.empty}</p>
   if (!menu.confirmed_at) {
     return (
-      <div className="list">
+      <div className="page list">
         <p>{t.list.confirmFirst}</p>
-        <button onClick={onOpenMenu}>{t.chat.openMenu}</button>
+        <button type="button" className="button primary" onClick={onOpenMenu}>
+          {t.chat.openMenu}
+        </button>
       </div>
     )
   }
@@ -155,7 +157,7 @@ export default function List({ session, onOpenMenu }: { session: Session; onOpen
   }
 
   return (
-    <div className="list">
+    <div className="page list">
       {priced && (
         <section className="prices">
           <h2 id="where">{t.prices.where}</h2>
@@ -194,14 +196,14 @@ export default function List({ session, onOpenMenu }: { session: Session; onOpen
       )}
       <p className="muted">{t.list.hint}</p>
       <div className="list-actions">
-        <button disabled={nothingToBuy} onClick={share}>
+        <button type="button" className="button primary" disabled={nothingToBuy} onClick={share}>
           {t.list.share}
         </button>
-        <button disabled={nothingToBuy} onClick={copy}>
+        <button type="button" className="button secondary" disabled={nothingToBuy} onClick={copy}>
           {t.list.copy}
         </button>
         {Object.keys(have).length > 0 && (
-          <button className="link" onClick={() => window.confirm(t.list.resetConfirm) && save({})}>
+          <button className="button quiet" onClick={() => window.confirm(t.list.resetConfirm) && save({})}>
             {t.list.reset}
           </button>
         )}

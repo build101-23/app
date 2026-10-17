@@ -6,7 +6,7 @@ Living doc: how the system is *now*. Reasoning lives in [ADRs](adr/), not here.
 
 - **Web app** (`src/`): a single-page app installed on the phone as a PWA. It talks to Supabase with the public key and the user's login token. Screens: Chat (with a preview of each menu it saved or showed and a button to the Menu tab), Menu (a Confirm button above the week, and Cambiar buttons that hand a draft to the chat), List (the confirmed menu added up into a shopping list by section, with what you have at home crossed out or reduced, and share or copy; on top, where to buy it by the store rule) and Profile.
 - **Supabase**: one hosted project.
-  - Auth: magic link email for now, an emailed code from milestone 6.
+  - Auth: Google's sign-in button first ([ADR 0023](adr/0023-google-leads-sign-in.md)), or a magic link email for now and an emailed code from milestone 6.
   - Postgres (`supabase/migrations/`), with row-level security on every table. Users read only their own rows, except the price catalog below. They write only `conversations`, `menus.confirmed_at` and `menus.have`; the `chat` function writes the rest ([ADR 0014](adr/0014-client-reads-chat-function-writes.md)):
     - `conversations`: the user's chats, with a title (the first message) and `updated_at` for sorting.
     - `messages`: the turns of each conversation. `content` holds each message exactly as sent to or returned by Claude, thinking blocks included. The history is append-only and replayed as is.
@@ -25,7 +25,9 @@ Living doc: how the system is *now*. Reasoning lives in [ADRs](adr/), not here.
 
 ## Data flow
 
-1. Sign-in: browser → Supabase Auth → magic link email → back to the app with a session.
+1. Sign-in, either way:
+   - Google: browser → Google's button → signed ID token → Supabase Auth (`signInWithIdToken`) → session, without leaving the page.
+   - Email: browser → Supabase Auth → magic link email → back to the app with a session.
 2. Chat: the browser creates a `conversations` row for a new chat, then → `chat` function (user token, conversation id) → Claude (streaming) → text streamed back to the browser. The function writes: `save_profile` calls write `profiles`, `save_menu` calls write `menus.data`, `update_shopping_list` calls write `menus.have`, and the new turns are appended to `messages`. When the stream ends, the browser reloads the chat's messages, so it sees the `save_menu` and `show_menu` calls it shows as previews. A `show_menu` preview is the latest menu in the chat before it: a saved `save_menu` input or the server's `<saved_menu>` copy.
 3. Screens read `conversations`, `messages`, `profiles` and `menus` directly from Supabase, limited to the user's own rows. The Menu tab's Confirm button writes `menus.confirmed_at`. The List tab builds the list in the browser from `menus.data` and the catalog, and writes `menus.have`. Those are the only columns of `menus` the browser may change. The List tab also prices what's left to buy, in the browser, with the example prices.
 4. Prices: `python -m scraper` → supermarket sites (1 request per second per site, 25 minutes at most) → `upsert_store_products` in batches → `store_products`, and `price_changes` through the trigger. One `scrape_runs` row per chain records how the run went.
@@ -35,6 +37,7 @@ Living doc: how the system is *now*. Reasoning lives in [ADRs](adr/), not here.
 - Client: installable web app (PWA), Capacitor later ([ADR 0002](adr/0002-pwa-now-capacitor-later.md))
 - Framework: Vite + React + TypeScript ([ADR 0004](adr/0004-vite-react-supabase-claude.md))
 - UI language: Spanish, strings in `src/strings.ts` ([ADR 0006](adr/0006-spanish-ui.md))
+- UI design: plain CSS with design tokens in `src/index.css`, pumpkin orange and black, floating glass dock, no CSS framework ([ADR 0022](adr/0022-coral-identity-and-glass-dock.md), [ADR 0024](adr/0024-naranja-zapallo-colors.md), [design.md](design.md))
 - Backend: Supabase: auth, Postgres, Edge Functions ([ADR 0004](adr/0004-vite-react-supabase-claude.md))
 - AI: `claude-sonnet-5-5` at medium effort via the Anthropic SDK ([ADR 0007](adr/0007-sonnet-for-chat.md))
 - Hosting: Cloudflare Worker serving the static build ([ADR 0005](adr/0005-cloudflare-workers.md))
