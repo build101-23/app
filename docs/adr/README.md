@@ -7,6 +7,7 @@ One file per decision: `NNNN-short-title.md`. ADRs are append-only: never rewrit
 | 0001 | [Record architecture decisions](0001-record-architecture-decisions.md) | Accepted | 2026-10-17 |
 | 0002 | [Installable web app now, Capacitor later](0002-pwa-now-capacitor-later.md) | Accepted | 2026-10-17 |
 | 0003 | [Prices from supermarket websites and SIPC](0003-price-sources.md) | Accepted | 2026-10-17 |
+| 0004 | [Vite React, Supabase and Claude](0004-vite-react-supabase-claude.md) | Accepted | 2026-10-17 |
 
 ## Template
 
