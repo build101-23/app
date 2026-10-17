@@ -1,6 +1,6 @@
 # Prices (fake) and store rule
 
-Status: **built**; release (step 7) is pending. Milestone 5 in [milestones](../notes/milestones.md). Based on `main` at `14b45b1`. It builds on [plan and menu](2026-10-17-plan-and-menu.md) and the [shopping list](2026-10-17-shopping-list.md). The choices marked *(team)* are listed at the end and need an OK before step 2.
+Status: **released** (build101-23/app#7, `chat` deployed); the Tenki setup (step 7.2) and the phone check (step 7.6) are pending. Milestone 5 in [milestones](../notes/milestones.md). Based on `main` at `14b45b1`. It builds on [plan and menu](2026-10-17-plan-and-menu.md) and the [shopping list](2026-10-17-shopping-list.md). The choices marked *(team)* are listed at the end and need an OK before step 2.
 
 > **⚠️ The prices in this milestone are made up, and they are temporary.** ADR 0019 says when they get deleted and lists every place to change. Everywhere else, a one-line pointer carries the literal `ADR 0019`. See [Removing the example prices](#removing-the-example-prices).
 
