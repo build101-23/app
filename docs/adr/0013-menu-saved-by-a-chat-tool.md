@@ -1,6 +1,6 @@
 # 0013. Weekly menu saved by a chat tool, keyed to a fixed food catalog
 
-- Status: Accepted
+- Status: Accepted (confirm step removed by 0022; seven fixed days superseded by 0024)
 - Date: 2026-10-17
 
 ## Context
