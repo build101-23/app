@@ -11,6 +11,7 @@ One file per decision: `NNNN-short-title.md`. ADRs are append-only: never rewrit
 | 0005 | [Host the web app on Cloudflare Workers](0005-cloudflare-workers.md) | Accepted | 2026-10-17 |
 | 0006 | [Spanish UI, English everything else](0006-spanish-ui.md) | Accepted | 2026-10-17 |
 | 0007 | [Claude Sonnet 5.5 at medium effort for the chat](0007-sonnet-for-chat.md) | Accepted | 2026-10-17 |
+| 0008 | [How we read supermarket sites](0008-how-we-read-supermarket-sites.md) | Accepted | 2026-10-17 |
 
 ## Template
 

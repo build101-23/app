@@ -52,3 +52,7 @@ Vite reads `.env`, then `.env.local` (gitignored), which overrides it.
 - Every other pushed branch builds too and gets its own Preview URL (`npx wrangler preview`); the URL is in that build's log. The Worker's settings live in `wrangler.jsonc`; Preview-only settings go in its `previews` block.
 - Signing in on a Preview only works if its URL is in Supabase's Redirect URLs (below).
 - In Supabase, under Authentication → URL Configuration, the Site URL is the deployed URL and the Redirect URLs include `https://app.build101-23.workers.dev/**`.
+
+## Spikes
+
+- Supermarket prices (`spikes/supermarket-prices/`, Python 3.13, not part of the app): see [price-sources-research.md](notes/price-sources-research.md#running-the-spike).
