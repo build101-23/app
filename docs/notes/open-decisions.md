@@ -15,4 +15,5 @@ Once a decision is made, record it where it belongs (an ADR in [adr/](../adr/), 
 - [ ] Safe limits for plans the AI builds from scratch: minimum calories, maximum deficit, minimum protein. Have a nutritionist review them.
 - [ ] Sending health data to an AI provider abroad: check what Law 18.331 requires for international transfers, and say it in the consent.
 - [ ] Which list edits count toward "under 20% of items edited" ([product.md](../product.md#what-we-want-to-learn)). Crossing something out often means it's in the pantry, not that the list was wrong, so milestone 6's events should record the kind of edit (crossed out or −) and where it came from (list or chat).
+- [ ] Real prices before the pilot? On example prices, "Do they actually save?" and "Do they accept a split?" ([product.md](../product.md#what-we-want-to-learn)) measure nothing ([ADR 0019](../adr/0019-example-prices-until-matched.md)).
 - [ ] App name.

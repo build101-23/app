@@ -375,7 +375,8 @@ textarea {
   min-height: 44px;
 }
 
-.list input[type='checkbox'] {
+.list input[type='checkbox'],
+.list input[type='radio'] {
   flex: none;
   width: 20px;
   height: 20px;

@@ -1,4 +1,5 @@
 import type { CatalogKey, Section } from '../supabase/functions/_shared/catalog.ts'
+import type { StoreKey } from '../supabase/functions/_shared/stores.ts'
 
 // All user-facing text, in Rioplatense Spanish (ADR 0006).
 export const t = {
@@ -75,6 +76,20 @@ export const t = {
       dairy: 'Lácteos, fiambres y huevos',
       other: 'Otros',
     } satisfies Record<Section | 'other', string>,
+  },
+  stores: { disco: 'Disco', geant: 'Géant', tata: 'Ta-Ta' } satisfies Record<StoreKey, string>,
+  // The List tab's price block. Amounts come in already formatted ("$ 1.937").
+  prices: {
+    where: 'Dónde comprar',
+    oneStore: (store: string, total: string) => `Todo en ${store} · ${total}`,
+    split: (a: string, b: string, total: string) => `${a} y ${b} · ${total}`,
+    cheaperThan: (amount: string, store: string) => `${amount} menos que todo en ${store}`,
+    noOneStore: 'Ningún súper tiene toda la lista.',
+    saving: (amount: string) => `Ahorrás ${amount} frente al promedio de los súper.`,
+    missing: (n: number) => (n === 1 ? '1 producto no encontrado' : `${n} productos no encontrados`),
+    notFound: 'No encontrado online',
+    // Temporary example-prices label (ADR 0019).
+    sample: (date: string) => `Precios de ejemplo del ${date}, no son reales.`,
   },
   foods: {
     chicken_breast: 'Pechuga de pollo',
