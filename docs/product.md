@@ -60,8 +60,9 @@ The first version goes from a chat to a priced shopping list, in Montevideo only
 #### 3. Numbers are optional
 
 - Numbers are hidden by default: the app talks about meals, not numbers.
-- If you want, you can set calories and protein yourself, or see the numbers per meal and per day.
-- Turned on with a switch in your profile.
+- A switch in your profile shows them: kcal, protein, carbs and fat per meal and per day in the Menu tab. They're estimates from a table per food; foods outside the catalog are left out of the totals, and the line says which ([ADR 0021](adr/0021-numbers-switch-in-the-profile.md)).
+- Ask the chat to show or hide them. Talk in numbers or technical terms (calories, grams of protein, macros) and it turns them on by itself, says so in one line and offers to go back. Once you turn them off, it doesn't turn them on again unless you ask.
+- With numbers on, give the chat a calorie or protein target and it builds the menu to it, with the same values the Menu tab adds up.
 
 #### 4. Weekly menu
 

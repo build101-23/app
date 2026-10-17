@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import type { Session } from '@supabase/supabase-js'
 import { days as order, type MenuData } from '../supabase/functions/_shared/menu.ts'
+import { addMacros } from '../supabase/functions/_shared/nutrition.ts'
 import { supabase } from './supabase'
 import { t } from './strings'
 
@@ -8,6 +9,13 @@ import { t } from './strings'
 type MenuRow = { data: MenuData; confirmed_at: string | null; updated_at: string }
 
 const byDay = (days: MenuData['days']) => [...days].sort((a, b) => order.indexOf(a.day) - order.indexOf(b.day))
+
+// "520 kcal · 35 g prote · 60 g carbos · 15 g grasa (sin contar espinaca)", for the numbers switch.
+function macrosLine({ kcal, protein, carbs, fat, missing }: ReturnType<typeof addMacros>) {
+  const f = (n: number) => Math.round(n).toLocaleString('es-UY')
+  const line = t.menu.macros(f(kcal), f(protein), f(carbs), f(fat))
+  return missing.length ? `${line} (${t.menu.without([...new Set(missing)].join(', '))})` : line
+}
 
 // The week as a save_menu call saved it, shown in the chat under that reply.
 export function MenuPreview({ menu, busy, onOpen }: { menu: MenuData; busy: boolean; onOpen: () => void }) {
@@ -34,6 +42,7 @@ export default function Menu({ session, onChange }: { session: Session; onChange
   const [menu, setMenu] = useState<MenuRow | null | undefined>(undefined)
   const [error, setError] = useState('')
   const [busy, setBusy] = useState(false)
+  const [showNumbers, setShowNumbers] = useState(false)
 
   function load() {
     return supabase
@@ -48,6 +57,11 @@ export default function Menu({ session, onChange }: { session: Session; onChange
 
   useEffect(() => {
     load()
+    supabase
+      .from('profiles')
+      .select('data')
+      .maybeSingle()
+      .then(({ data }) => setShowNumbers(data?.data?.show_numbers === true))
   }, [])
 
   async function confirm(version: string) {
@@ -95,6 +109,12 @@ export default function Menu({ session, onChange }: { session: Session; onChange
               {t.menu.change}
             </button>
           </div>
+          {showNumbers && (
+            <p className="macros">
+              {t.menu.dayTotal}:{' '}
+              {macrosLine(addMacros(meals.flatMap((meal) => recipes.get(meal.recipe_id)?.ingredients ?? [])))}
+            </p>
+          )}
           {meals.map((meal, i) => {
             const recipe = recipes.get(meal.recipe_id)
             if (!recipe) return null
@@ -102,6 +122,7 @@ export default function Menu({ session, onChange }: { session: Session; onChange
               <details key={i}>
                 <summary>
                   <span className="muted">{meal.slot}</span> {recipe.name}
+                  {showNumbers && <small className="macros">{macrosLine(addMacros(recipe.ingredients))}</small>}
                 </summary>
                 <ul>
                   {recipe.ingredients.map((item, j) => (

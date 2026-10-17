@@ -312,6 +312,21 @@ textarea {
   padding-left: 20px;
 }
 
+.profile label.switch {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  margin: 16px 0;
+}
+
+.menu .macros {
+  display: block;
+  margin: 0 0 4px;
+  color: var(--muted);
+  font-size: 0.875rem;
+}
+
 .menu-day {
   display: flex;
   justify-content: space-between;
@@ -376,7 +391,8 @@ textarea {
 }
 
 .list input[type='checkbox'],
-.list input[type='radio'] {
+.list input[type='radio'],
+.profile input[type='checkbox'] {
   flex: none;
   width: 20px;
   height: 20px;
