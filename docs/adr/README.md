@@ -22,6 +22,8 @@ One file per decision: `NNNN-short-title.md`. ADRs are append-only: never rewrit
 | 0016 | [Price catalog: one row per product per chain](0016-price-catalog-one-row-per-product-per-chain.md) | Accepted | 2026-10-17 |
 | 0017 | [The shopping list is derived in the browser; only what you have is stored](0017-shopping-list-derived-in-the-browser.md) | Accepted | 2026-10-17 |
 | 0018 | [The scraper reads GDU through listings and a few food pages](0018-gdu-listings-and-food-pages.md) | Accepted | 2026-10-17 |
+| 0019 | [Example prices bundled with the app until real prices are matched](0019-example-prices-until-matched.md) | Accepted | 2026-10-17 |
+| 0020 | [CI on Tenki runners](0020-ci-on-tenki-runners.md) | Accepted | 2026-10-17 |
 
 ## Template
 

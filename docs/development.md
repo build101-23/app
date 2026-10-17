@@ -18,7 +18,7 @@ Sign-in uses Supabase's default magic link email. The link only sends you back t
 | --- | --- |
 | `npm run dev` | Dev server at http://localhost:5173 |
 | `npm run build` | Type-check and build to `dist/` |
-| `npm run lint` | Lint with oxlint |
+| `npm run lint` | Lint with oxlint; warnings fail it too |
 | `npm test` | Run the tests (Node's test runner) |
 | `npx supabase migration new <name>` | Create an empty migration in `supabase/migrations/` |
 | `npx supabase db push` | Apply new migrations to the hosted database (asks for the database password) |
@@ -53,6 +53,8 @@ Vite reads `.env`, then `.env.local` (gitignored), which overrides it.
 ## Testing
 
 - `npm test` runs Node's built-in test runner on `supabase/functions/_shared/*.test.ts`. That code is plain TS, so it runs without Deno.
+- Node only strips types from the tests, so `npm run build` type-checks them (`tsconfig.node.json` includes `_shared`).
+- CI ([workflow](../.github/workflows/ci.yml), [ADR 0020](adr/0020-ci-on-tenki-runners.md)) runs lint, build and tests, and the scraper's tests, on pull requests and on pushes to `main`, on Tenki runners, and skips pull requests from forks. It uses Node 24, like Cloudflare; your local Node may be newer. It doesn't block Cloudflare deploys.
 - The `chat` function itself has no tests: try it against the hosted project after deploying.
 - Scraper: `scraper/.venv/bin/python -m unittest discover -s scraper/tests -t .`. Hand-written fixtures, no network.
 

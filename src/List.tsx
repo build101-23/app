@@ -1,12 +1,16 @@
 import { useEffect, useState } from 'react'
 import type { Session } from '@supabase/supabase-js'
 import type { CatalogKey, Unit } from '../supabase/functions/_shared/catalog.ts'
-import { buildList, stepHave, toBuy, type Have, type Item } from '../supabase/functions/_shared/list.ts'
+import { buildList, left, stepHave, toBuy, type Have, type Item } from '../supabase/functions/_shared/list.ts'
 import type { MenuData } from '../supabase/functions/_shared/menu.ts'
+// Temporary example prices: swapped for the real loader per ADR 0019.
+import { examplePrices, pricesDate } from '../supabase/functions/_shared/prices.ts'
+import { planStores, type Option } from '../supabase/functions/_shared/stores.ts'
 import { supabase } from './supabase'
 import { t } from './strings'
 
-type MenuRow = { data: MenuData; confirmed_at: string | null; have: Have }
+// updated_at is the menu's version: writing have doesn't touch it.
+type MenuRow = { data: MenuData; confirmed_at: string | null; have: Have; updated_at: string }
 
 const sections = Object.keys(t.list.sections) as (keyof typeof t.list.sections)[]
 
@@ -32,18 +36,36 @@ const nameOf = (item: Item) => item.other_name ?? t.foods[item.food as CatalogKe
 const buyText = (item: Item, buy: number) =>
   item.pack ? `${buy / item.pack} × ${qty(item.pack, item.unit)}` : qty(buy, item.unit)
 
+const money = new Intl.NumberFormat('es-UY', { style: 'currency', currency: 'UYU', maximumFractionDigits: 0 }).format
+const pricesDay = new Date(pricesDate).toLocaleDateString('es-UY', { day: 'numeric', month: 'long' })
+const optionText = ({ stores, total }: Option) =>
+  stores.length === 1
+    ? t.prices.oneStore(t.stores[stores[0]], money(total))
+    : t.prices.split(t.stores[stores[0]], t.stores[stores[1]], money(total))
+
+// The menu version the user picked the split for. Another menu starts on one store again, the default.
+// shortcut: the pick lives in this browser; move it next to menus.have if people switch devices
+function readPick() {
+  try {
+    return localStorage.getItem('storePick')
+  } catch {
+    return null
+  }
+}
+
 export default function List({ session, onOpenMenu }: { session: Session; onOpenMenu: () => void }) {
   // undefined while loading, null when the AI hasn't saved a menu yet.
   const [menu, setMenu] = useState<MenuRow | null | undefined>(undefined)
   const [error, setError] = useState('')
   const [notice, setNotice] = useState('')
+  const [pickedFor, setPickedFor] = useState(readPick)
 
   // Reads again whenever the app comes back to the screen, so marks saved from the chat or another device
   // show up before the next tap writes the whole map over them.
   useEffect(() => {
     const load = () => {
       const before = saves
-      return inTurn(() => supabase.from('menus').select('data, confirmed_at, have').maybeSingle()).then(
+      return inTurn(() => supabase.from('menus').select('data, confirmed_at, have, updated_at').maybeSingle()).then(
         ({ data, error }) => {
           if (error) setError(t.menu.loadError)
           // A tap made while this read was in flight is newer than the `have` it read, and that save writes it.
@@ -68,7 +90,7 @@ export default function List({ session, onOpenMenu }: { session: Session; onOpen
     )
   }
 
-  const { have } = menu
+  const { have, updated_at } = menu
   const items = buildList(menu.data)
   const text = [
     t.list.title,
@@ -80,6 +102,24 @@ export default function List({ session, onOpenMenu }: { session: Session; onOpen
     }),
   ].join('\n')
   const nothingToBuy = items.every((item) => toBuy(item, have) === 0)
+
+  // Priced on what's left to buy, unrounded; crossed-out items have nothing left.
+  const toPrice = items.map((item) => ({ id: item.id, amount: left(item, have) })).filter((need) => need.amount > 0)
+  const plan = planStores(toPrice, examplePrices)
+  const { single, split } = plan
+  const priced = toPrice.length > plan.notFound.length
+  const chosen = (pickedFor === updated_at && split) || single || split
+
+  function pick(toSplit: boolean) {
+    const version = toSplit ? updated_at : null
+    try {
+      if (version) localStorage.setItem('storePick', version)
+      else localStorage.removeItem('storePick')
+    } catch {
+      // Private mode: the pick only lasts while the tab is open.
+    }
+    setPickedFor(version)
+  }
 
   // The screen changes at once. Each save sends the whole map, so the last one to land decides what's stored.
   function save(next: Have) {
@@ -116,6 +156,42 @@ export default function List({ session, onOpenMenu }: { session: Session; onOpen
 
   return (
     <div className="list">
+      {priced && (
+        <section className="prices">
+          <h2 id="where">{t.prices.where}</h2>
+          {single && split ? (
+            <div role="radiogroup" aria-labelledby="where">
+              <label>
+                <input type="radio" name="where" checked={chosen === single} onChange={() => pick(false)} />
+                <span>{optionText(single)}</span>
+              </label>
+              <label>
+                <input type="radio" name="where" checked={chosen === split} onChange={() => pick(true)} />
+                <span>
+                  {optionText(split)} · {t.prices.cheaperThan(money(single.total - split.total), t.stores[single.stores[0]])}
+                </span>
+              </label>
+            </div>
+          ) : (
+            chosen && (
+              <p>
+                {optionText(chosen)}
+                {!single && ` ${t.prices.noOneStore}`}
+              </p>
+            )
+          )}
+          {chosen && chosen.saving > 0 && <p>{t.prices.saving(money(chosen.saving))}</p>}
+          <ul>
+            {plan.perStore.map(({ store, total, missing }) => (
+              <li key={store}>
+                {t.stores[store]} {money(total)}
+                {missing > 0 && ` · ${t.prices.missing(missing)}`}
+              </li>
+            ))}
+          </ul>
+          <p className="muted">{t.prices.sample(pricesDay)}</p>
+        </section>
+      )}
       <p className="muted">{t.list.hint}</p>
       <div className="list-actions">
         <button disabled={nothingToBuy} onClick={share}>
@@ -144,6 +220,8 @@ export default function List({ session, onOpenMenu }: { session: Session; onOpen
                 const buy = toBuy(item, have)
                 const crossed = buy === 0
                 const needs = qty(item.amount, item.unit)
+                const store = chosen && chosen.stores.length === 2 ? chosen.at[item.id] : undefined
+                const tag = !priced ? '' : plan.notFound.includes(item.id) ? t.prices.notFound : store ? t.stores[store] : ''
                 return (
                   <li key={item.id} className={crossed ? 'have' : undefined}>
                     <label>
@@ -154,6 +232,7 @@ export default function List({ session, onOpenMenu }: { session: Session; onOpen
                         onChange={() => toggle(item, crossed)}
                       />
                       <span>{name}</span>
+                      {tag && <small className="muted">{tag}</small>}
                     </label>
                     <span className="qty">
                       {crossed ? needs : buyText(item, buy)}

@@ -82,20 +82,20 @@ The first version goes from a chat to a priced shopping list, in Montevideo only
 
 #### 6. Save money
 
-- Looks up every item on the list at the main supermarkets.
-- Compares price per kilo or liter, not per package. A bigger pack wins only if it's really cheaper and gets used up that week.
-- Suggests cheaper options the plan allows: store brands, fruit and vegetables in season, another cut of meat that fits.
+- Prices the list at Disco, Géant and Ta-Ta, with example prices for now ([ADR 0019](adr/0019-example-prices-until-matched.md)).
+- Prices only what's left to buy: crossed-out items aren't priced, and partly-had ones are priced on what's left.
+- Each store is costed on the whole packs the week needs, and loose food on the exact weight (the line rounds up). So a bigger pack only wins if it's cheaper even counting what's left over.
 - Shows what the whole list costs at each supermarket.
 - Prices are estimates and show the date they were checked.
 
 **Which store to buy at.** The app picks the cheapest way to buy the whole *list*, not the cheapest store for each item, so you never end up with an order at every store:
 
-1. By default it recommends one store: the cheapest one that has the whole list.
-2. It suggests splitting between two stores, each item at the cheaper of the two, only if that saves at least 10% of the list, or if no single store has everything. It shows how much the split saves and you choose.
-3. It never suggests more than two stores.
+1. By default it recommends one store: the cheapest one that has the whole list. "The whole list" means every item at least one store sells.
+2. It suggests splitting between two stores, each item at the cheaper of the two, only if that saves at least 10% of the one-store total, or if no single store has everything. It shows how much the split saves and you choose; one store stays the default.
+3. It never suggests more than two stores. If neither one store nor two have the whole list, it shows each store's total and recommends nothing.
 4. A store that is missing items shows "N items not found". Items no store has are marked "not found online" and left out of every total.
 
-**How much you saved.** Each week the app shows the saving compared with the average price of the same list across the supermarkets it checks.
+**How much you saved.** Each week the app shows the saving compared with the average price of the same list across the supermarkets it checks: each item's average over the stores that sell it, added up. It's rounded down and shown only when it's above zero.
 
 #### 7. Basics
 

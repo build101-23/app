@@ -20,6 +20,8 @@ Ideas for after the first version ([scope](../product.md#scope)). Grouped by are
 - Pay inside the app.
 
 **Money**
+- Cheaper options the plan allows: store brands, fruit and vegetables in season, another cut of meat that fits.
+- Several pack sizes per store, picking the cheapest for the week.
 - Weekly promotions and bank-card discount days, counted in the price.
 - A menu that leans toward what's on sale this week, inside the plan.
 - Price history, to tell a real deal from a fake one.
