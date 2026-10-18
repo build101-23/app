@@ -1,10 +1,12 @@
 import { useEffect, useState } from 'react'
 import type { Session } from '@supabase/supabase-js'
-import type { CatalogKey, Unit } from '../supabase/functions/_shared/catalog.ts'
+import type { Unit } from '../supabase/functions/_shared/catalog.ts'
 import { buildList, stepHave, toBuy, type Have, type Item } from '../supabase/functions/_shared/list.ts'
 import type { MenuData } from '../supabase/functions/_shared/menu.ts'
 import { lineOf, pricing, type Pricing } from '../supabase/functions/_shared/offers.ts'
 import type { Option } from '../supabase/functions/_shared/stores.ts'
+import Cart from './Cart'
+import { money, nameOf } from './format'
 import { usePrices } from './prices'
 import { supabase } from './supabase'
 import { t } from './strings'
@@ -32,7 +34,6 @@ function qty(amount: number, unit: Unit) {
   if (unit !== 'un' && amount >= 1000) return `${num(amount / 1000)} ${unit === 'g' ? t.menu.units.kg : t.menu.units.l}`
   return `${num(amount)} ${t.menu.units[unit]}`
 }
-const nameOf = (item: Item) => item.other_name ?? t.foods[item.food as CatalogKey]
 // Whole packs where the food comes in packs ("2 × 1 kg"), otherwise the amount.
 const buyText = (item: Item, buy: number) =>
   item.pack ? `${buy / item.pack} × ${qty(item.pack, item.unit)}` : qty(buy, item.unit)
@@ -49,7 +50,6 @@ const listText = (items: Item[], have: Have) =>
     }),
   ].join('\n')
 
-const money = new Intl.NumberFormat('es-UY', { style: 'currency', currency: 'UYU', maximumFractionDigits: 0 }).format
 const day = (iso: string) => new Date(iso).toLocaleDateString('es-UY', { day: 'numeric', month: 'long' })
 const optionText = ({ stores, total }: Option) =>
   stores.length === 1
@@ -262,6 +262,7 @@ export default function List({ session, onOpenChat }: { session: Session; onOpen
               </li>
             ))}
           </ul>
+          {p && <Cart p={p} chosen={chosen} />}
           {p?.checkedAt && <p className="muted">{t.prices.checked(day(p.checkedAt))}</p>}
         </section>
       )}

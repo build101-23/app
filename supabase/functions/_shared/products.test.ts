@@ -1,7 +1,7 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import { days, type MenuData } from './menu.ts'
-import { offerOf, productProblems, searchText, skusByStore, unitOfSale, type SearchRow } from './products.ts'
+import { freshRows, offerOf, productProblems, searchText, skusByStore, unitOfSale, type SearchRow } from './products.ts'
 import { row } from './testing.ts'
 
 const menu = (products: MenuData['products']): MenuData => ({
@@ -73,6 +73,27 @@ test('save_menu needs a product for every item, sold at that store, in its unit'
     'rice (g): 20 at tata is sold by un, not g. Pick another, or change the unit.',
     'egg (un): no product picked. Search for it and add it to products, or use another food.',
   ])
+})
+
+test('a row 14 days older than its store\'s newest read is no longer listed', () => {
+  const rows = [
+    row({ store_key: 'tata', store_sku: '1', checked_at: '2026-10-04T12:00:01Z' }),
+    row({ store_key: 'tata', store_sku: '2', checked_at: '2026-10-04T12:00:00Z' }),
+    // Géant's newest read is older, so the same date is still fresh there.
+    row({ store_key: 'geant', store_sku: '2', checked_at: '2026-10-04T12:00:00Z' }),
+    // A store with no newest read keeps its rows.
+    row({ store_key: 'disco', store_sku: '3', checked_at: '2020-01-01T00:00:00Z' }),
+  ]
+  const newest = [
+    { store_key: 'tata', newest: '2026-10-18T12:00:00Z' },
+    { store_key: 'geant', newest: '2026-10-10T12:00:00Z' },
+    { store_key: 'disco', newest: null },
+  ]
+  assert.deepEqual(
+    freshRows(rows, newest).map((r) => `${r.store_key}:${r.store_sku}`),
+    ['tata:1', 'geant:2', 'disco:3'],
+  )
+  assert.equal(freshRows(rows, []).length, 4)
 })
 
 test('skus are read per store, once each', () => {
