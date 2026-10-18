@@ -249,6 +249,9 @@ export const t = {
     loadError: 'No se pudo cargar tu perfil.',
     empty: 'Todavía no hay nada guardado. Contáselo al chat.',
     openChat: 'Ir al chat',
+    // The two cards of what the chat saved: the facts, then the lists.
+    about: 'Sobre vos',
+    tastes: 'Tus gustos',
     goal: 'Objetivo',
     meals: 'Comidas por día',
     cookingTime: 'Tiempo para cocinar',
@@ -260,10 +263,9 @@ export const t = {
     like: 'Me gusta',
     want: 'Quiero comer',
     // The numbers switch (product.md: numbers are optional, hidden by default).
-    settings: 'Preferencias',
-    numbers: 'Mostrar números (calorías y macros)',
+    numbers: 'Mostrar números',
+    numbersHint: 'Calorías y macros en tu menú',
     numbersError: 'No se pudo guardar. Probá de nuevo.',
-    account: 'Cuenta',
     signOut: 'Cerrar sesión',
   },
 }

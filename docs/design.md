@@ -225,11 +225,11 @@ A near-white ground with a faint green tint, the icon's deep green for the user'
 ### Hierarchy
 - **Title large** (650, 1.75rem, 1.2): the sign-in heading.
 - **Headline** (650, 1.4375rem, 1.25): reserved for page headings; no current screen uses it.
-- **Title** (650, 1.25rem, 1.3): sheet titles (the health-data dialog) and the Menu's day name. Screens have no visible title: the top bar shows the logo, and the section's name is a screen-reader-only `h1`.
+- **Title** (650, 1.25rem, 1.3): sheet titles (the health-data dialog), the Menu's day name and the Profile's card titles. Screens have no visible title: the top bar shows the logo, and the section's name is a screen-reader-only `h1`.
 - **Body** (400, 1rem, 1.5; 1.45 in bubbles): messages, values, hints.
-- **Label** (550, 0.9375rem): field labels, chips, alerts, profile section headings, and List sections (at 1rem, 650).
-- **Meta** (400, 0.875rem): definition-list labels above profile values.
-- **Caption** (0.8125rem): the status pill, error details, the chat's status line and disclaimer, dates in the chats list, and the List's store tags and menu amounts.
+- **Label** (550, 0.9375rem): field labels, chips, alerts, and List sections (at 1rem, 650).
+- **Meta** (400, 0.875rem): the sign-in divider and the notes under the List's order button; the small button borrows its size.
+- **Caption** (0.8125rem): the status pill, error details, the chat's status line and disclaimer, dates in the chats list, the List's store tags and menu amounts, and the Profile's labels and switch hint.
 - **Tab** (550, 0.8125rem; 650 when active).
 
 ### Named Rules
@@ -250,7 +250,7 @@ A near-white ground with a faint green tint, the icon's deep green for the user'
 - **Spacing:**
   - A 4px base and a 16px gutter.
   - Pages pad 20px on top and the dock's clearance at the bottom.
-  - Profile groups are 28px apart, and headings sit closer to their content than to the group above.
+  - Profile cards are 16px apart.
 - **Safe areas:** `--safe-top/right/bottom/left` wrap `env(safe-area-inset-*)`.
   - The top bar pads the top inset, and the gutters pad the side insets.
   - The dock sits `max(12px, bottom inset)` above the bottom edge and 12px plus the side insets from each side.
@@ -282,7 +282,7 @@ Flat content, glass navigation ([ADR 0026](adr/0026-glass-navigation-layer.md)).
 
 ## Shapes
 
-Round, from the dots. Pills (999px) for buttons, chips, the status pill and the single-line composer; a 44px circle for send; 18px bubbles with a 6px "tail" corner on the speaker's side; 16px cards; 14px fields; a 64px pill for the dock, with pill-shaped items and active capsule; a 44px circle for the microphone; 32px circles for the List's − and + steps, with a 44px target.
+Round, from the dots. Pills (999px) for buttons, chips, the status pill and the single-line composer; a 44px circle for send; 18px bubbles with a 6px "tail" corner on the speaker's side; 16px cards; 14px fields; a 64px pill for the dock, with pill-shaped items and active capsule; a 44px circle for the microphone; a 56px circle for the profile's initial; 32px circles for the List's − and + steps, with a 44px target.
 
 ## Components
 
@@ -379,11 +379,18 @@ A 44px tangerine circle with a white up arrow. Disabled: sunk surface with a mut
 - Loading shows the page skeleton; with no menu yet, the empty state; a failed load, the inline alert.
 
 ### Profile
-- What the chat saved (facts in a card, then chips by group), or the empty state; then "Preferencias", a card with the numbers switch; then "Cuenta", with the email and a secondary "Cerrar sesión".
-- **Switch:** a real checkbox with `role="switch"`, drawn as a 44 × 26px track (strong line off, primary on) with a surface knob. It changes at once and goes back, with an inline alert, if saving fails. In forced colors it uses system colors.
+A page ([ADR 0038](adr/0038-profile-as-cards.md)), built like the Menu: cards with the title inside, and nothing loose on the ground but the header and the sign-out button.
+- **Header:** a 56px sunk-surface circle with the email's first letter in green ink at 1.375rem/650 (the Perfil icon without an email), then the email at 650. It's there in every state, since the session is, and the loading, error and empty states go under it.
+- **"Sobre vos":** a card titled at the Title size like the Menu's day card, with one row per fact under hairlines: the label in caption type (muted, 600) like a meal's slot, the value in body type under it.
+- **"Tus gustos":** the same card, with one row per list (No puedo comer, No me gusta, Me gusta, Quiero comer) and its [chips](#chips) under the label.
+- A card with nothing to show isn't drawn; with nothing at all, the empty state takes their place.
+- **Numbers switch:** its own card with no title: "Mostrar números" at 550 with "Calorías y macros en tu menú" under it in muted caption type, and the switch on the right.
+- **"Cerrar sesión"** comes last: a secondary pill at the start of the line, so leaving is never the loudest action.
+- **Switch:** a real checkbox with `role="switch"`, drawn as a 44 × 26px track (strong line off, primary on) with a surface knob. It changes at once and goes back, with an inline alert under its card, if saving fails. In forced colors it uses system colors.
+- The profile is read-only: what's in it changes by talking to the chat.
 
 ### Chips
-Sunk-surface pills (6px 14px) listing what the chat saved: can't eat, dislikes, likes, wants. Read-only; long items wrap.
+Sunk-surface pills (6px 14px) listing what the chat saved, in the Profile's "Tus gustos" card: can't eat, dislikes, likes, wants. Read-only; long items wrap.
 
 ### Cards / Containers
 - **Corner Style:** 16px.
@@ -416,7 +423,7 @@ Sunk-surface pills (6px 14px) listing what the chat saved: can't eat, dislikes, 
 
 ### Alerts and states
 - **Inline alert:** danger text on the danger surface, a 20px alert icon, 14px radius (`Alert` in `src/ui.tsx` when there's nothing to do but read it). Below the message goes either a muted detail line (the provider's raw message on sign-in) or a quiet "Reintentar" button when the failed load can be retried (chats, profile).
-- **Skeletons:** flat sunk-surface shapes with a slow opacity pulse, in the layout of what's loading, inside a `role="status"` region with a screen-reader label (the rest `aria-hidden`). Chat has bubbles; Menu has the day strip, a card with a title bar and four meal rows with hairlines, and a pill; List has the "Dónde comprar" card, the two button pills and a section of rows (checkbox, name, price, and the control under the name); Profile has the facts card and two groups of chips. They reuse the real page's classes (`.day-card`, `.prices`, `.list li`, `.facts`, `.chips`), so gaps and hairlines match and the content arrives where its placeholder was; `PageSkeleton` in `src/ui.tsx` takes the shape (`menu` or `list`), and Profile's is in `src/Profile.tsx`. No shimmer: a sweeping band needs a gradient fill, which the Flat Fill Rule rules out. Every skeleton has the `skeleton` class, which the page fade-in skips.
+- **Skeletons:** flat sunk-surface shapes with a slow opacity pulse, in the layout of what's loading, inside a `role="status"` region with a screen-reader label (the rest `aria-hidden`). Chat has bubbles; Menu has the day strip, a card with a title bar and four meal rows with hairlines, and a pill; List has the "Dónde comprar" card, the two button pills and a section of rows (checkbox, name, price, and the control under the name); Profile has its two cards (rows of a label and a value, then rows of a label and a chip-high bar) under the header, which doesn't wait. They reuse the real page's classes (`.day-card`, `.prices`, `.list li`, `.profile-card`), so gaps and hairlines match and the content arrives where its placeholder was; `PageSkeleton` in `src/ui.tsx` takes the shape (`menu` or `list`), and Profile's is in `src/Profile.tsx`. No shimmer: a sweeping band needs a gradient fill, which the Flat Fill Rule rules out. Every skeleton has the `skeleton` class, which the page fade-in skips.
 - **Content arriving:** on Menu, List and Profile, what replaces a skeleton (and each page on a tab switch) fades in over `--dur-slow`: every direct child of `.page` except `.skeleton`, so a quick load never shows a half-faded skeleton. Chat's bubbles already have `rise-in`.
 - **Not available yet:** something in the product plan but not in the app yet shows a "Muy pronto" pill and says only what's true today. Today that's the health-data consent dialog.
 - **Empty screens** (Profile, Menu, List; `EmptyState` in `src/ui.tsx`): the mark, one line of copy, and an "Ir al chat" primary button.

@@ -41,6 +41,7 @@ One file per decision: `NNNN-short-title.md`. ADRs are append-only: never rewrit
 | 0035 | [The mark is the first V of VIVERI](0035-mark-is-the-first-v.md) | Accepted | 2026-10-18 |
 | 0036 | [The List steps by unit of sale](0036-list-steps-by-unit-of-sale.md) | Accepted | 2026-10-18 |
 | 0037 | [The List shows the cheapest split](0037-list-shows-the-cheapest-split.md) | Accepted | 2026-10-18 |
+| 0038 | [The Profile is built from cards](0038-profile-as-cards.md) | Accepted | 2026-10-18 |
 
 ## Template
 

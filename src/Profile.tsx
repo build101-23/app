@@ -1,8 +1,8 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, type ReactNode } from 'react'
 import type { Session } from '@supabase/supabase-js'
 import { supabase } from './supabase'
 import { t } from './strings'
-import { Alert, AlertIcon, EmptyState } from './ui'
+import { Alert, AlertIcon, EmptyState, ProfileIcon } from './ui'
 
 // The shape the chat's save_profile tool writes (supabase/functions/chat/index.ts).
 type ProfileData = {
@@ -54,8 +54,17 @@ export default function Profile({ session, onOpenChat }: { session: Session; onO
     }
   }
 
+  const email = session.user.email
+
   return (
     <div className="page profile">
+      {/* Who's signed in, on every state of the page: the session is already here. */}
+      <header className="identity">
+        <span className="avatar" aria-hidden="true">
+          {email ? email[0].toUpperCase() : <ProfileIcon />}
+        </span>
+        <p>{email}</p>
+      </header>
       {failed ? (
         <div role="alert" className="alert">
           <AlertIcon />
@@ -69,55 +78,44 @@ export default function Profile({ session, onOpenChat }: { session: Session; onO
       ) : data ? (
         <Saved data={data} onOpenChat={onOpenChat} />
       ) : (
-        <>
-          <div className="card facts skeleton" role="status">
-            <span className="sr-only">{t.profile.loading}</span>
-            {[0, 1, 2].map((row) => (
-              <div key={row} aria-hidden="true">
-                <span className="skeleton-line label" />
-                <span className="skeleton-line value" />
-              </div>
-            ))}
-          </div>
-          {[3, 2].map((chips) => (
-            <section key={chips} className="group skeleton" aria-hidden="true">
-              <span className="skeleton-line heading" />
-              <ul className="chips">
-                {Array.from({ length: chips }, (_, i) => (
-                  <li key={i} className="skeleton-line" />
+        <div className="skeleton profile-skeleton" role="status">
+          <span className="sr-only">{t.profile.loading}</span>
+          {[3, 2].map((rows, card) => (
+            <section key={card} className="card profile-card" aria-hidden="true">
+              <span className="skeleton-line title" />
+              <dl>
+                {Array.from({ length: rows }, (_, row) => (
+                  <div key={row}>
+                    <dt className="skeleton-line label" />
+                    <dd className={`skeleton-line ${card ? 'chip-row' : 'value'}`} />
+                  </div>
                 ))}
-              </ul>
+              </dl>
             </section>
           ))}
-        </>
+        </div>
       )}
       {/* Even with nothing saved yet: numbers are optional and can be turned on any time. */}
       {data && (
-        <section className="settings">
-          <h2>{t.profile.settings}</h2>
-          <div className="card settings-card">
-            <label className="switch">
-              <span>{t.profile.numbers}</span>
-              <input
-                type="checkbox"
-                role="switch"
-                checked={data.show_numbers === true}
-                onChange={(e) => setNumbers(e.target.checked)}
-              />
-            </label>
-          </div>
+        <>
+          <label className="card switch">
+            <span>
+              {t.profile.numbers}
+              <small>{t.profile.numbersHint}</small>
+            </span>
+            <input
+              type="checkbox"
+              role="switch"
+              checked={data.show_numbers === true}
+              onChange={(e) => setNumbers(e.target.checked)}
+            />
+          </label>
           {numbersError && <Alert text={numbersError} />}
-        </section>
+        </>
       )}
-      <section className="account">
-        <h2>{t.profile.account}</h2>
-        <div className="card account-card">
-          <p className="account-email">{session.user.email}</p>
-          <button type="button" className="button secondary" onClick={() => supabase.auth.signOut()}>
-            {t.profile.signOut}
-          </button>
-        </div>
-      </section>
+      <button type="button" className="button secondary" onClick={() => supabase.auth.signOut()}>
+        {t.profile.signOut}
+      </button>
     </div>
   )
 }
@@ -148,28 +146,39 @@ function Saved({ data, onOpenChat }: { data: ProfileData; onOpenChat: () => void
     return <EmptyState text={t.profile.empty} action={t.profile.openChat} onAction={onOpenChat} />
   }
 
+  // Two cards, like the Menu's day card: the title inside, then a label over each value under hairlines.
+  const cards: [string, [string, ReactNode][]][] = [
+    [t.profile.about, shownFacts],
+    [
+      t.profile.tastes,
+      shownLists.map(([label, items]) => [
+        label,
+        <ul key={label} className="chips">
+          {items!.map((item) => (
+            <li key={item}>{item}</li>
+          ))}
+        </ul>,
+      ]),
+    ],
+  ]
+
   return (
     <>
-      {shownFacts.length > 0 && (
-        <dl className="card facts">
-          {shownFacts.map(([label, value]) => (
-            <div key={label}>
-              <dt>{label}</dt>
-              <dd>{value}</dd>
-            </div>
-          ))}
-        </dl>
-      )}
-      {shownLists.map(([label, items]) => (
-        <section key={label} className="group">
-          <h2>{label}</h2>
-          <ul className="chips">
-            {items!.map((item) => (
-              <li key={item}>{item}</li>
-            ))}
-          </ul>
-        </section>
-      ))}
+      {cards
+        .filter(([, rows]) => rows.length)
+        .map(([title, rows]) => (
+          <section key={title} className="card profile-card">
+            <h2>{title}</h2>
+            <dl>
+              {rows.map(([label, value]) => (
+                <div key={label}>
+                  <dt>{label}</dt>
+                  <dd>{value}</dd>
+                </div>
+              ))}
+            </dl>
+          </section>
+        ))}
     </>
   )
 }
