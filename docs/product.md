@@ -66,6 +66,7 @@ The first version goes from a chat to a priced shopping list, in Montevideo only
 - A switch in your profile shows them: kcal, protein, carbs and fat per meal and per day in the Menu tab. They're estimates from a table per food; foods outside the catalog are left out of the totals, and the line says which ([ADR 0021](adr/0021-numbers-switch-in-the-profile.md)).
 - Ask the chat to show or hide them. Talk in numbers or technical terms (calories, grams of protein, macros) and it turns them on by itself, says so in one line and offers to go back. Once you turn them off, it doesn't turn them on again unless you ask.
 - With numbers on, give the chat a calorie or protein target and it builds the menu to it, with the same values the Menu tab adds up.
+- With no target, on or off, a menu aims at maintenance: about 2000–2200 kcal a day, nearer 2500 for a man or someone very active; a moderate deficit or surplus only when your goal is to lose or gain weight ([plan](plans/2026-10-17-default-calories.md)).
 
 #### 4. Weekly menu
 
