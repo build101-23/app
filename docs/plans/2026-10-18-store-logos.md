@@ -1,6 +1,6 @@
 # Supermarket logos in "Dónde comprar"
 
-Status: **planned**. Branch `feat/store-logos`, stacked on `feat/fill-cart` (build101-23/app#19). Rebase it onto `main` once #19 merges, then open its own PR.
+Status: **done** in code (2026-10-18); PR after #19 merges. Branch `feat/store-logos`, stacked on `feat/fill-cart` (build101-23/app#19). Rebase it onto `main` once #19 merges, then open its own PR.
 
 ## Context
 The List tab names the supermarkets as text (Disco, Géant, Ta-Ta). As a plus to the cart buttons ([fill-cart plan](2026-10-18-fill-cart.md)), the user asked for their logos.

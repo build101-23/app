@@ -7,6 +7,7 @@ import type { Pricing } from '../supabase/functions/_shared/offers.ts'
 import type { Option, StoreKey } from '../supabase/functions/_shared/stores.ts'
 import { money, nameOf } from './format'
 import { t } from './strings'
+import { StoreLogo } from './ui'
 
 // Ta-Ta fills by link in any browser.
 const canFill = (store: StoreKey) => store === 'tata'
@@ -28,8 +29,9 @@ export default function Cart({ p, chosen }: { p: Pricing; chosen: Option | null 
       )
     })
   // Each opens the store's cart in a new tab, straight from the tap.
-  const link = (cart: StoreCart, className: string, label: string) => (
+  const link = (cart: StoreCart, className: string, label: string, logo = false) => (
     <a className={className} href={tataCartUrl(cart.lines)} target="_blank" rel="noreferrer" onClick={() => setOpened(cart.store)}>
+      {logo && <StoreLogo store={cart.store} />}
       {label}
     </a>
   )
@@ -53,7 +55,7 @@ export default function Cart({ p, chosen }: { p: Pricing; chosen: Option | null 
     <div className="cart">
       {carts.map((cart) => (
         <div key={cart.store} className="cart-store">
-          {link(cart, 'button primary', t.cart.fill(t.stores[cart.store]))}
+          {link(cart, 'button primary', t.cart.fill(t.stores[cart.store]), true)}
           <p className="muted">{t.cart.adds(cart.lines.length, money(cart.total))}</p>
           {left(cart)}
         </div>

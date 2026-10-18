@@ -360,12 +360,12 @@ A 44px tangerine circle with a white up arrow. Disabled: sunk surface with a mut
 
 ### List
 - A page. On top, when the list is priced from the products the chat picked ([ADR 0024](adr/0024-agent-builds-the-menu-from-real-products.md)), a flat card "Dónde comprar":
-  - the recommended store or split (radio buttons when there's a choice);
+  - the recommended store or split (radio buttons when there's a choice), each store's logo before its text ([Store logos](#store-logos));
   - what the chosen total comes to per day of the menu, for menus of 2 days or more;
   - the budget line, in plain ink, when the menu has a budget: it fits, or what's missing and whether a split fits. Over budget is announced, but it isn't an error, so it doesn't use the alert;
-  - the saving and the total per store;
+  - the saving and the total per store, each with its store's logo;
   - the cart buttons, under a hairline ([ADR 0030](adr/0030-cart-filling-tata-link-gdu-team-extension.md)), all of them links that open the supermarket in another tab:
-    - a primary "Armar carrito en Ta-Ta" for each store of the chosen option the app can fill, with muted lines under it: how many products and the estimated total, then what stays out, one line per reason;
+    - a primary "Armar carrito en Ta-Ta", with the store's logo, for each store of the chosen option the app can fill, with muted lines under it: how many products and the estimated total, then what stays out, one line per reason;
     - a muted line for a store of the option it can't fill yet;
     - a quiet "Armar todo en Ta-Ta · $X · faltan N" when that puts more of the list in a cart, left-aligned with the card's text, with what stays out under it, one line per reason;
     - one muted line for the items no store sells ("Ningún súper tiene: …");
@@ -430,6 +430,14 @@ Drawn for this app on a 24px grid: 1.75px round strokes, `currentColor` (the sen
 - `src/assets/viveri-logo.svg` and `public/favicon.svg` are byte-for-byte copies of the approved `recommended-horizontal.svg` and `recommended-icon.svg` (from the logo exploration, `C:\prompt-lab\assets\logo-app\v1\`).
 - `public/icons/icon-180.png`, `icon-192.png` and `icon-512.png` were rendered from that icon SVG with headless Microsoft Edge at 1× scale. Each PNG carries its origin in a `tEXt` chunk. The 512 also serves as the maskable icon; the mark sits inside the 40% safe circle.
 - The 16px favicon is the full icon; a simplified small-size mark doesn't exist yet.
+
+### Store logos
+- Each supermarket's own logo, in `src/assets/stores/`, copied byte for byte from its website on 2026-10-18. None has scripts or external references.
+  - `disco.svg`: `https://www.disco.com.uy/img/Disco/logo.svg`, the red oval alone (their `logo-header.svg` adds a "FRESH MARKET" seal).
+  - `geant.svg`: `https://www.geant.com.uy/img/Geant/logo-header.svg`.
+  - `tata.svg`: `https://www.tata.com.uy/logoMobile.svg`, the red wordmark (their `logo.svg` is all white, for their red header).
+- `StoreLogo` in `src/ui.tsx` puts one on a white pill, `--store-logo-w` × `--store-logo-h` (64 × 24px), with a 1px line border, in both themes. The logos are never recolored, so the pill stays white in dark mode too.
+- Only in the List's "Dónde comprar" card. The logo is decorative: the store's name is always written next to it. The product lines under each item and the chat's list card keep the name as text.
 
 ### Motion
 | Name | Value | Use |
