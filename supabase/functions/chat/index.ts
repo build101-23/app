@@ -129,8 +129,10 @@ const saveMenu: Anthropic.Beta.BetaTool = {
       type: 'array',
       description:
         'One entry per food on the shopping list (food, unit and other_name as in the recipes), with the store_sku you picked at each store from search_products, or null where none fits.',
+      // No food enum here: a second copy of the catalog's enum made the strict grammar too large for the API (400).
+      // menuProblems checks these foods like the recipes'.
       items: object({
-        food: { type: 'string', enum: [...Object.keys(catalog), 'other'] },
+        food: { type: 'string', description: "The catalog food or 'other', as in the recipes." },
         other_name: nullable('string'),
         unit: { type: 'string', enum: ['g', 'ml', 'un'] },
         disco: nullable('string'),
@@ -141,12 +143,12 @@ const saveMenu: Anthropic.Beta.BetaTool = {
   }),
 }
 
-// Reads the store_products catalog through the search_products RPC. Writes nothing.
+// Reads the store_products catalog through the search_products RPC. Writes nothing. Not strict: one list of strings
+// is easy to check in runTool, and every strict tool adds to a grammar the API caps.
 const searchProducts: Anthropic.Beta.BetaTool = {
   name: 'search_products',
   description:
     "Search the supermarkets' products (Disco, Géant, Ta-Ta), with real prices. Send every search you need in one call: two or three Spanish queries per food, the generic name and the cuts, forms or varieties it's sold as (pollo: suprema, pechuga, muslo; papa: papa rosada; tomate: tomate perita).",
-  strict: true,
   input_schema: object({ queries: { type: 'array', items: { type: 'string' }, description: '1 to 20 queries.' } }),
 }
 
@@ -291,7 +293,9 @@ Deno.serve(async (req) => {
       return { problem: error ? `Could not save: ${error.message}` : '' }
     }
     if (name === 'search_products') {
-      const queries = [...new Set((input as { queries: string[] }).queries.map((q) => q.trim()).filter(Boolean))].slice(0, 20)
+      const sent = (input as { queries?: unknown }).queries
+      const texts = Array.isArray(sent) ? sent.filter((q): q is string => typeof q === 'string') : []
+      const queries = [...new Set(texts.map((q) => q.trim()).filter(Boolean))].slice(0, 20)
       if (!queries.length) return { problem: 'Send at least one query.' }
       const found = await Promise.all(queries.map((q) => supabase.rpc('search_products', { q, lim: 5 })))
       const failed = found.find((result) => result.error)
