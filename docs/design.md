@@ -430,7 +430,7 @@ Sunk-surface pills (6px 14px) listing what the chat saved, in the Profile's "Tus
 - **Results that appear in place** (the chat's status line, "Lista copiada.") live in a `role="status"` element that is always mounted, so screen readers announce each change of its text.
 
 ### The mark (signature component)
-`Mark` in [`src/ui.tsx`](../src/ui.tsx) draws the app icon's seven circles (`public/favicon.svg`), with unchanged centers and radii, cropped to the dots. It is the system's state glyph: inside an assistant bubble while a reply hasn't started (with the visible status line below it), on the splash after a 400ms delay, and static on the empty profile. The `converge` animation lights the dots from the outer pair inward to the apex, 1.2s per loop, 0.15s apart.
+`Mark` in [`src/ui.tsx`](../src/ui.tsx) draws the app icon's seven circles (`public/favicon.svg`), with unchanged centers and radii, cropped to the dots. It is the system's state glyph: inside an assistant bubble while a reply hasn't started (with the visible status line below it), on the splash after a 400ms delay, and static on the empty profile. The `assemble` animation builds the V: the pairs slide in along their arms from the outer pair inward, 80ms apart, the apex lands last, the V holds and then fades out, 1.6s per loop with no overlap between loops.
 
 ### Icons
 Drawn for this app on a 24px grid: 1.75px round strokes, `currentColor` (the send arrow uses a 2.25px stroke). Chat, Menú (a calendar with three dots), Lista (a checklist), Perfil, send, alert, mail, a chevron (opens a Menu meal, and points right on the menu card's button), and the microphone (drawn inline in `src/Chat.tsx`; while listening it becomes a filled stop square).
@@ -459,7 +459,7 @@ Drawn for this app on a 24px grid: 1.75px round strokes, `currentColor` (the sen
 | `--ease` | cubic-bezier(0.2, 0.7, 0.2, 1) | everything that isn't a loop |
 | `rise-in` | 160ms, 6px | a new bubble arriving |
 | `dot-in` | 180ms scale | the active-tab dot |
-| `converge` | 1.2s loop | the mark while waiting |
+| `assemble` | 1.6s loop, `--ease` arrival, 6 units along each arm | the mark while waiting |
 | `shimmer` | 1.8s loop | the chat's status line |
 | `pulse` | 1.4s loop (1.2s on the microphone) | skeletons, listening |
 
