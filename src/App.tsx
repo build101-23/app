@@ -124,8 +124,12 @@ function useKeyboardOpen() {
     const update = () => {
       const w = viewport.width * viewport.scale
       const h = viewport.height * viewport.scale
-      // A rotation changes the full height, so start over.
-      if (Math.abs(w - width) > 1) {
+      // An on-screen keyboard only comes up on a touch screen, for a focused text field. Otherwise, or after a
+      // rotation, a height change is the window itself (a resized window, split view), so start over from it.
+      const typing =
+        window.matchMedia('(pointer: coarse)').matches &&
+        document.activeElement?.matches('input, textarea, [contenteditable]')
+      if (!typing || Math.abs(w - width) > 1) {
         width = w
         full = h
       }

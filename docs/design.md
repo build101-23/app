@@ -276,7 +276,7 @@ A green-tinted neutral ground, the icon's deep green for the user's words and ac
   - The dock sits `max(12px, bottom inset)` above the bottom edge and 12px plus the side insets from each side.
 - **Keyboard:**
   - On touch screens (`pointer: coarse`, at any width), the dock is hidden only while the on-screen keyboard is up *and* focus is in the composer, so the keyboard doesn't stack on it. The composer accessory then drops to 8px above the keyboard. With a mouse or trackpad the rule never applies, so shrinking a desktop window never hides the dock.
-  - `useKeyboardOpen` in `src/App.tsx` reads the visual viewport (ignoring zoom, resetting on rotation) and sets `data-keyboard="open"` on the shell.
+  - `useKeyboardOpen` in `src/App.tsx` reads the visual viewport (ignoring zoom, resetting on rotation, and taking a height change without a touch screen (`pointer: coarse`) or a focused text field as the window resizing, not the keyboard) and sets `data-keyboard="open"` on the shell.
   - When the keyboard goes down, the dock comes back even if the composer keeps focus.
   - The send button keeps focus in the textarea on tap, so the keyboard stays up and nothing shifts under the finger.
 
