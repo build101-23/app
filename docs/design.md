@@ -2,12 +2,12 @@
 name: VIVERI
 description: Phone-first app that turns a conversation about how you eat into a week of meals and one shopping list.
 colors:
-  ground: "#f3f6f2"
+  ground: "#f8f9f8"
   surface: "#ffffff"
-  surface-sunk: "#e8eee9"
-  line: "#d8e1db"
+  surface-sunk: "#e9f2ec"
+  line: "#e3e8e4"
   line-strong: "#74877d"
-  ink: "#14211b"
+  ink: "#0f1713"
   ink-muted: "#55645c"
   brand: "#1e8a5e"
   brand-ink: "#156b49"
@@ -22,19 +22,19 @@ colors:
   danger: "#b42318"
   danger-surface: "#fcedea"
   success-surface: "#e3f1e8"
-  ground-dark: "#0d1613"
-  surface-dark: "#16221d"
-  surface-sunk-dark: "#1d2b25"
-  line-dark: "#26352e"
-  line-strong-dark: "#5c7067"
-  ink-dark: "#e6eee9"
-  ink-muted-dark: "#9aaba3"
+  ground-dark: "#0b0f0d"
+  surface-dark: "#141a17"
+  surface-sunk-dark: "#1c2420"
+  line-dark: "#252d29"
+  line-strong-dark: "#5f6f67"
+  ink-dark: "#e9efeb"
+  ink-muted-dark: "#9ba9a2"
   brand-ink-dark: "#5cc495"
   primary-hover-dark: "#7bd3aa"
   bubble-user-dark: "#1d5a42"
-  glass-dark: "#0d1613ad"
-  glass-solid-dark: "#0d1613"
-  capsule-dark: "#16221d"
+  glass-dark: "#0b0f0dad"
+  glass-solid-dark: "#0b0f0d"
+  capsule-dark: "#141a17"
   danger-dark: "#ff8a7a"
   danger-surface-dark: "#2a1715"
   success-surface-dark: "#13291f"
@@ -195,7 +195,7 @@ It is a working tool for people planning meals on a phone, at home or in a super
 - the deep-green bubbles and buttons;
 - the tangerine dot;
 - the mark as the state glyph;
-- a green-tinted ground instead of grey or cream.
+- a near-white ground with a faint green tint, and mint chips, instead of grey or cream.
 
 The navigation is a neutral glass dock floating over that content ([ADR 0026](adr/0026-glass-navigation-layer.md)): it takes no color of its own, so it never repeats the content's green. The app deliberately avoids the category's wellness look (sage, cream, leaf illustrations) and the AI look (gradients, sparkles).
 
@@ -209,7 +209,7 @@ The navigation is a neutral glass dock floating over that content ([ADR 0026](ad
 
 ## Colors
 
-A green-tinted neutral ground, the icon's deep green for the user's words and actions, neutral glass for the navigation, and one tangerine accent, each with a dark-theme counterpart. Contrast was computed for every text pair (all ≥ 4.5:1) and every UI graphic (≥ 3:1) in both themes. The glass was measured on real pixels instead (see [Navigation](#navigation)).
+A near-white ground with a faint green tint (graphite in dark mode), the icon's deep green for the user's words and actions, neutral glass for the navigation, and one tangerine accent, each with a dark-theme counterpart. The neutrals were cleaned up on 2026-10-18 ([ADR 0031](adr/0031-cleaner-neutral-palette.md)); the brand colors didn't change. Contrast was computed for every text pair (all ≥ 4.5:1) and every UI graphic (≥ 3:1) in both themes. The glass was measured on real pixels instead (see [Navigation](#navigation)).
 
 ### Primary
 - **Deep green** (#0B3D2B): the icon tile's color. The user's chat bubbles, primary buttons in light mode. White on it is 12.2:1.
@@ -220,13 +220,13 @@ A green-tinted neutral ground, the icon's deep green for the user's words and ac
 - **Tangerine** (#E85D2A): a graphic, never text. The active-tab dot, the send button (white arrow, 3.5:1), the mark's apex.
 
 ### Neutral
-- **Ground** (#F3F6F2 / #0D1613): the page, the top bar, the chat bar and the splash.
-- **Surface** (#FFFFFF / #16221D): cards, assistant bubbles, fields.
-- **Sunk surface** (#E8EEE9 / #1D2B25): chips, the status pill, skeletons, the disabled send button.
-- **Line** (#D8E1DB / #26352E): hairlines and card borders. **Strong line** (#74877D / #5C7067): field borders and the secondary button outline, ≥ 3:1 against both surfaces.
-- **Ink** (#14211B / #E6EEE9) and **muted ink** (#55645C / #9AABA3): text.
+- **Ground** (#F8F9F8 / #0B0F0D): the page, the top bar, the chat bar and the splash.
+- **Surface** (#FFFFFF / #141A17): cards, assistant bubbles, fields.
+- **Sunk surface** (#E9F2EC, a mint wash / #1C2420): chips, the status pill, skeletons, the disabled send button.
+- **Line** (#E3E8E4 / #252D29): hairlines and card borders. **Strong line** (#74877D / #5F6F67): field borders and the secondary button outline, ≥ 3:1 against both surfaces.
+- **Ink** (#0F1713 / #E9EFEB) and **muted ink** (#55645C / #9BA9A2): text.
 - **Danger** (#B42318 on #FCEDEA / #FF8A7A on #2A1715) for errors; **success surface** (#E3F1E8 / #13291F) for the "check your email" panel.
-- **Glass** (white at 50% / #0D1613 at 68%): the dock and the chat's composer accessory. **Solid glass** (#FFFFFF / #0D1613) is its opaque fallback. **Capsule** (#FFFFFF / #16221D): the active tab's opaque inner capsule.
+- **Glass** (white at 50% / #0B0F0D at 68%): the dock and the chat's composer accessory. **Solid glass** (#FFFFFF / #0B0F0D) is its opaque fallback. **Capsule** (#FFFFFF / #141A17): the active tab's opaque inner capsule.
 
 ### Named Rules
 **The One Rule.** Tangerine appears once per region and always means "the one": the current tab, the send action, the apex of the mark. It never colors text, borders, or decoration.
@@ -292,7 +292,7 @@ Flat content, glass navigation ([ADR 0026](adr/0026-glass-navigation-layer.md)).
   - one soft two-layer shadow.
   
   Nothing else gets a blur or a shadow.
-- **Opaque fallback.** The glass turns into solid glass (#FFFFFF light, #0D1613 dark), with no blur:
+- **Opaque fallback.** The glass turns into solid glass (#FFFFFF light, #0B0F0D dark), with no blur:
   - when `backdrop-filter` isn't supported (`@supports`);
   - with `prefers-contrast: more`, which also adds a 1px strong-line border;
   - with `prefers-reduced-transparency: reduce`.
@@ -407,17 +407,17 @@ Sunk-surface pills (6px 14px) listing what the chat saved: can't eat, dislikes, 
 - **Dock (every width):**
   - **Shape and placement:** a floating glass capsule, 64px tall and at most 440px wide, centered, with four equal items (a 24px icon and a 13px label). It doesn't compact on scroll, and the labels never disappear.
   - **No rail:** the dock looks the same on a phone and a desktop, and there's no side rail. The logo is in the top bar instead.
-  - **Labels:** every item is ink (#14211B / #E6EEE9) at weight 550; the active one is at 650.
-  - **Active item:** an opaque inner capsule (#FFFFFF / #16221D) with a 6px tangerine dot above the icon, plus `aria-current="page"`. The dot always sits inside the capsule, never on the glass.
+  - **Labels:** every item is ink (#0F1713 / #E9EFEB) at weight 550; the active one is at 650.
+  - **Active item:** an opaque inner capsule (#FFFFFF / #141A17) with a 6px tangerine dot above the icon, plus `aria-current="page"`. The dot always sits inside the capsule, never on the glass.
   - **Why three signals:** against glass over dark content, the capsule alone is too faint. So "active" is told by the capsule, the dot and the weight together.
-  - **Focus:** inside the navigation layer, keyboard focus is a 2px ink ring (#14211B / #E6EEE9), drawn on the item's outer 2px. The brand-green ring doesn't reach 3:1 on this glass.
-  - **Tint, measured:** white at 50% in light mode and #0D1613 at 68% in dark mode. Both were measured on real pixels in headless Chrome ([v3 plan, results](plans/2026-10-17-glass-dock-living-color.md#results)). The dock's own ink was hidden, and the glass was captured over uniform worst-case fills and over the real chat and profile scrolled beneath it.
+  - **Focus:** inside the navigation layer, keyboard focus is a 2px ink ring (#0F1713 / #E9EFEB), drawn on the item's outer 2px. The brand-green ring doesn't reach 3:1 on this glass.
+  - **Tint, measured:** white at 50% in light mode and #0B0F0D at 68% in dark mode. Both were measured on real pixels in headless Chrome, first for [the glass dock](plans/2026-10-17-glass-dock-living-color.md#results) and again, with the current colors, for [the cleaner palette](plans/2026-10-18-modern-palette.md#results) (the numbers below). The dock's own ink was hidden, and the glass was captured over uniform worst-case fills and over the real chat, Menú, Lista and profile scrolled beneath it.
     - The worst cases come from the fills: ink in light mode, white in dark mode.
-    - Labels and icons: ≥ 5.11:1 (light) and ≥ 5.35:1 (dark).
-    - The ink ring against its neighbors: ≥ 3.50:1 and ≥ 3.31:1.
-    - The dot on the capsule: 3.48:1 and 4.71:1.
-    - The disclaimer: ≥ 5.04:1 and ≥ 5.35:1.
-    - The tint is the lowest measured value that keeps at least 10% margin on every threshold. Dark 65% left the ring at 3.13:1.
+    - Labels and icons: ≥ 5.28:1 (light) and ≥ 5.80:1 (dark).
+    - The ink ring against its neighbors: ≥ 4.68:1 and ≥ 5.80:1.
+    - The dot on the capsule: 3.48:1 and 5.07:1.
+    - The disclaimer: ≥ 5.21:1 and ≥ 5.80:1.
+    - Light 50% is the lowest tint that keeps at least 10% margin on every threshold. Dark stays at 68%; with the current colors 65% also passes (≥ 5.21:1 everywhere), and it is the floor if the dark glass is ever lowered.
   - **Hover** (pointer devices): inactive items get a half-strength capsule wash.
   - **While the chat saves a turn**, the items are disabled, since leaving would hide that turn. The other items fade to 55%; the current one keeps its capsule and dot.
 
