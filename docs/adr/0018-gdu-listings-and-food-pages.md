@@ -1,6 +1,6 @@
 # 0018. The scraper reads GDU through listings and a few food pages
 
-- Status: Accepted
+- Status: Accepted (food phase picks changed by 0023)
 - Date: 2026-10-17
 
 ## Context

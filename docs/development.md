@@ -68,10 +68,10 @@ Vite reads `.env`, then `.env.local` (gitignored), which overrides it.
 
 ## Price scraper
 
-How it works and why: [ADR 0015](adr/0015-price-scraper-python-job-with-time-budget.md) and [ADR 0018](adr/0018-gdu-listings-and-food-pages.md). Reading rules: [ADR 0008](adr/0008-how-we-read-supermarket-sites.md).
+How it works and why: [ADR 0015](adr/0015-price-scraper-python-job-with-time-budget.md), [ADR 0018](adr/0018-gdu-listings-and-food-pages.md) and [ADR 0023](adr/0023-scraper-prices-for-the-unit-of-sale.md). Reading rules: [ADR 0008](adr/0008-how-we-read-supermarket-sites.md).
 
 - `scraper/.venv/bin/python -m scraper` reads all four chains for 25 minutes at most and saves as it goes. Ctrl-C stops it and keeps what it read.
-- Narrow a run with `--minutes`, `--stores devoto,tata`, `--limit N` (at most N pages per chain and phase) and `--phases` (`categories,brands,food`; `brands` needs `categories`). `--phases food` tops up food products without reading the listings again.
+- Narrow a run with `--minutes`, `--stores devoto,tata`, `--limit N` (at most N pages per chain and phase) and `--phases` (`categories,brands,food`; `brands` needs `categories`). `--phases food` reads the food product pages again, oldest first, without reading the listings ([ADR 0023](adr/0023-scraper-prices-for-the-unit-of-sale.md)). A 25-minute run of all phases rarely gets through all of them.
 - `--dry-run` writes NDJSON to `scraper/data/out/` instead of Supabase, and needs no key.
 - The GDU sitemap is cached for 24 hours in `scraper/data/cache/`. `--refresh-sitemap` reads it again.
 - Every run leaves one `scrape_runs` row per chain: `status` (`done`, `interrupted`, `blocked`, `failed`), `price_context` and counters in `stats`.

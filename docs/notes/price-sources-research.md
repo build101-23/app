@@ -19,6 +19,8 @@ Research for [ADR 0003](../adr/0003-price-sources.md), done on 2026-10-17. The s
 - Category ids grow two digits per level: department `10` (almacén), category `1010`, leaf `101013` (arroz). There are 597 leaves. 125 of them are in the supermarket departments: almacén 10, bebidas 11, perfumería y limpieza 12, frescos 14, mascotas 15. The rest are hypermarket departments (TV, furniture, clothing...).
 - Product page: `<script type="application/ld&#x2B;json">` (the `+` is escaped) with `name`, `brand`, `sku`, `gtin` (valid EAN-13), `offers.price`, `priceCurrency`, `availability`.
 - In the HTML: previous price in `div.before span.val`, current price in `div.text span.val`, promo labels in `div.det-labels`, size in the `det-especs` table (row "Contenido"), category breadcrumb.
+- Items sold by weight (checked 2026-10-17): the price block (`desc-prices` on a card, `det-precios` on a product page) has the class `product-price-weighable` and shows two prices. First the price per kg, a `span.val` followed by `<span class="mon"> / kg</span>`; then the piece's, which is the price per kg times the weight in the name, rounded up. "Papa Rosada Premium malla aprox x 1.5 kg": $89 per kg and $134. JSON-LD and `og:price` give the price per kg.
+- Some pieces show only the piece's price, with no weighable class, while JSON-LD still gives the price per kg: "Nalga de ternera un. x 750 g" shows $532, and its JSON-LD says $709. Read the visible price ([ADR 0023](../adr/0023-scraper-prices-for-the-unit-of-sale.md)).
 - The first request answers 302 and sets a branch cookie: follow redirects and keep cookies.
 - Prices are for the default branch given to anonymous visitors: Devoto Fresh Market Portones, Géant Parque Roosevelt, Disco Fresh Market Plaza Italia.
 - The three chains share SKU ids and EANs. Prices are usually the same, but about a third differed in the spike, mostly at Géant ([feasibility](price-scraping-feasibility.md#gdu-prices-are-not-identical)).
@@ -40,7 +42,8 @@ Research for [ADR 0003](../adr/0003-price-sources.md), done on 2026-10-17. The s
 - Each node has `name`, `brand.name`, `sku`, `slug`, `offers.offers[0].price`, `listPrice`, `availability`, `categoriesIds`, `measurementUnit` and `unitMultiplier`. Public URL: `https://www.tata.com.uy/<slug>/p`.
 - Pages hold up to 100 products (`first`) and give `pageInfo.totalCount`. Asking past about 2,500 results fails with HTTP 500, so the whole catalog is read one category at a time. Facets take the category slugs: `category-1` = `almacen`, `category-2` = `desayuno`. Sorting by `name_asc` keeps paging stable.
 - The category tree is public at `https://secure.tata.com.uy/api/catalog_system/pub/category/tree/3`, on the checkout host, whose `robots.txt` allows everything. It's not served on `www`.
-- Sold by weight (meat, produce): `measurementUnit` is `kg`, and the price is for `unitMultiplier` kg, which can differ from the weight in the name. For example, "Aguja Sin Hueso En Trozo 780 G" costs $346.51 for 0.827 kg.
+- Sold by weight (meat, produce): `measurementUnit` is `kg`. Up to 1 kg, the price is for `unitMultiplier` kg, which can differ from the weight in the name. For example, "Aguja Sin Hueso En Trozo 780 G" costs $346.51 for 0.827 kg. Over 1 kg, `price` and `listPrice` are per kg, and one unit is `unitMultiplier` kg: "Lomo De Cerdo 1.4 Kg" (`unitMultiplier` 1.4) is $199 per kg, and its page says "Venta al peso, peso aproximado: 1.4 Kg".
+- Some names come mis-encoded, UTF-8 read as Latin-1 ("VacÃ­o", "CaÃ±uelas"): 120 rows on 2026-10-17.
 - Some names use "Cl" for milliliters ("750 Cl" for a 750 ml bottle), so centiliters aren't read as a size.
 - Clothing (`textil`, 1,204 products, many out of stock at a placeholder $0) isn't read.
 - `gtin` is an internal code (for example `1000050592`), not an EAN: match Ta-Ta by brand, name and size.
@@ -80,7 +83,7 @@ What counts as "most similar" is still [open](open-decisions.md).
 ## Data rules
 - Never invent data: fields the source doesn't give stay empty.
 - A price of $1 or less is a placeholder, not a price: drop it and keep the raw value in `notes`.
-- Size comes from the product spec ("Contenido") and, if missing, from the name. If the name has two different measures, the size stays empty.
+- Size comes from the product spec ("Contenido") and, if missing, from the name. If the name has two different measures, the size stays empty. For items sold by weight, what the price is for and what one unit of sale holds follow [ADR 0023](../adr/0023-scraper-prices-for-the-unit-of-sale.md).
 - Every offer keeps `source_url`, `product_url`, `extracted_at` and `price_context` (branch or sales channel).
 
 ## Catalog fields

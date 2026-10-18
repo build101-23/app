@@ -13,6 +13,8 @@ What this relies on (probed 2026-10-17, see docs/notes/price-sources-research.md
   doesn't carry came right before Devoto blocked us. So product pages are read only for foods the
   listings miss, a few per food, slowly.
 - Prices are for the branch the site gives anonymous visitors, shown in every page's header.
+- Items sold by weight show "$ X / kg", then the piece's price; JSON-LD has the price per kg. Some
+  pieces show only the piece's price, while JSON-LD still has the price per kg.
 """
 from __future__ import annotations
 
@@ -24,7 +26,7 @@ from pathlib import Path
 
 from .fetch import PoliteSession
 from .rows import add_note, make_row, previous_if_higher, to_float
-from .sizes import gtin13, parse_size, size_fields
+from .sizes import gtin13, parse_size, priced_per_kg, size_fields
 
 STORES = {
     "devoto": "https://www.devoto.com.uy",
@@ -50,6 +52,9 @@ FOOD_TERMS = (
     "garbanzos", "porotos", "arroz", "leche", "yogur",
 )
 FOOD_PAGES_PER_TERM = 10
+# Fresh produce and meat sold by weight have these in the slug. The newest ids of a food are mostly
+# packaged ("tomate-" is all canned), so these go first.
+FRESH_SLUG_MARKS = ("aprox", "x-kg", "malla", "bandeja")
 
 
 # ------------------------------------------------------------------ sitemap
@@ -122,6 +127,27 @@ def _texts(fragment: str) -> list[str]:
     return [t for t in (html.unescape(x).strip() for x in texts) if t]
 
 
+_PRICE = r'<div class="text"[^>]*>\s*<span class="mon"[^>]*>([^<]*)</span>\s*<span class="val"[^>]*>([^<]+)</span>'
+_PER_KG = r'\s*<span class="mon"[^>]*>\s*/\s*kg\s*</span>'
+
+
+def weighable_prices(prices: str) -> dict:
+    """A price block for an item sold by weight has the `product-price-weighable` class and shows
+    "$ X / kg", then the piece's price. Gives the price per kg, its "before" price and the piece's price,
+    all None when it isn't sold by weight; when only one of the two signs is there, a note says which."""
+    per_kg = re.search(_PRICE + _PER_KG, prices)
+    marked = "product-price-weighable" in prices
+    if not (per_kg and marked):
+        note = ("weighable price block without a price per kg" if marked else
+                "price per kg without the weighable class" if per_kg else None)
+        return {"kg_price": None, "kg_previous_price": None, "piece_price": None, "weighable_note": note}
+    # The block per kg comes first, so a "before" price ahead of its price is per kg too.
+    before = re.findall(r'<div class="before"[^>]*>.*?<span class="val"[^>]*>([^<]+)</span>', prices[:per_kg.start()], re.S)
+    piece = re.search(f"{_PRICE}(?!{_PER_KG})", prices[per_kg.end():])
+    return {"kg_price": _num_es(per_kg.group(2)), "kg_previous_price": _num_es(before[-1]) if before else None,
+            "piece_price": _num_es(piece.group(2)) if piece else None, "weighable_note": None}
+
+
 def page_branch(page: str) -> str | None:
     return _first(r'<span class="text"><strong class="val">([^<]+)</strong>', page)
 
@@ -139,9 +165,7 @@ def parse_listing_page(page: str) -> tuple[int | None, list[dict]]:
         if not link:
             continue
         prices = _first(r'<div class="desc-prices">(.*?)<div class="prod-labels">', chunk) or ""
-        current = re.search(
-            r'<div class="text"[^>]*>\s*<span class="mon"[^>]*>([^<]*)</span>\s*<span class="val"[^>]*>([^<]+)</span>',
-            prices)
+        current = re.search(_PRICE, prices)
         labels = _first(r'<div class="prod-labels">(.*?)</div>\s*</div>\s*<div class="prod-add">', chunk) or ""
         button = re.search(r'<div class="prod-add">(.*?)</div>\s*</div>', chunk, re.S)
         cards.append({
@@ -153,6 +177,7 @@ def parse_listing_page(page: str) -> tuple[int | None, list[dict]]:
             "currency_symbol": html.unescape(current.group(1)).strip() if current else None,
             "price": _num_es(current.group(2)) if current else None,
             "previous_price": _num_es(_first(r'<div class="before"[^>]*>.*?<span class="val"[^>]*>([^<]+)</span>', prices)),
+            **weighable_prices(prices),
             "labels": _texts(labels),
             "button": " ".join(_texts(button.group(1))) if button else None,
         })
@@ -190,6 +215,7 @@ def parse_product_page(page: str) -> dict | None:
         "availability": (offer.get("availability") or "").rsplit("/", 1)[-1] or None,
         "html_price": _num_es(_first(r'<div class="text"[^>]*>.*?<span class="val">([^<]+)</span>', prices_block)),
         "previous_price": _num_es(_first(r'<div class="before"[^>]*>.*?<span class="val">([^<]+)</span>', prices_block)),
+        **weighable_prices(prices_block),
         "promo_labels": _texts(labels_html),
         "content_spec": specs.get("Contenido"),
         "category_id": crumbs[-1] if crumbs else None,
@@ -198,15 +224,22 @@ def parse_product_page(page: str) -> dict | None:
 
 
 def food_candidates(sitemap: Sitemap, saved: set[str], terms: tuple[str, ...] = FOOD_TERMS,
-                    per_term: int = FOOD_PAGES_PER_TERM) -> list[str]:
-    """Product ids for the food pages phase: up to `per_term` per food, newest first (more likely
-    still for sale), leaving out what's already saved. Foods take turns, so a run cut short by its
-    budget still gets some of each."""
+                    per_term: int = FOOD_PAGES_PER_TERM, read_times: dict[str, str] | None = None) -> list[str]:
+    """Product ids for the food pages phase: up to `per_term` per food, leaving out `saved`. Each food's
+    picks are fresh ones (FRESH_SLUG_MARKS) first, then newest first (more likely still for sale); they
+    are read never-read first, then by oldest `read_times`. Foods take turns, so a run cut short by its
+    budget still gets some of each, and the next run starts with the picks it missed. Products outside a
+    food's picks aren't read again: ordering every candidate by `read_times` would hand the picks to the
+    never-read long tail, including pages a chain no longer sells, which are never saved (ADR 0023)."""
+    def rank(pid: str) -> tuple[bool, int]:
+        return not any(mark in sitemap.products[pid] for mark in FRESH_SLUG_MARKS), -int(pid)
+
+    read_times = read_times or {}
     queues = []
     for term in terms:
         ids = [pid for pid, slug in sitemap.products.items()
                if (slug == term or slug.startswith(term + "-")) and pid not in saved]
-        queues.append(sorted(ids, key=int, reverse=True)[:per_term])
+        queues.append(sorted(sorted(ids, key=rank)[:per_term], key=lambda pid: read_times.get(pid, "")))
     seen: set[str] = set()
     out = []
     for i in range(per_term):
@@ -220,14 +253,34 @@ def food_candidates(sitemap: Sitemap, saved: set[str], terms: tuple[str, ...] = 
 # ------------------------------------------------------------------ rows
 
 
+def sold_by_weight(weight: dict | None, kg_price: float, piece_price: float | None) -> tuple[dict, list[str]]:
+    """Size of an item priced per kg: the price is for 1000 g, and one unit of sale (what goes in the
+    cart) weighs what `weight` (from the name) says, when the piece's price agrees: the site charges the
+    price per kg times that weight, rounded up. Otherwise the piece's price over the price per kg gives
+    the weight, and without a piece price either, it's taken as 1 kg. A note says when it isn't the name's."""
+    name_g = weight["base_qty"] if weight and weight["base_unit"] == "g" else None
+    if name_g and (piece_price is None or abs(piece_price - kg_price * name_g / 1000) <= 1):
+        return priced_per_kg(name_g), []
+    if piece_price:
+        sale_g = round(piece_price / kg_price * 1000)
+        says = f"; the name says {name_g:g} g" if name_g else ""
+        return priced_per_kg(sale_g), [f"unit of sale {sale_g} g from the piece price {piece_price:g} at {kg_price:g} per kg{says}"]
+    return priced_per_kg(1000), ["sold by weight with no weight in the name or piece price: unit of sale taken as 1 kg"]
+
+
 def card_row(store: str, card: dict, category: str | None, run_id: int, checked_at: str) -> dict:
-    size = parse_size(card["name"])
+    size, source, price, previous, notes = parse_size(card["name"]), "name", card["price"], card["previous_price"], []
+    if card.get("kg_price") is not None:
+        price, previous, source = card["kg_price"], card["kg_previous_price"], "unit"
+        size, notes = sold_by_weight(size, card["kg_price"], card["piece_price"])
+    elif card.get("weighable_note"):  # unclear what the price is for: no size, so no unit price
+        size, notes = None, [card["weighable_note"]]
     currency = CURRENCIES.get(card["currency_symbol"] or "")
     row = make_row(
         store_key=store, store_sku=card["id"], name=card["name"], brand=card["brand"], category=category,
         url_path=f"/product/{card['slug']}/{card['id']}",
-        **size_fields(size, "name"),
-        price=card["price"], previous_price=previous_if_higher(card["previous_price"], card["price"]),
+        **size_fields(size, source),
+        price=price, previous_price=previous_if_higher(previous, price),
         currency=currency, promo_labels="; ".join(card["labels"]) or None,
         # The card offers "Agregar" only when the default branch can sell it.
         availability="InStock" if card["button"] == "Agregar" else None,
@@ -236,11 +289,13 @@ def card_row(store: str, card: dict, category: str | None, run_id: int, checked_
     )
     if card["currency_symbol"] and not currency:
         add_note(row, f"unknown currency symbol {card['currency_symbol']!r}")
+    for note in notes:
+        add_note(row, note)
     return row
 
 
 def product_row(store: str, p: dict, url_path: str, category: str | None, run_id: int, checked_at: str) -> dict:
-    size = parse_size(p["content_spec"]) if p.get("content_spec") else None
+    spec_size = size = parse_size(p["content_spec"]) if p.get("content_spec") else None
     source, text = ("spec", p["content_spec"]) if size else (None, None)
     name_size = parse_size(p["name"])
     notes = []
@@ -248,13 +303,25 @@ def product_row(store: str, p: dict, url_path: str, category: str | None, run_id
         notes.append(f"spec size ({p['content_spec']}) != size in name")
     if size is None and name_size:
         size, source = name_size, "name"
-    price = p.get("price")
-    if price is not None and p.get("html_price") is not None and abs(price - p["html_price"]) > 0.01:
-        notes.append(f"JSON-LD price {price:g} != visible price {p['html_price']:g}")
+    price, previous, shown = p.get("price"), p.get("previous_price"), p.get("html_price")
+    if price is not None and shown is None:
+        notes.append("no visible price: JSON-LD price kept")  # it's per kg for pieces and items sold by weight
+    elif price is not None and abs(price - shown) > 0.01:
+        notes.append(f"JSON-LD price {price:g} != visible price {shown:g}")
+        if abs(price - shown) > 1:
+            price = shown  # what the cart charges: a piece shows its own price, its JSON-LD the price per kg
+    if p.get("kg_price") is not None:
+        price, previous, source = p["kg_price"], p["kg_previous_price"], "unit"
+        weight = name_size if name_size and name_size["base_unit"] == "g" else spec_size
+        size, more = sold_by_weight(weight, p["kg_price"], p["piece_price"])
+        notes += more
+    elif p.get("weighable_note"):  # unclear what the price is for: no size, so no unit price
+        size = None
+        notes.append(p["weighable_note"])
     row = make_row(
         store_key=store, store_sku=p["sku"], gtin=gtin13(p.get("gtin_raw")), name=p["name"], brand=p["brand"],
         category=category, url_path=url_path, **size_fields(size, source, text),
-        price=price, previous_price=previous_if_higher(p.get("previous_price"), price), currency=p.get("currency"),
+        price=price, previous_price=previous_if_higher(previous, price), currency=p.get("currency"),
         promo_labels="; ".join(p.get("promo_labels") or []) or None, availability=p.get("availability"),
         read_from="product_page", run_id=run_id, checked_at=checked_at,
     )
