@@ -9,6 +9,7 @@
     "build": "tsc -b && vite build",
     "lint": "oxlint --deny-warnings",
     "preview": "vite preview",
+    "pitch": "node pitch/serve.mjs",
     "test": "node --test supabase/functions/_shared/*.test.ts"
   },
   "dependencies": {
