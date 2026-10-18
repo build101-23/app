@@ -1,4 +1,4 @@
-// Foods the weekly menu can use, keyed in English; Spanish names live in src/strings.ts.
+// Foods the menu can use, keyed in English; Spanish names live in src/strings.ts.
 // Plain TS shared by the chat function and the web app, so no Deno or DOM globals here.
 // shortcut: a fixed list of everyday foods, anything else goes in as 'other'; grow it or replace it with scraped products once prices are real.
 // Keys are only ever added, never renamed or removed: saved menus point at them.

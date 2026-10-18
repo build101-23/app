@@ -3,7 +3,7 @@
 // imports this file. Scenarios come from the query string; see docs/development.md.
 import type { Session } from '@supabase/supabase-js'
 import type { Unit } from '../../supabase/functions/_shared/catalog.ts'
-import type { Ingredient, MenuData } from '../../supabase/functions/_shared/menu.ts'
+import type { Day, Ingredient, MenuData } from '../../supabase/functions/_shared/menu.ts'
 import type { ProductRow } from '../../supabase/functions/_shared/products.ts'
 import { stores, type StoreKey } from '../../supabase/functions/_shared/stores.ts'
 
@@ -30,6 +30,12 @@ let current: Session | null = scenario('auth', 'in') === 'out' ? null : session
 
 type Row = { role: 'user' | 'assistant'; content: Record<string, unknown>[] }
 const text = (role: Row['role'], value: string): Row => ({ role, content: [{ type: 'text', text: value }] })
+
+// menu=short: three days, sábado to lunes, as "los 3 días que vienen" builds them on a Friday.
+const menuDays: Day[] =
+  scenario('menu', 'saved') === 'short'
+    ? ['saturday', 'sunday', 'monday']
+    : ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday']
 
 // A week with few recipes that repeat, as the product asks, all from the food catalog.
 const week: MenuData = {
@@ -87,7 +93,7 @@ const week: MenuData = {
       ],
     },
   ],
-  days: (['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'] as const).map((day, i) => ({
+  days: menuDays.map((day, i) => ({
     day,
     meals: [
       { slot: 'Desayuno', recipe_id: 'avena' },
@@ -162,7 +168,14 @@ if (pricesMode !== 'old') {
 }
 
 const longChat: Row[] = [
-  text('user', 'Hola, quiero comer más ordenado entre semana.'),
+  // The chat function's date block comes first, as stored; the chat hides it.
+  {
+    role: 'user',
+    content: [
+      { type: 'text', text: '<today>Friday, October 16, 2026</today>' },
+      { type: 'text', text: 'Hola, quiero comer más ordenado entre semana.' },
+    ],
+  },
   {
     role: 'assistant',
     content: [
@@ -248,7 +261,7 @@ const fullProfile = {
   show_numbers: scenario('numbers', 'off') === 'on',
 }
 
-// menu: saved (default), none, error. One item starts crossed out on the list.
+// menu: saved (default), short (above), none, error. One item starts crossed out on the list.
 const menuMode = scenario('menu', 'saved')
 const menuRow = {
   data: week,

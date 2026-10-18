@@ -55,6 +55,8 @@ const optionText = ({ stores, total }: Option) =>
   stores.length === 1
     ? t.prices.oneStore(t.stores[stores[0]], money(total))
     : t.prices.split(t.stores[stores[0]], t.stores[stores[1]], money(total))
+// The chosen total over the menu's days, on what's left to buy like the total. A one-day menu's total already is that.
+const perDay = (total: number, days: number) => (days > 1 ? t.prices.perDay(money(total / days), days) : '')
 
 // The menu version the user picked the split for. Another menu starts on one store again, the default.
 // shortcut: the pick lives in this browser; move it next to menus.have if people switch devices
@@ -98,9 +100,11 @@ export function ListPreview({ row, busy, onOpen }: { row: MenuRow; busy: boolean
       ? `${optionText(chosen)}${single ? '' : ` ${t.prices.noOneStore}`}`
       : `${t.prices.noOneStore} ${p.plan.perStore.map(({ store, total }) => `${t.stores[store]} ${money(total)}`).join(' · ')}`
     const budget = budgetText(p, chosen)
+    const daily = chosen ? perDay(chosen.total, row.data.days.length) : ''
     summary = (
       <p>
         <strong>{total}</strong>
+        {daily && `\n${daily}`}
         {budget && `\n${budget.text}`}
         <small className="muted">
           {notFound.length > 0 && `\n${t.prices.missing(notFound.length)}`}
@@ -172,6 +176,7 @@ export default function List({ session, onOpenChat }: { session: Session; onOpen
   const split = plan?.split ?? null
   const chosen = (pickedFor === updated_at && split) || single || split
   const budget = p && budgetText(p, chosen)
+  const daily = chosen ? perDay(chosen.total, menu.data.days.length) : ''
 
   function pick(toSplit: boolean) {
     const version = toSplit ? updated_at : null
@@ -252,6 +257,7 @@ export default function List({ session, onOpenChat }: { session: Session; onOpen
               </p>
             )
           )}
+          {daily && <p>{daily}</p>}
           {budget && <p role={budget.alert ? 'alert' : undefined}>{budget.text}</p>}
           {chosen && chosen.saving > 0 && <p>{t.prices.saving(money(chosen.saving))}</p>}
           <ul>

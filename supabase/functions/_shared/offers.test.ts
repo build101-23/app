@@ -102,12 +102,12 @@ test('checked date is the oldest of the products used', () => {
 test('the verdict says the cheapest option, the stores, the budget and what to swap', () => {
   assert.equal(
     verdict(pricing(menu(400, products), {}, rows)),
-    'Cheapest: all at disco $360. Per store: disco $360, geant $370, tata $440. Budget $400: fits, $40 left.',
+    'Cheapest: all at disco $360. Per day (2 days): $180. Per store: disco $360, geant $370, tata $440. Budget $400: fits, $40 left.',
   )
   const over = verdict(pricing(menu(300, products), {}, rows))
   assert.equal(
     over,
-    'Cheapest: all at disco $360. Per store: disco $360, geant $370, tata $440. Budget $300: over by $60. Costliest: chicken_breast $300, rice $60.',
+    'Cheapest: all at disco $360. Per day (2 days): $180. Per store: disco $360, geant $370, tata $440. Budget $300: over by $60. Costliest: chicken_breast $300, rice $60.',
   )
   assert.deepEqual(costliest(pricing(menu(300, products), {}, rows), 1), ['chicken_breast $300'])
   assert.match(verdict(pricing(menu(null), {}, rows)), /^Not priced: this menu has no products/)

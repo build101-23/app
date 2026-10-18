@@ -1,4 +1,4 @@
-// The shopping list: the week's menu added up, minus what the user has at home.
+// The shopping list: the menu added up, minus what the user has at home.
 // Plain TS shared by the web app (List tab) and the chat function (update_shopping_list), so no Deno or DOM globals here.
 import { catalog, type CatalogKey, type Section, type Unit } from './catalog.ts'
 import type { Ingredient, MenuData } from './menu.ts'
@@ -6,7 +6,7 @@ import type { Ingredient, MenuData } from './menu.ts'
 // Item id → how much the user has at home, in the item's unit. null: enough, don't buy it.
 export type Have = Record<string, number | null>
 
-// amount: the week's total for one person, raw as bought. pack: from the catalog, null for 'other'.
+// amount: the menu's total for one person, raw as bought. pack: from the catalog, null for 'other'.
 export type Item = {
   id: string
   food: CatalogKey | 'other'
@@ -71,7 +71,7 @@ export function listLines(menu: MenuData, have: Have): string {
       const atHome = mark === null || (typeof mark === 'number' && Number.isFinite(mark) && mark >= 0) ? mark : 0
       const buy = toBuy(item, { [item.id]: atHome })
       const unit = item.pack ? `${item.unit}, pack ${item.pack}` : item.unit
-      return `${item.id} (${unit}): week ${item.amount}, have ${atHome ?? 'enough'}, buy ${buy}`
+      return `${item.id} (${unit}): menu ${item.amount}, have ${atHome ?? 'enough'}, buy ${buy}`
     })
     .join('\n')
 }

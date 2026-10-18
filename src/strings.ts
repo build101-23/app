@@ -54,7 +54,7 @@ export const t = {
     openList: 'Ver lista',
   },
   menu: {
-    empty: 'Todavía no hay menú. Pedíselo al chat.',
+    empty: 'Todavía no hay menú. Pedíselo al chat, para la semana o para los días que quieras.',
     loading: 'Cargando el menú…',
     loadError: 'No se pudo cargar el menú.',
     change: 'Cambiar',
@@ -116,6 +116,8 @@ export const t = {
     cheaperThan: (amount: string, store: string) => `${amount} menos que todo en ${store}`,
     noOneStore: 'Ningún súper tiene toda la lista.',
     saving: (amount: string) => `Ahorrás ${amount} frente al promedio de los súper.`,
+    // Under the chosen total, for menus of 2 days or more: "$ 277 por día · menú de 7 días".
+    perDay: (amount: string, days: number) => `${amount} por día · menú de ${days} días`,
     missing: (n: number) => (n === 1 ? '1 producto no encontrado' : `${n} productos no encontrados`),
     notFound: 'No encontrado online',
     checked: (date: string) => `Precios de las webs de los súper del ${date}. Pueden variar.`,

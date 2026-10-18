@@ -27,10 +27,11 @@ One file per decision: `NNNN-short-title.md`. ADRs are append-only: never rewrit
 | 0021 | [The numbers switch lives in the profile; macros come from a fixed table](0021-numbers-switch-in-the-profile.md) | Accepted | 2026-10-17 |
 | 0022 | [The shopping list follows the menu, and shows in the chat](0022-list-follows-the-menu.md) | Accepted (the model sees prices: 0024) | 2026-10-17 |
 | 0023 | [Scraper prices for the unit of sale](0023-scraper-prices-for-the-unit-of-sale.md) | Accepted | 2026-10-17 |
-| 0024 | [The chat agent searches real products and builds the menu from them](0024-agent-builds-the-menu-from-real-products.md) | Accepted | 2026-10-17 |
+| 0024 | [The chat agent searches real products and builds the menu from them](0024-agent-builds-the-menu-from-real-products.md) | Accepted (days' order and start from 0028) | 2026-10-17 |
 | 0025 | [VIVERI identity and a token-based UI system](0025-viveri-identity-and-ui-system.md) | Proposed (navigation and depth amended by 0026) | 2026-10-17 |
 | 0026 | [Glass navigation layer](0026-glass-navigation-layer.md) | Proposed | 2026-10-17 |
 | 0027 | [Sign in with Google's own button](0027-google-sign-in-button.md) | Accepted | 2026-10-17 |
+| 0028 | [Menus in calendar order from tomorrow, named by weekday](0028-menus-of-1-to-7-days.md) | Accepted | 2026-10-17 |
 
 ## Template
 
