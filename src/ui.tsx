@@ -23,7 +23,9 @@ export function Mark({ size = 24, animated = false }: { size?: number; animated?
       aria-hidden="true"
     >
       {pairs.map((pair, i) =>
-        pair.x.map((cx) => <circle key={cx} className={`dot step-${i + 1}`} cx={cx} cy={pair.y} r={pair.r} fill="#1E8A5E" />),
+        pair.x.map((cx, side) => (
+          <circle key={cx} className={`dot step-${i + 1} ${side ? 'right' : 'left'}`} cx={cx} cy={pair.y} r={pair.r} fill="#1E8A5E" />
+        )),
       )}
       <circle className="dot step-4" cx={48} cy={67.97} r={6.99} fill="#E85D2A" />
     </svg>

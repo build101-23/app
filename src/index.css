@@ -352,20 +352,38 @@ a.button {
   flex: none;
 }
 
+/* While waiting, the V assembles: the pairs slide in along their arms from the outer pair inward, the
+   point lands last, the V holds, then fades out before the next cycle. 6 units along each arm, so the
+   outer dots start outside the viewBox, which is cropped to the dots: let them draw there. */
+.mark.animated {
+  overflow: visible;
+}
+
 .mark.animated .dot {
-  animation: converge 1.2s ease-in-out infinite both;
+  animation: assemble 1.6s ease infinite both;
+}
+
+.mark.animated .left {
+  --assemble-from: translate(-2.68px, -5.37px);
+}
+
+.mark.animated .right {
+  --assemble-from: translate(2.68px, -5.37px);
 }
 
 .mark.animated .step-2 {
-  animation-delay: 0.15s;
+  animation-delay: 80ms;
 }
 
 .mark.animated .step-3 {
-  animation-delay: 0.3s;
+  animation-delay: 160ms;
 }
 
 .mark.animated .step-4 {
-  animation-delay: 0.45s;
+  transform-box: fill-box;
+  transform-origin: center;
+  animation-name: assemble-point;
+  animation-delay: 240ms;
 }
 
 .splash {
@@ -2087,14 +2105,45 @@ a.button {
 
 /* Motion */
 
-@keyframes converge {
-  0%,
-  100% {
-    opacity: 0.25;
+/* 1.6s cycles: arrive in the first 30%, hold, fade out between 72% and 84%. With the point's 240ms delay
+   it is gone by 1.58s, so a cycle never overlaps the next. */
+@keyframes assemble {
+  0% {
+    opacity: 0;
+    transform: var(--assemble-from);
+    animation-timing-function: var(--ease);
   }
 
-  40% {
+  30%,
+  72% {
     opacity: 1;
+    transform: none;
+  }
+
+  84%,
+  100% {
+    opacity: 0;
+    transform: none;
+  }
+}
+
+@keyframes assemble-point {
+  0% {
+    opacity: 0;
+    transform: scale(0.85);
+    animation-timing-function: var(--ease);
+  }
+
+  30%,
+  72% {
+    opacity: 1;
+    transform: none;
+  }
+
+  84%,
+  100% {
+    opacity: 0;
+    transform: none;
   }
 }
 
