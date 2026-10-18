@@ -133,17 +133,19 @@ _PER_KG = r'\s*<span class="mon"[^>]*>\s*/\s*kg\s*</span>'
 
 def weighable_prices(prices: str) -> dict:
     """A price block for an item sold by weight has the `product-price-weighable` class and shows
-    "$ X / kg", then the piece's price. Both prices are None when it isn't sold by weight; when only one
-    of the two signs is there, a note says which."""
+    "$ X / kg", then the piece's price. Gives the price per kg, its "before" price and the piece's price,
+    all None when it isn't sold by weight; when only one of the two signs is there, a note says which."""
     per_kg = re.search(_PRICE + _PER_KG, prices)
     marked = "product-price-weighable" in prices
     if not (per_kg and marked):
         note = ("weighable price block without a price per kg" if marked else
                 "price per kg without the weighable class" if per_kg else None)
-        return {"kg_price": None, "piece_price": None, "weighable_note": note}
+        return {"kg_price": None, "kg_previous_price": None, "piece_price": None, "weighable_note": note}
+    # The block per kg comes first, so a "before" price ahead of its price is per kg too.
+    before = re.findall(r'<div class="before"[^>]*>.*?<span class="val"[^>]*>([^<]+)</span>', prices[:per_kg.start()], re.S)
     piece = re.search(f"{_PRICE}(?!{_PER_KG})", prices[per_kg.end():])
-    return {"kg_price": _num_es(per_kg.group(2)), "piece_price": _num_es(piece.group(2)) if piece else None,
-            "weighable_note": None}
+    return {"kg_price": _num_es(per_kg.group(2)), "kg_previous_price": _num_es(before[-1]) if before else None,
+            "piece_price": _num_es(piece.group(2)) if piece else None, "weighable_note": None}
 
 
 def page_branch(page: str) -> str | None:
@@ -222,18 +224,20 @@ def parse_product_page(page: str) -> dict | None:
 
 
 def food_candidates(sitemap: Sitemap, saved: set[str], terms: tuple[str, ...] = FOOD_TERMS,
-                    per_term: int = FOOD_PAGES_PER_TERM) -> list[str]:
-    """Product ids for the food pages phase: up to `per_term` per food, leaving out `saved`. Fresh ones
-    (FRESH_SLUG_MARKS) first, then newest first (more likely still for sale). Foods take turns, so a run
-    cut short by its budget still gets some of each."""
+                    per_term: int = FOOD_PAGES_PER_TERM, read_times: dict[str, str] | None = None) -> list[str]:
+    """Product ids for the food pages phase: up to `per_term` per food, leaving out `saved`. They are
+    picked fresh ones (FRESH_SLUG_MARKS) first, then newest first (more likely still for sale), and read
+    never-read first, then by oldest `read_times`. Foods take turns, so a run cut short by its budget
+    still gets some of each, and the next run starts with the ones it missed."""
     def rank(pid: str) -> tuple[bool, int]:
         return not any(mark in sitemap.products[pid] for mark in FRESH_SLUG_MARKS), -int(pid)
 
+    read_times = read_times or {}
     queues = []
     for term in terms:
         ids = [pid for pid, slug in sitemap.products.items()
                if (slug == term or slug.startswith(term + "-")) and pid not in saved]
-        queues.append(sorted(ids, key=rank)[:per_term])
+        queues.append(sorted(sorted(ids, key=rank)[:per_term], key=lambda pid: read_times.get(pid, "")))
     seen: set[str] = set()
     out = []
     for i in range(per_term):
@@ -249,23 +253,23 @@ def food_candidates(sitemap: Sitemap, saved: set[str], terms: tuple[str, ...] = 
 
 def sold_by_weight(weight: dict | None, kg_price: float, piece_price: float | None) -> tuple[dict, list[str]]:
     """Size of an item priced per kg: the price is for 1000 g, and one unit of sale (what goes in the
-    cart) is `weight`, the weight in the name, or 1 kg without one. Notes when the piece's price isn't
-    the price per kg times that weight (the site rounds it up)."""
-    notes = []
-    if weight and weight["base_unit"] == "g":
-        sale_g = weight["base_qty"]
-    else:
-        sale_g = 1000
-        notes.append("sold by weight with no weight in the name: unit of sale taken as 1 kg")
-    if piece_price is not None and abs(piece_price - kg_price * sale_g / 1000) > 1:
-        notes.append(f"piece price {piece_price:g} != {kg_price:g} per kg x {sale_g / 1000:g} kg")
-    return priced_per_kg(sale_g), notes
+    cart) weighs what `weight` (from the name) says, when the piece's price agrees: the site charges the
+    price per kg times that weight, rounded up. Otherwise the piece's price over the price per kg gives
+    the weight, and without a piece price either, it's taken as 1 kg. A note says when it isn't the name's."""
+    name_g = weight["base_qty"] if weight and weight["base_unit"] == "g" else None
+    if name_g and (piece_price is None or abs(piece_price - kg_price * name_g / 1000) <= 1):
+        return priced_per_kg(name_g), []
+    if piece_price:
+        sale_g = round(piece_price / kg_price * 1000)
+        says = f"; the name says {name_g:g} g" if name_g else ""
+        return priced_per_kg(sale_g), [f"unit of sale {sale_g} g from the piece price {piece_price:g} at {kg_price:g} per kg{says}"]
+    return priced_per_kg(1000), ["sold by weight with no weight in the name or piece price: unit of sale taken as 1 kg"]
 
 
 def card_row(store: str, card: dict, category: str | None, run_id: int, checked_at: str) -> dict:
-    size, source, price, notes = parse_size(card["name"]), "name", card["price"], []
+    size, source, price, previous, notes = parse_size(card["name"]), "name", card["price"], card["previous_price"], []
     if card.get("kg_price") is not None:
-        price, source = card["kg_price"], "unit"
+        price, previous, source = card["kg_price"], card["kg_previous_price"], "unit"
         size, notes = sold_by_weight(size, card["kg_price"], card["piece_price"])
     elif card.get("weighable_note"):  # unclear what the price is for: no size, so no unit price
         size, notes = None, [card["weighable_note"]]
@@ -274,7 +278,7 @@ def card_row(store: str, card: dict, category: str | None, run_id: int, checked_
         store_key=store, store_sku=card["id"], name=card["name"], brand=card["brand"], category=category,
         url_path=f"/product/{card['slug']}/{card['id']}",
         **size_fields(size, source),
-        price=price, previous_price=previous_if_higher(card["previous_price"], price),
+        price=price, previous_price=previous_if_higher(previous, price),
         currency=currency, promo_labels="; ".join(card["labels"]) or None,
         # The card offers "Agregar" only when the default branch can sell it.
         availability="InStock" if card["button"] == "Agregar" else None,
@@ -297,13 +301,15 @@ def product_row(store: str, p: dict, url_path: str, category: str | None, run_id
         notes.append(f"spec size ({p['content_spec']}) != size in name")
     if size is None and name_size:
         size, source = name_size, "name"
-    price, shown = p.get("price"), p.get("html_price")
-    if price is not None and shown is not None and abs(price - shown) > 0.01:
+    price, previous, shown = p.get("price"), p.get("previous_price"), p.get("html_price")
+    if price is not None and shown is None:
+        notes.append("no visible price: JSON-LD price kept")  # it's per kg for pieces and items sold by weight
+    elif price is not None and abs(price - shown) > 0.01:
         notes.append(f"JSON-LD price {price:g} != visible price {shown:g}")
         if abs(price - shown) > 1:
             price = shown  # what the cart charges: a piece shows its own price, its JSON-LD the price per kg
     if p.get("kg_price") is not None:
-        price, source = p["kg_price"], "unit"
+        price, previous, source = p["kg_price"], p["kg_previous_price"], "unit"
         weight = name_size if name_size and name_size["base_unit"] == "g" else spec_size
         size, more = sold_by_weight(weight, p["kg_price"], p["piece_price"])
         notes += more
@@ -313,7 +319,7 @@ def product_row(store: str, p: dict, url_path: str, category: str | None, run_id
     row = make_row(
         store_key=store, store_sku=p["sku"], gtin=gtin13(p.get("gtin_raw")), name=p["name"], brand=p["brand"],
         category=category, url_path=url_path, **size_fields(size, source, text),
-        price=price, previous_price=previous_if_higher(p.get("previous_price"), price), currency=p.get("currency"),
+        price=price, previous_price=previous_if_higher(previous, price), currency=p.get("currency"),
         promo_labels="; ".join(p.get("promo_labels") or []) or None, availability=p.get("availability"),
         read_from="product_page", run_id=run_id, checked_at=checked_at,
     )

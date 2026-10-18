@@ -96,6 +96,12 @@ class MojibakeTest(unittest.TestCase):
         self.assertEqual(fix_mojibake("CaÃ±uelas"), "Cañuelas")
         self.assertEqual(fix_mojibake("LimÃ³n"), "Limón")
 
+    def test_repairs_each_broken_run(self):
+        self.assertEqual(fix_mojibake("Recipiente Plástico HermÃ©tico"), "Recipiente Plástico Hermético")
+        self.assertEqual(fix_mojibake("CafÃ© – especial"), "Café – especial")
+        self.assertEqual(fix_mojibake("LIMÃ“N Ã\x81CIDO"), "LIMÓN ÁCIDO")  # Windows-1252 and Latin-1 forms
+        self.assertEqual(fix_mojibake("VacÃ\x83Â\xado"), "Vacío")  # broken twice
+
     def test_leaves_good_text_alone(self):
-        for s in ("Vacío", "SÃO PAULO", "Arroz", "", None):
+        for s in ("Vacío", "SÃO PAULO", "PÃO", "MAÇÃ", "Más – grande", "Arroz", "", None):
             self.assertEqual(fix_mojibake(s), s)

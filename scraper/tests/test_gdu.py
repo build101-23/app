@@ -186,11 +186,32 @@ class WeighableCardTest(unittest.TestCase):
         self.assertIsNone(row["size_text"])
         self.assertIsNone(row["notes"])  # 119 x 1.5 = 178.5: the site rounds the piece up to 179
 
-    def test_no_weight_in_the_name_sells_one_kg(self):
+    def test_no_weight_in_the_name_takes_it_from_the_piece_price(self):
         row = gdu.card_row("disco", {**self.card, "name": "Zapallo Kabutia"}, None, 1, "t")
-        self.assertEqual((row["base_qty"], row["size_qty"], row["size_unit"]), (1000, 1, "kg"))
+        self.assertEqual((row["base_qty"], row["size_qty"], row["size_unit"]), (1000, 1.504, "kg"))
+        self.assertEqual(row["notes"], "unit of sale 1504 g from the piece price 179 at 119 per kg")
+
+    def test_a_name_the_piece_price_contradicts_gives_way(self):
+        row = gdu.card_row("disco", {**self.card, "name": "Pan negro chico x 6 un. 450 g aprox", "kg_price": 220,
+                                     "piece_price": 99}, None, 1, "t")
+        self.assertEqual((row["price"], row["size_qty"], row["size_unit"]), (220, 450, "g"))
+        self.assertIn("the name says 2700 g", row["notes"])
+
+    def test_no_weight_and_no_piece_price_sells_one_kg(self):
+        row = gdu.card_row("disco", {**self.card, "name": "Zapallo Kabutia", "piece_price": None}, None, 1, "t")
+        self.assertEqual((row["size_qty"], row["size_unit"]), (1, "kg"))
         self.assertIn("unit of sale taken as 1 kg", row["notes"])
-        self.assertIn("piece price 179 != 119 per kg x 1 kg", row["notes"])
+
+    def test_before_price_counts_only_from_the_block_per_kg(self):
+        before = '<div class="before"><span class="mon">$</span> <span class="val">{}</span></div>'
+        piece_promo = WEIGHABLE_CARD.replace('<div class="text" style="">\n<span class="mon">$</span>\n <span class="val">179',
+                                             before.format(210) + '<div class="text" style="">\n<span class="mon">$</span>\n <span class="val">179')
+        kg_promo = WEIGHABLE_CARD.replace('<div class="price"><div class="text" style=""><span class="mon">$</span>\n <span class="val">119',
+                                          '<div class="price">' + before.format(140) + '<div class="text" style=""><span class="mon">$</span>\n <span class="val">119')
+        for page, previous in ((piece_promo, None), (kg_promo, 140)):
+            _, (card,) = gdu.parse_listing_page(page)
+            self.assertEqual((card["price"], card["kg_price"], card["piece_price"]), (119, 119, 179))
+            self.assertEqual(gdu.card_row("disco", card, None, 1, "t")["previous_price"], previous)
 
     def test_only_one_sign_gives_a_note_and_no_size(self):
         no_class = WEIGHABLE_CARD.replace(" product-price-weighable", "")
@@ -233,6 +254,11 @@ class WeighablePageTest(unittest.TestCase):
         self.assertEqual(row["price"], 55)
         self.assertIn("JSON-LD price 55 != visible price 55.5", row["notes"])
 
+    def test_no_visible_price_is_noted(self):
+        p = {**gdu.parse_product_page(PIECE_PAGE), "html_price": None}
+        row = gdu.product_row("geant", p, "/product/x/300566", None, 1, "t")
+        self.assertEqual((row["price"], row["notes"]), (709, "no visible price: JSON-LD price kept"))
+
     def test_flat_page_is_not_weighable(self):
         p = gdu.parse_product_page(PRODUCT_PAGE)
         self.assertEqual((p["kg_price"], p["piece_price"], p["weighable_note"]), (None, None, None))
@@ -257,6 +283,12 @@ class FoodCandidatesTest(unittest.TestCase):
         }, {})
         ids = gdu.food_candidates(sitemap, saved=set(), terms=("tomate",), per_term=5)
         self.assertEqual(ids, ["410056", "401026", "401022", "300100", "900500"])
+
+    def test_never_read_first_then_oldest(self):
+        sitemap = gdu.Sitemap({"3": "papa-malla-1-kg", "2": "papa-aprox-x-200-g", "1": "papa-x-kg", "9": "papa-frita"}, {})
+        read = {"3": "2026-10-17T22:00:00+00:00", "1": "2026-10-17T21:00:00+00:00"}
+        ids = gdu.food_candidates(sitemap, saved=set(), terms=("papa",), per_term=3, read_times=read)
+        self.assertEqual(ids, ["2", "1", "3"])  # the top 3 are the fresh ones; "papa-frita" stays out
 
 
 if __name__ == "__main__":

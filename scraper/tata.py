@@ -127,6 +127,8 @@ def node_row(node: dict, paths: dict[str, str], run_id: int, checked_at: str) ->
     )
     if mismatch:
         add_note(row, f"priced for {size['size_qty']:g} {size['size_unit']}; the name says otherwise")
+    if per_kg and name_size and name_size["base_unit"] == "g" and abs(name_size["base_qty"] - size["size_qty"] * 1000) > 0.5:
+        add_note(row, f"sold as {size['size_qty']:g} kg; the name says otherwise")
     if multicurrency:
         add_note(row, "multicurrency price in source; currency unknown")
     return row

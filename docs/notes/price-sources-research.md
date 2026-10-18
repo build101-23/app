@@ -83,7 +83,7 @@ What counts as "most similar" is still [open](open-decisions.md).
 ## Data rules
 - Never invent data: fields the source doesn't give stay empty.
 - A price of $1 or less is a placeholder, not a price: drop it and keep the raw value in `notes`.
-- Size comes from the product spec ("Contenido") and, if missing, from the name. If the name has two different measures, the size stays empty. Items sold by weight store the price per kg and their unit of sale ([ADR 0023](../adr/0023-scraper-prices-for-the-unit-of-sale.md)).
+- Size comes from the product spec ("Contenido") and, if missing, from the name. If the name has two different measures, the size stays empty. For items sold by weight, what the price is for and what one unit of sale holds follow [ADR 0023](../adr/0023-scraper-prices-for-the-unit-of-sale.md).
 - Every offer keeps `source_url`, `product_url`, `extracted_at` and `price_context` (branch or sales channel).
 
 ## Catalog fields

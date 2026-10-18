@@ -17,16 +17,33 @@ def norm_text(s: str | None) -> str:
     return re.sub(r"\s+", " ", s).strip()
 
 
+_CP1252 = "€‚ƒ„…†‡ˆ‰Š‹ŒŽ‘’“”•–—˜™š›œžŸ"  # bytes 0x80-0x9f as Windows-1252 shows them
+# A UTF-8 lead byte (Â, Ã, â) and its continuation bytes, as Latin-1 or Windows-1252 shows them.
+_MOJIBAKE_RE = re.compile(f"[ÂÃâ][\x80-\xbf{_CP1252}]+")
+
+
+def _as_byte(c: str) -> int:
+    return ord(c) if ord(c) < 256 else c.encode("cp1252")[0]
+
+
+def _repair(m: re.Match) -> str:
+    try:
+        return bytes(_as_byte(c) for c in m.group()).decode("utf-8")
+    except UnicodeDecodeError:
+        return m.group()
+
+
 def fix_mojibake(s: str | None) -> str | None:
-    """UTF-8 text that was decoded as Latin-1 somewhere upstream: "VacÃ­o" -> "Vacío". Text that isn't
-    stays as it is."""
-    if not s or "Ã" not in s:
-        return s
-    for encoding in ("latin-1", "cp1252"):
-        try:
-            return s.encode(encoding).decode("utf-8")
-        except (UnicodeEncodeError, UnicodeDecodeError):
-            continue
+    """UTF-8 text that was decoded as Latin-1 or Windows-1252 somewhere upstream: "VacÃ­o" -> "Vacío".
+    Each broken run is repaired on its own, so a name that also has correct accents is repaired too, and
+    twice-broken text gets a second pass. Text that isn't broken stays as it is."""
+    for _ in range(3):
+        if not s:
+            return s
+        fixed = _MOJIBAKE_RE.sub(_repair, s)
+        if fixed == s:
+            return s
+        s = fixed
     return s
 
 
