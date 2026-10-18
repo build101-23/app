@@ -33,7 +33,52 @@ export function foodProblems(item: Pick<Ingredient, 'food' | 'other_name' | 'uni
   return []
 }
 
-// What strict mode can't enforce. Lowercases food and day keys in place; returns what the model must fix.
+// save_menu isn't strict (ADR 0024: its grammar went over the API's cap), so this checks the input's shape first:
+// what menuProblems reads must be there. Returns what the model must fix, or nothing.
+export function menuShapeProblems(input: unknown): string[] {
+  const isObject = (x: unknown): x is Record<string, unknown> => typeof x === 'object' && x !== null && !Array.isArray(x)
+  const isText = (x: unknown) => typeof x === 'string'
+  const isNullableText = (x: unknown) => x === null || typeof x === 'string'
+  const isUnit = (x: unknown) => x === 'g' || x === 'ml' || x === 'un'
+  if (!isObject(input)) return ['The menu must be an object with recipes, days, budget and products.']
+  const problems: string[] = []
+  if (!Array.isArray(input.recipes)) problems.push('recipes must be a list.')
+  else {
+    input.recipes.forEach((recipe, i) => {
+      const where = `Recipe ${i + 1}`
+      if (!isObject(recipe) || !isText(recipe.id) || !isText(recipe.name) || !isText(recipe.how)) {
+        return problems.push(`${where}: needs id, name and how, as text.`)
+      }
+      if (!Array.isArray(recipe.ingredients)) return problems.push(`${where}: ingredients must be a list.`)
+      recipe.ingredients.forEach((item, j) => {
+        const ok = isObject(item) && isText(item.food) && isNullableText(item.other_name) && typeof item.amount === 'number' && isUnit(item.unit)
+        if (!ok) problems.push(`${where}, ingredient ${j + 1}: needs food (text), other_name (text or null), amount (number) and unit (g, ml or un).`)
+      })
+    })
+  }
+  if (!Array.isArray(input.days)) problems.push('days must be a list.')
+  else {
+    input.days.forEach((entry, i) => {
+      const ok =
+        isObject(entry) && (days as readonly unknown[]).includes(typeof entry.day === 'string' ? entry.day.toLowerCase() : entry.day) &&
+        Array.isArray(entry.meals) && entry.meals.every((meal) => isObject(meal) && isText(meal.slot) && isText(meal.recipe_id))
+      if (!ok) problems.push(`Day ${i + 1}: needs day (monday to sunday) and meals, each with slot and recipe_id.`)
+    })
+  }
+  if (input.budget !== undefined && input.budget !== null && typeof input.budget !== 'number') problems.push('budget must be a number or null.')
+  if (input.products !== undefined && !Array.isArray(input.products)) problems.push('products must be a list.')
+  if (Array.isArray(input.products)) {
+    input.products.forEach((pick, i) => {
+      const ok =
+        isObject(pick) && isText(pick.food) && isNullableText(pick.other_name) && isUnit(pick.unit) &&
+        isNullableText(pick.disco) && isNullableText(pick.geant) && isNullableText(pick.tata)
+      if (!ok) problems.push(`Product ${i + 1}: needs food, other_name, unit, and disco, geant and tata (a sku or null).`)
+    })
+  }
+  return problems
+}
+
+// What the input's shape doesn't settle. Lowercases food and day keys in place; returns what the model must fix.
 export function menuProblems(menu: MenuData): string[] {
   const problems: string[] = []
   for (const recipe of menu.recipes) {

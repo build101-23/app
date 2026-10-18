@@ -39,6 +39,7 @@ For search:
   - what isn't priced;
   - whether it fits the budget, and if not the five costliest items.
   - The list tools answer with the same line. The model quotes only those numbers.
+- **`save_menu` isn't a strict tool any more.** With the products added, the strict grammar of all the tools went over the API's cap (a 400 on every request). Its shape is checked in code (`menuShapeProblems`) before the menu checks, and the model gets a fix list like any other "Not saved".
 - **The menu covers 1 to 7 days**, the ones the user asks for ("para el finde"); without that, the whole week.
 - **`budget`** is pesos for that shopping, saved in the menu, and only when the user gives one. Over budget, the model:
   - suggests the split if it fits;

@@ -2,7 +2,7 @@ import Anthropic from 'npm:@anthropic-ai/sdk@0.135.0'
 import { createClient } from 'npm:@supabase/supabase-js@2.118.0'
 import { catalog, type CatalogKey } from '../_shared/catalog.ts'
 import { buildList, itemId, listLines, type Have } from '../_shared/list.ts'
-import { days, foodProblems, menuProblems, type Ingredient, type MenuData } from '../_shared/menu.ts'
+import { days, foodProblems, menuProblems, menuShapeProblems, type Ingredient, type MenuData } from '../_shared/menu.ts'
 import { nutritionText } from '../_shared/nutrition.ts'
 import { pricing, verdict } from '../_shared/offers.ts'
 import { productColumns, productProblems, searchText, skusByStore, type ProductRow, type SearchRow } from '../_shared/products.ts'
@@ -76,13 +76,13 @@ const object = (properties: Record<string, unknown>) => ({
 })
 
 // A few recipes that repeat, referenced by id from the days, and the product picked for each food at each store from
-// search_products (ADR 0024). Recipes come first so they're written before the days that point at them. Strict can't
-// check ids, units, days or skus: menuProblems (../_shared/menu.ts) and productProblems (../_shared/products.ts) do.
+// search_products (ADR 0024). Recipes come first so they're written before the days that point at them. Not strict:
+// with the products its grammar went over the API's cap (400). menuShapeProblems checks the shape, menuProblems the
+// ids, units and days (../_shared/menu.ts), productProblems the skus (../_shared/products.ts).
 const saveMenu: Anthropic.Beta.BetaTool = {
   name: 'save_menu',
   description:
     "Save the user's menu: the days they asked for (1 to 7), the recipes, the budget and the products picked from search_products. Each call replaces the saved menu, so always send all of it. The answer gives the real price of the shopping list.",
-  strict: true,
   input_schema: object({
     recipes: {
       type: 'array',
@@ -129,8 +129,7 @@ const saveMenu: Anthropic.Beta.BetaTool = {
       type: 'array',
       description:
         'One entry per food on the shopping list (food, unit and other_name as in the recipes), with the store_sku you picked at each store from search_products, or null where none fits.',
-      // No food enum here: a second copy of the catalog's enum made the strict grammar too large for the API (400).
-      // menuProblems checks these foods like the recipes'.
+      // No food enum here: menuProblems checks these foods like the recipes'.
       items: object({
         food: { type: 'string', description: "The catalog food or 'other', as in the recipes." },
         other_name: nullable('string'),
@@ -304,6 +303,8 @@ Deno.serve(async (req) => {
     }
     if (name === 'save_menu') {
       // A copy: the stored assistant turn must keep the input exactly as the model wrote it.
+      const shape = menuShapeProblems(input)
+      if (shape.length) return { problem: `Not saved. Fix this and call save_menu again:\n${shape.join('\n')}` }
       const menu = structuredClone(input) as MenuData
       const problems = menuProblems(menu)
       if (!problems.length) {
