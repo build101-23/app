@@ -85,11 +85,7 @@ export function offerOf(row: ProductRow, unit: Unit): Offer | null {
   if (!sale || !qty) return null
   const url = row.stores?.base_url ? `${row.stores.base_url}${row.url_path}` : undefined
   const offer: Offer = { price: sale.price, base_qty: qty, sku: row.store_sku, name: row.name, url }
-  // Sold by weight: the store sets the final weight and charges for it, so it's priced on the grams (stores.ts cost()).
-  if (row.size_source === 'unit') {
-    offer.weighed = true
-    offer.by_weight = true
-  }
+  if (row.size_source === 'unit') offer.weighed = true
   return offer
 }
 

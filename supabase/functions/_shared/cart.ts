@@ -29,9 +29,7 @@ export function cartFor(p: Pricing, store: StoreKey, ids: Iterable<string>): Car
     } else if (offer.weighed && !weighedInCart[store]) {
       skipped.push({ id: need.id, reason: 'weighed' })
     } else {
-      // What the cart charges is whole units of sale, even for food the list prices by weight.
-      const { packs } = lineOf(need, offer)
-      const cost = Math.round(packs * offer.price)
+      const { packs, cost } = lineOf(need, offer)
       const line = lines.get(offer.sku)
       if (line) {
         line.qty += packs

@@ -27,7 +27,7 @@ One file per decision: `NNNN-short-title.md`. ADRs are append-only: never rewrit
 | 0021 | [The numbers switch lives in the profile; macros come from a fixed table](0021-numbers-switch-in-the-profile.md) | Accepted | 2026-10-17 |
 | 0022 | [The shopping list follows the menu, and shows in the chat](0022-list-follows-the-menu.md) | Accepted (the model sees prices: 0024) | 2026-10-17 |
 | 0023 | [Scraper prices for the unit of sale](0023-scraper-prices-for-the-unit-of-sale.md) | Accepted | 2026-10-17 |
-| 0024 | [The chat agent searches real products and builds the menu from them](0024-agent-builds-the-menu-from-real-products.md) | Accepted (days' order and start from 0028; food sold by weight is priced by weight from 0036) | 2026-10-17 |
+| 0024 | [The chat agent searches real products and builds the menu from them](0024-agent-builds-the-menu-from-real-products.md) | Accepted (days' order and start from 0028) | 2026-10-17 |
 | 0025 | [VIVERI identity and a token-based UI system](0025-viveri-identity-and-ui-system.md) | Proposed (navigation and depth amended by 0026; neutrals by 0031; dark theme removed by 0033; logo and icon files replaced by 0035) | 2026-10-17 |
 | 0026 | [Glass navigation layer](0026-glass-navigation-layer.md) | Proposed (dark tint and capsule colors superseded by 0033) | 2026-10-17 |
 | 0027 | [Sign in with Google's own button](0027-google-sign-in-button.md) | Accepted | 2026-10-17 |
@@ -39,7 +39,7 @@ One file per decision: `NNNN-short-title.md`. ADRs are append-only: never rewrit
 | 0033 | [Light theme only](0033-light-theme-only.md) | Accepted | 2026-10-18 |
 | 0034 | [The List shows one supermarket at a time](0034-list-shows-one-store-at-a-time.md) | Accepted | 2026-10-18 |
 | 0035 | [The mark is the first V of VIVERI](0035-mark-is-the-first-v.md) | Accepted | 2026-10-18 |
-| 0036 | [Food sold by weight is priced by weight](0036-food-sold-by-weight-is-priced-by-weight.md) | Accepted | 2026-10-18 |
+| 0036 | [The List steps by unit of sale](0036-list-steps-by-unit-of-sale.md) | Accepted | 2026-10-18 |
 
 ## Template
 

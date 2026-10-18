@@ -368,16 +368,15 @@ export default function List({ session, onOpenChat }: { session: Session; onOpen
                         ? t.prices.notAt(t.stores[store])
                         : ''
                 const line = need && offer ? lineOf(need, offer) : null
-                // A pack steps by the store's own, so each tap changes what's paid; weight and unpriced lines by the food's.
-                const step = offer && !offer.by_weight ? offer.base_qty : undefined
-                // By weight: the grams the price is worked out on. A pack: the packs of the selected store. Else the catalog's.
-                const bought = need && offer && line ? (line.byWeight ? need.amount : line.packs * offer.base_qty) : buy
+                // With a price, − and + move by one unit of sale of the selected store (a pack, a piece, a tray), so each tap
+                // changes what's paid and the line adds up to what the cart adds. Without one, by the food's own step.
+                const step = offer ? offer.base_qty : undefined
+                // The units of the selected store, or the catalog's pack where there is no price.
+                const bought = need && offer && line ? line.packs * offer.base_qty : buy
                 const amount = crossed
                   ? needs
                   : need && offer && line
-                    ? line.byWeight
-                      ? qty(need.amount, item.unit)
-                      : `${line.packs} × ${qty(offer.base_qty, item.unit)}`
+                    ? `${line.packs} × ${qty(offer.base_qty, item.unit)}`
                     : buyText(item, buy)
                 return (
                   <li key={item.id} className={[crossed && 'have', tag && 'unavailable'].filter(Boolean).join(' ') || undefined}>

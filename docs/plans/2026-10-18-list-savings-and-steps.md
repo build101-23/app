@@ -49,3 +49,14 @@ Four requests on the List tab (`src/List.tsx`):
 - **Open point:** at Ta-Ta the store's tab says $ 2.299 and the cart's note says $ 2.630 estimated, 14% more. The tab prices the loose produce by its grams and the cart adds whole units of it, as the store sells them to a cart. That is deliberate ([ADR 0036](../adr/0036-food-sold-by-weight-is-priced-by-weight.md)), but two different totals on one screen may confuse. The alternative is to show the cart's estimate by weight too, which understates what the cart charges.
 - Not checked: a wide screen, Safari and a screen reader.
 - Still to do after the merge: deploy the `chat` function.
+
+## Revision: back to whole units, stepping by unit
+The proportional price for food sold by weight (the first approach above, and the first Results section) was dropped the same day, in favor of [ADR 0036](../adr/0036-list-steps-by-unit-of-sale.md). The cart can only add whole units, so with grams for the tab and units for the cart the two totals disagreed (at Ta-Ta, $ 2.299 against $ 2.630, 14%), and they can't match while one counts grams and the other units. The user chose to move by unit, as they said: "volvemos a que te deje mover por unidad y no por gramos".
+
+What changed:
+- `offerOf`, `cost()`, `lineOf` and the cart are as on `main` again: whole units everywhere, no `by_weight`.
+- `stepHave`'s optional step stays, and the List tab now passes the selected store's unit of sale for every priced line, by weight or not. Every tap changes the price, and the line reads "2 × 1 kg", what the cart adds.
+- The fixture's loose produce is no longer marked sold by weight, and the ADR is "The List steps by unit of sale" in place of the one on pricing by weight. Nothing the `chat` function uses changes in behavior, so it needs no deploy for this.
+- The savings card, the actions row, the rows' layout, "$ 0" and the grayed-out lines are untouched.
+- A new test checks that stepping by the store's unit changes the price at every tap, for a pack and for 250 g pieces.
+- Checked in `npm run dev:fixture` (`?cart=tata`, Ta-Ta's tab): the tab's total and the cart's note say the same at every step, $ 2.438 with the whole list and $ 2.154 and $ 1.870 after tapping − on the chicken (1 kg trays at $ 284: "2 × 1 kg", "1 × 1 kg", crossed out at $ 0). Sweet potato goes "2 × 1 kg" $ 124, "1 × 1 kg" $ 62, then crossed out. `npm test` passes (52), as do `npx tsc -b`, `npm run lint` and `npm run build`.
