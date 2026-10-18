@@ -316,12 +316,19 @@ export default function Chat({
       if (res.status === 429) failure = t.chat.limit
       if (!res.ok || !res.body) throw new Error(`chat failed: ${res.status}`)
       // One JSON object per line, text or step (ADR 0029). A chunk can end mid-line: the rest waits for the next.
+      // A plain-text body (a chat function deployed from before ADR 0029) is the reply itself, with no steps.
+      const plain = !res.headers.get('Content-Type')?.includes('ndjson')
       const reader = res.body.pipeThrough(new TextDecoderStream()).getReader()
       let reply = ''
       let rest = ''
       for (;;) {
         const { done, value } = await reader.read()
         if (done) break
+        if (plain) {
+          reply += value
+          setReply(reply)
+          continue
+        }
         const lines = (rest + value).split('\n')
         rest = lines.pop() ?? ''
         for (const line of lines) {

@@ -71,7 +71,7 @@ Vite reads `.env`, then `.env.local` (gitignored), which overrides it.
 | `auth` | `in`, `out` | Signed in, or the sign-in screen |
 | `otp` | `ok`, `error`, `slow` | Sign-in link sent, refused (rate limit), or slow |
 | `chat` | `long`, `empty`, `error` | Three chats opening on the long one, no chats (a new chat with the intent cards), or a load error with retry |
-| `reply` | `ok`, `error`, `limit`, `slow`, `trickle` | The streamed reply to a sent message. `limit` answers 429 (the daily cap); `slow` waits 3 s for the first words; `trickle` streams one chunk every 600 ms, to see the status line |
+| `reply` | `ok`, `error`, `limit`, `slow`, `trickle`, `plain` | The streamed reply to a sent message. `limit` answers 429 (the daily cap); `slow` waits 3 s for the first words; `trickle` streams one chunk every 600 ms, to see the status line; `plain` streams bare text with no steps, like a `chat` function from before [ADR 0029](adr/0029-chat-streams-its-steps.md) |
 | `menu` | `saved`, `short`, `none`, `error` | The week saved (Menu, List with its products and prices, and the chat's menu and list cards), a 3-day menu from sábado to lunes, no menu yet, or a load error (Menu and List show it; the chat opens without its list card) |
 | `prices` | `ok`, `over`, `old`, `error` | The saved week's products: inside its budget, over it, a menu saved before real products, or the products can't be read. Synthetic names and prices |
 | `numbers` | `off`, `on`, `error` | The numbers switch off or on (Menu shows macros), or saving it fails and nothing changes. Works with `profile=empty` too |
