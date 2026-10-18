@@ -37,9 +37,10 @@ One file per decision: `NNNN-short-title.md`. ADRs are append-only: never rewrit
 | 0031 | [A cleaner neutral palette](0031-cleaner-neutral-palette.md) | Accepted | 2026-10-18 |
 | 0032 | [The Menu tab shows one day at a time](0032-menu-shows-one-day-at-a-time.md) | Accepted | 2026-10-18 |
 | 0033 | [Light theme only](0033-light-theme-only.md) | Accepted | 2026-10-18 |
-| 0034 | [The List shows one supermarket at a time](0034-list-shows-one-store-at-a-time.md) | Accepted | 2026-10-18 |
+| 0034 | [The List shows one supermarket at a time](0034-list-shows-one-store-at-a-time.md) | Accepted (split tab added by 0037) | 2026-10-18 |
 | 0035 | [The mark is the first V of VIVERI](0035-mark-is-the-first-v.md) | Accepted | 2026-10-18 |
 | 0036 | [The List steps by unit of sale](0036-list-steps-by-unit-of-sale.md) | Accepted | 2026-10-18 |
+| 0037 | [The List shows the cheapest split](0037-list-shows-the-cheapest-split.md) | Accepted | 2026-10-18 |
 
 ## Template
 

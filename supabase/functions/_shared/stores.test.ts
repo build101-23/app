@@ -42,8 +42,9 @@ test('a split needs to save at least 10% of the one-store total', () => {
   const tenPercent = planStores(needs('x', 'y'), rows(40))
   assert.deepEqual([tenPercent.single?.total, tenPercent.split?.stores, tenPercent.split?.total], [100, ['disco', 'geant'], 90])
   assert.deepEqual(tenPercent.split?.at, { x: 'geant', y: 'disco' })
+  const fivePercent = planStores(needs('x', 'y'), rows(45))
+  assert.deepEqual([fivePercent.split, fivePercent.pair?.stores, fivePercent.pair?.total], [null, ['disco', 'geant'], 95])
   assert.equal(planStores(needs('x', 'y'), rows(41)).split, null)
-  assert.equal(planStores(needs('x', 'y'), rows(45)).split, null)
 })
 
 test('no single store has the whole list: the split is the recommendation', () => {
@@ -80,7 +81,7 @@ test('two different other items are both not found online, in list order', () =>
 
 test('ties go to the earlier store, and a pair that buys everything at one store is no split', () => {
   const tie = planStores(needs('x', 'y'), prices({ x: { disco: 10, geant: 10, tata: 10 }, y: { disco: 10, geant: 10, tata: 10 } }))
-  assert.deepEqual([tie.single?.stores, tie.split], [['disco'], null])
+  assert.deepEqual([tie.single?.stores, tie.split, tie.pair], [['disco'], null, null])
   const pairs = planStores(needs('x', 'y'), prices({ x: { disco: 10, geant: 20, tata: 20 }, y: { disco: 20, geant: 10, tata: 10 } }))
   assert.deepEqual(pairs.split?.stores, ['disco', 'geant'])
 })
@@ -109,7 +110,7 @@ test('the saving is exact and does not depend on list order', () => {
 
 test('a split that saves nothing is not offered, even on a free list', () => {
   const plan = planStores(needs('x', 'y'), prices({ x: { disco: 0, geant: 0 }, y: { disco: 0, tata: 0 } }))
-  assert.equal(plan.split, null)
+  assert.deepEqual([plan.split, plan.pair], [null, null])
 })
 
 test('a bigger pack wins only if it is cheaper even counting the leftover', () => {

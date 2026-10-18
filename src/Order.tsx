@@ -13,7 +13,18 @@ import { StoreIcon } from './ui'
 const canFill = (store: StoreKey) => store === 'tata'
 
 // compact: only the button, for the top of the List tab; the notes and the status stay with the full one below the list.
-export default function Order({ p, store, compact = false }: { p: Pricing; store: StoreKey; compact?: boolean }) {
+// ids: the list items to order here, every one left to buy unless a split gives this store only its share.
+export default function Order({
+  p,
+  store,
+  compact = false,
+  ids = p.needs.map((need) => need.id),
+}: {
+  p: Pricing
+  store: StoreKey
+  compact?: boolean
+  ids?: string[]
+}) {
   const [opened, setOpened] = useState<StoreKey | null>(null)
   const label = (
     <>
@@ -41,11 +52,7 @@ export default function Order({ p, store, compact = false }: { p: Pricing; store
     )
   }
 
-  const cart = cartFor(
-    p,
-    store,
-    p.needs.map((need) => need.id),
-  )
+  const cart = cartFor(p, store, ids)
   if (!cart.lines.length) return null
   const names = new Map(p.items.map((item) => [item.id, nameOf(item)]))
   // What stays out, one line per reason, worded so nothing has to agree with the names.
