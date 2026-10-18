@@ -150,7 +150,7 @@ export const t = {
     notAt: (store: string) => `No está en ${store}`,
     // On the tab of the store the rule recommends: the cheapest that has the whole list.
     cheapest: 'Recomendado',
-    checked: (date: string) => `Precios de las webs de los súper del ${date}. Pueden variar.`,
+    checked: (date: string) => `Precios de las webs de los súper del ${date}, sin envío. Pueden variar.`,
     loading: 'Buscando precios…',
     loadError: 'No se pudieron cargar los precios.',
     // A menu saved before real products (ADR 0024).
