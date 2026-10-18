@@ -43,16 +43,29 @@ const rows = [
   row({ store_key: 'tata', store_sku: '4', size_source: 'unit', size_qty: 1, size_unit: 'kg', price: 380 }),
 ]
 
-test('whole units of sale: 600 g of chicken is three 250 g pieces, or one 1 kg tray', () => {
+test('food sold by weight is priced on its grams, the rest in whole packs', () => {
   const p = pricing(menu(null, products), {}, rows)
-  assert.deepEqual(lineOf({ id: 'chicken_breast', amount: 600 }, p.prices.chicken_breast!.disco!), { packs: 3, cost: 300 })
-  assert.deepEqual(lineOf({ id: 'chicken_breast', amount: 600 }, p.prices.chicken_breast!.tata!), { packs: 1, cost: 380 })
+  // Chicken: 600 g at 400/kg, or at 380/kg off a 1 kg tray. The cart still takes 3 pieces or 1 tray.
+  assert.deepEqual(lineOf({ id: 'chicken_breast', amount: 600 }, p.prices.chicken_breast!.disco!), { packs: 3, cost: 240, byWeight: true })
+  assert.deepEqual(lineOf({ id: 'chicken_breast', amount: 600 }, p.prices.chicken_breast!.tata!), { packs: 1, cost: 228, byWeight: true })
+  // Rice is a pack: 600 g is one 1 kg bag, or two 500 g bags.
+  assert.deepEqual(lineOf({ id: 'rice', amount: 600 }, p.prices.rice!.disco!), { packs: 1, cost: 60, byWeight: false })
+  assert.deepEqual(lineOf({ id: 'rice', amount: 600 }, p.prices.rice!.tata!), { packs: 2, cost: 60, byWeight: false })
   assert.deepEqual(
     p.plan.perStore.map((s) => [s.store, s.total]),
-    [['disco', 360], ['geant', 370], ['tata', 440]],
+    [['disco', 300], ['geant', 310], ['tata', 288]],
   )
-  assert.equal(p.base?.stores[0], 'disco')
+  assert.equal(p.base?.stores[0], 'tata')
   assert.equal(p.status, 'ok')
+})
+
+test('less of food sold by weight costs less, less of a pack only when a whole pack goes', () => {
+  const total = (have: Have) => pricing(menu(null, products), have, rows).plan.perStore.find((s) => s.store === 'tata')!.total
+  // Chicken by weight: 100 g less is 100 g less of $ 380/kg; rice in 500 g bags: 600 g and 500 g are 2 and 1 bags.
+  assert.equal(total({}), 288)
+  assert.equal(total({ chicken_breast: 100 }), 288 - 38)
+  assert.equal(total({ rice: 100 }), 288 - 30)
+  assert.equal(total({ rice: 50 }), 288)
 })
 
 test('the plan is the store rule on the picked products', () => {
@@ -65,12 +78,12 @@ test('crossed-out or forged marks: what is left to buy, never NaN', () => {
   const have = { rice: null, chicken_breast: 'x' } as unknown as Have
   assert.deepEqual(needsFor(items, have), [{ id: 'chicken_breast', amount: 600 }])
   const crossed = pricing(menu(null, products), { rice: null }, rows)
-  assert.deepEqual(crossed.plan.perStore.map((s) => s.total), [300, 300, 380])
+  assert.deepEqual(crossed.plan.perStore.map((s) => s.total), [240, 240, 228])
 })
 
 test('budget: equal fits, one peso less is over by one', () => {
-  assert.equal(pricing(menu(360, products), {}, rows).over, 0)
-  assert.equal(pricing(menu(359, products), {}, rows).over, 1)
+  assert.equal(pricing(menu(288, products), {}, rows).over, 0)
+  assert.equal(pricing(menu(287, products), {}, rows).over, 1)
   assert.equal(pricing(menu(null, products), {}, rows).over, null)
 })
 
@@ -102,14 +115,14 @@ test('checked date is the oldest of the products used', () => {
 test('the verdict says the cheapest option, the stores, the budget and what to swap', () => {
   assert.equal(
     verdict(pricing(menu(400, products), {}, rows)),
-    'Cheapest: all at disco $360. Per day (2 days): $180. Per store: disco $360, geant $370, tata $440. Budget $400: fits, $40 left.',
+    'Cheapest: all at tata $288. Per day (2 days): $144. Per store: disco $300, geant $310, tata $288. Budget $400: fits, $112 left.',
   )
-  const over = verdict(pricing(menu(300, products), {}, rows))
+  const over = verdict(pricing(menu(250, products), {}, rows))
   assert.equal(
     over,
-    'Cheapest: all at disco $360. Per day (2 days): $180. Per store: disco $360, geant $370, tata $440. Budget $300: over by $60. Costliest: chicken_breast $300, rice $60.',
+    'Cheapest: all at tata $288. Per day (2 days): $144. Per store: disco $300, geant $310, tata $288. Budget $250: over by $38. Costliest: chicken_breast $228, rice $60.',
   )
-  assert.deepEqual(costliest(pricing(menu(300, products), {}, rows), 1), ['chicken_breast $300'])
+  assert.deepEqual(costliest(pricing(menu(250, products), {}, rows), 1), ['chicken_breast $228'])
   assert.match(verdict(pricing(menu(null), {}, rows)), /^Not priced: this menu has no products/)
   assert.ok(over.length < 700)
 })

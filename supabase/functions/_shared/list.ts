@@ -76,12 +76,15 @@ export function listLines(menu: MenuData, have: Have): string {
     .join('\n')
 }
 
-// One step less (-1) or more (1) to buy. Nothing left to buy is stored as null; back at the menu's amount, the mark goes.
-export function stepHave(item: Item, have: Have, dir: 1 | -1): Have {
+// One step less (-1) or more (1) to buy. step: what a tap moves, the food's own by default. A priced item that is sold
+// in packs passes the store's pack, so each tap changes what's paid. What's bought is counted in whole steps, never
+// down below the menu's amount. Nothing left to buy is stored as null; back at the menu's amount, the mark goes.
+export function stepHave(item: Item, have: Have, dir: 1 | -1, step = stepOf(item)): Have {
   const next = { ...have }
-  const buy = toBuy(item, have) + dir * stepOf(item)
+  const whole = (h: Have) => Math.ceil(left(item, h) / step) * step
+  const buy = whole(have) + dir * step
   if (buy <= 0) next[item.id] = null
-  else if (buy >= toBuy(item, {})) delete next[item.id]
+  else if (buy >= whole({})) delete next[item.id]
   else next[item.id] = round(item.amount - buy)
   return next
 }

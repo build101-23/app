@@ -4,7 +4,8 @@
 export const stores = ['disco', 'geant', 'tata'] as const // = stores.key in the database; this order breaks every tie
 export type StoreKey = (typeof stores)[number]
 
-// base_qty: pack content in the food's catalog unit. by_weight: sold loose, price is per base_qty.
+// base_qty: pack content in the food's catalog unit. by_weight: sold by weight, so it's priced on the exact weight: the
+// price is for base_qty.
 // sku, name, url: the product behind the offer, for the screen; the rule ignores them. weighed: a piece, tray or bag
 // of food sold by weight (ADR 0023), whose final weight and price the store sets; the cart needs to know (cart.ts).
 export type Offer = {

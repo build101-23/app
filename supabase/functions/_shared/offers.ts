@@ -32,10 +32,12 @@ export function pricesFor(items: Item[], menu: MenuData, rows: ProductRow[]): Pr
   return prices
 }
 
-// One line of the list at one store: how many units of sale and what they cost.
+// One line of the list at one store: how many units of sale (what the cart adds), what they cost, and whether the cost
+// follows the weight (so the screen shows a weight, not a count of packs).
 export const lineOf = (need: Need, offer: Offer) => ({
   packs: Math.ceil(need.amount / offer.base_qty - 1e-9),
   cost: cost(need.amount, offer),
+  byWeight: !!offer.by_weight,
 })
 
 export type Pricing = {

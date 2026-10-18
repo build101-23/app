@@ -50,6 +50,22 @@ test('an offer is in the item unit, with g and ml standing in for each other, ne
   assert.equal(offerOf(row({ store_key: 'tata', store_sku: '8', base_qty: 1, base_unit: 'un' }), 'g'), null)
 })
 
+test('a product sold by weight is an offer by weight and weighed; a pack is neither', () => {
+  const tray = row({ store_key: 'tata', store_sku: '9', size_source: 'unit', size_qty: 1, size_unit: 'kg', price: 380 })
+  assert.deepEqual(offerOf(tray, 'g'), {
+    price: 380,
+    base_qty: 1000,
+    sku: '9',
+    name: 'Producto 9',
+    url: 'https://www.example.uy/p/9',
+    weighed: true,
+    by_weight: true,
+  })
+  const pack = offerOf(row({ store_key: 'tata', store_sku: '7', price: 120 }), 'g')!
+  assert.equal(pack.by_weight, undefined)
+  assert.equal(pack.weighed, undefined)
+})
+
 test('save_menu needs a product for every item, sold at that store, in its unit', () => {
   const rows = [
     row({ store_key: 'disco', store_sku: '10' }),
