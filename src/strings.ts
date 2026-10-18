@@ -128,6 +128,10 @@ export const t = {
     perDay: (amount: string, days: number) => `${amount} por día · menú de ${days} días`,
     missing: (n: number) => (n === 1 ? '1 producto no encontrado' : `${n} productos no encontrados`),
     notFound: 'No encontrado online',
+    // Under a line the selected store doesn't sell (ADR 0031).
+    notAt: (store: string) => `No está en ${store}`,
+    // On the tab of the store the rule recommends: the cheapest that has the whole list.
+    cheapest: 'Recomendado',
     checked: (date: string) => `Precios de las webs de los súper del ${date}. Pueden variar.`,
     loading: 'Buscando precios…',
     loadError: 'No se pudieron cargar los precios.',
@@ -141,22 +145,19 @@ export const t = {
     product: (packs: number, name: string, store: string, cost: string) => `${packs} × ${name} · ${store} · ${cost}`,
   },
   // The cart buttons at the bottom of "Dónde comprar" (docs/plans/2026-10-18-fill-cart.md).
+  // The order button under the list (ADR 0031).
   cart: {
-    fill: (store: string) => `Armar carrito en ${store}`,
-    // The whole list at Ta-Ta, when the chosen option leaves Ta-Ta out or can't be filled here.
-    allAt: (store: string, total: string, missing: number) =>
-      `Armar todo en ${store} · ${total}${missing ? ` · ${missing === 1 ? 'falta\u00a01' : `faltan\u00a0${missing}`}` : ''}`,
+    order: (store: string) => `Pedir ahora en ${store}`,
     adds: (n: number, total: string) =>
-      `Se ${n === 1 ? 'agrega 1 producto' : `agregan ${n} productos`} · ${total} estimado, sin envío. Lo que ya tenías en el carrito queda.`,
-    // A store of the chosen option the app can't fill yet (Disco and Géant, until the extension).
-    byHand: (store: string, n: number) =>
-      `Lo de ${store} (${n === 1 ? '1 producto' : `${n} productos`}) lo agregás desde el link de cada producto en la lista.`,
-    // What a cart leaves out, one line per reason, worded so nothing has to agree with the names ("Ajo, Lentejas").
+      `Se ${n === 1 ? 'agrega 1 producto' : `agregan ${n} productos`} a tu carrito · ${total} estimado, sin envío. Lo que ya tenías en el carrito queda.`,
+    // What the cart leaves out, one line per reason, worded so nothing has to agree with the names ("Ajo, Lentejas").
     left: {
       not_here: (store: string, names: string) => `${store} no tiene: ${names}.`,
       weighed: (_store: string, names: string) => `Agregar a mano (por peso): ${names}.`,
+      not_found: (_store: string, names: string) => `Ningún súper tiene: ${names}.`,
     },
-    nowhere: (names: string) => `Ningún súper tiene: ${names}.`,
+    // Disco and Géant, until the extension.
+    byHand: (store: string) => `Por ahora, agregá los productos de ${store} desde el link de cada uno.`,
     // After the tap: the store's cart opens in another tab.
     opened: (store: string) => `Abrimos tu carrito de ${store} en otra pestaña. Revisalo y pagá ahí.`,
   },

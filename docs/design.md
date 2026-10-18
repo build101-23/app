@@ -359,21 +359,16 @@ A 44px tangerine circle with a white up arrow. Disabled: sunk surface with a mut
 - "Cambiar" takes you to the chat with a draft ready to finish.
 
 ### List
-- A page. On top, when the list is priced from the products the chat picked ([ADR 0024](adr/0024-agent-builds-the-menu-from-real-products.md)), a flat card "Dónde comprar":
-  - the recommended store or split (radio buttons when there's a choice), each store's logo before its text ([Store logos](#store-logos));
-  - what the chosen total comes to per day of the menu, for menus of 2 days or more;
-  - the budget line, in plain ink, when the menu has a budget: it fits, or what's missing and whether a split fits. Over budget is announced, but it isn't an error, so it doesn't use the alert;
-  - the saving and the total per store, each with its store's logo;
-  - the cart buttons, under a hairline ([ADR 0030](adr/0030-cart-filling-tata-link-gdu-team-extension.md)), all of them links that open the supermarket in another tab:
-    - a primary "Armar carrito en Ta-Ta", with the store's logo, for each store of the chosen option the app can fill, with muted lines under it: how many products and the estimated total, then what stays out, one line per reason;
-    - a muted line for a store of the option it can't fill yet;
-    - a quiet "Armar todo en Ta-Ta · $X · faltan N" when that puts more of the list in a cart, left-aligned with the card's text, with what stays out under it, one line per reason;
-    - one muted line for the items no store sells ("Ningún súper tiene: …");
-    - after a tap, one muted line in an always-mounted `role="status"`;
-  - the muted note with the date the prices were read.
-- While the prices load, or for a menu saved before real products, the card holds one muted line instead. If they can't be read, the inline alert takes its place.
+- A page. On top, when the list is priced from the products the chat picked ([ADR 0024](adr/0024-agent-builds-the-menu-from-real-products.md)), three supermarket tabs ([ADR 0031](adr/0031-list-shows-one-store-at-a-time.md)):
+  - three equal cards in a row, each a button with `aria-pressed`: the store's icon at 40px ([Store icons](#store-icons)), its name, its total in 650 weight, and either the "Recomendado" pill or "N productos no encontrados" in caption type;
+  - the selected one trades its line for a 2px primary edge;
+  - under them, for the selected store: what its total comes to per day (menus of 2 days or more), the budget line in plain ink (over budget is announced, but it isn't an error, so it doesn't use the alert), the saving when it's the recommended store, and the muted note with the date the prices were read.
+- While the prices load, or for a menu saved before real products, a card holds one muted line instead. If they can't be read, the inline alert takes its place.
 - Then the hint, and secondary "Compartir" and "Copiar" buttons with a "Lista nueva" link.
-- Sections (Frutas y verduras, Almacén…) list items in rows with hairlines: a checkbox (brand green), the name (it wraps beside the checkbox), the amount to buy on the right with what the menu uses under it, and 44px − and + circles. Under the name, in caption type, either "No encontrado online" or the product to buy at the chosen store ("2 × Boniato 1 kg · Géant · $ 144"), linked to its page: muted ink, underlined.
+- Sections (Frutas y verduras, Almacén…) list items in rows with hairlines: a checkbox (brand green), the name (it wraps beside the checkbox), the amount to buy on the right with what the menu uses under it, and 44px − and + circles. Under the name, in caption type, "No encontrado online", "No está en {store}", or the product to buy at the selected store ("2 × Boniato 1 kg · Géant · $ 144"), linked to its page: muted ink, underlined.
+- Under the list, "Pedir ahora en {store}": a primary button with the store's icon at 28px ([ADR 0030](adr/0030-cart-filling-tata-link-gdu-team-extension.md)).
+  - For Ta-Ta it's a link that opens the cart in another tab. Muted lines under it give how many products and the estimated total, then what stays out, one line per reason. After a tap, one muted line appears in an always-mounted `role="status"`.
+  - For Disco and Géant it's disabled, with the "Muy pronto" pill beside it and one muted line.
 - Crossed-out items (you have them at home) turn muted and struck through.
 - Loading shows the page skeleton; with no menu yet, the empty state; a failed load, the inline alert.
 
@@ -431,13 +426,13 @@ Drawn for this app on a 24px grid: 1.75px round strokes, `currentColor` (the sen
 - `public/icons/icon-180.png`, `icon-192.png` and `icon-512.png` were rendered from that icon SVG with headless Microsoft Edge at 1× scale. Each PNG carries its origin in a `tEXt` chunk. The 512 also serves as the maskable icon; the mark sits inside the 40% safe circle.
 - The 16px favicon is the full icon; a simplified small-size mark doesn't exist yet.
 
-### Store logos
-- Each supermarket's own logo, in `src/assets/stores/`, copied byte for byte from its website on 2026-10-18. None has scripts or external references.
-  - `disco.svg`: `https://www.disco.com.uy/img/Disco/logo.svg`, the red oval alone (their `logo-header.svg` adds a "FRESH MARKET" seal).
-  - `geant.svg`: `https://www.geant.com.uy/img/Geant/logo-header.svg`.
-  - `tata.svg`: `https://www.tata.com.uy/logoMobile.svg`, the red wordmark (their `logo.svg` is all white, for their red header).
-- `StoreLogo` in `src/ui.tsx` puts one on a white pill, `--store-logo-w` × `--store-logo-h` (64 × 24px), with a 1px line border, in both themes. The logos are never recolored, so the pill stays white in dark mode too.
-- Only in the List's "Dónde comprar" card. The logo is decorative: the store's name is always written next to it. The product lines under each item and the chat's list card keep the name as text.
+### Store icons
+- Each supermarket's own square icon, from its website on 2026-10-18, scaled down to 128px and otherwise unchanged, in `src/assets/stores/`:
+  - `disco.png`: `https://www.disco.com.uy/img/Disco/icon.png`, the red oval;
+  - `geant.png`: `https://www.geant.com.uy/img/Geant/icon.png`, "Gé" in green;
+  - `tata.png`: `https://www.tata.com.uy/icons/icon-512x512.png`, the red wordmark.
+- `StoreIcon` in `src/ui.tsx` puts one on a white tile with a 1px line border and 8px corners, in both themes, so the icons are never recolored. Its size comes from where it sits (`--store-icon-size`): 40px in the List's tabs, 28px in the order button.
+- It's decorative: the store's name is always written next to it.
 
 ### Motion
 | Name | Value | Use |

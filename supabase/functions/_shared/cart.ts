@@ -1,7 +1,7 @@
 // A store's cart from the priced list (docs/plans/2026-10-18-fill-cart.md): which products, how many units of sale,
 // and which list items stay out and why. Plain TS shared like offers.ts, so no Deno or DOM globals here.
 import { lineOf, type Pricing } from './offers.ts'
-import type { Option, StoreKey } from './stores.ts'
+import type { StoreKey } from './stores.ts'
 
 // One product to add: units of sale of a sku, and what they cost at our prices.
 export type CartLine = { sku: string; qty: number; name: string; url?: string; cost: number }
@@ -42,10 +42,6 @@ export function cartFor(p: Pricing, store: StoreKey, ids: Iterable<string>): Car
   const all = [...lines.values()]
   return { store, lines: all, skipped, total: all.reduce((sum, line) => sum + line.cost, 0) }
 }
-
-// One cart per store of an option, each with only the items the option buys there.
-export const optionCarts = (p: Pricing, option: Option): Cart[] =>
-  option.stores.map((store) => cartFor(p, store, Object.keys(option.at).filter((id) => option.at[id] === store)))
 
 // Ta-Ta's VTEX add-to-cart link. Opened in the user's browser, it adds each sku to their own cart, or raises it to qty
 // when the cart has fewer, and never lowers or removes anything (docs/notes/cart-handoff-feasibility.md). The checkout

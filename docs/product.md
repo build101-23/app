@@ -47,7 +47,7 @@ The first version goes from a chat to a priced shopping list and the supermarket
 - Ask from the list for something you'd eat differently ("cambiame la carne por pollo", "sacame el brócoli del menú") and it changes the menu in the background, says in one line what changed, and shows the updated list.
 - It builds the menu only with products it found at Disco, Géant and Ta-Ta ([ADR 0024](adr/0024-agent-builds-the-menu-from-real-products.md)), and can tell you the total, what it comes to per day, where it's cheapest and whether it fits your budget: the same numbers as the List tab. Whenever it says the total, it says the per-day amount too. It never writes the list or makes up a price.
 - Tell it a budget for the shopping ("tengo $ 1.500") and it builds to fit: the split between two stores if that does it, otherwise cheaper foods your plan allows, never smaller amounts. If it still doesn't fit, it says how much is missing. With room, it picks known brands.
-- Ask it to order or fill your cart ("pedímelo", "armame el carrito") and it sends you to the cart buttons in the List tab ([§5](#5-shopping-list)). It never says it placed an order or filled a cart.
+- Ask it to order or fill your cart ("pedímelo", "armame el carrito") and it sends you to the "Pedir ahora" button in the List tab ([§5](#5-shopping-list)). It never says it placed an order or filled a cart.
 - If you ask for something the stores don't sell, or something it can't do, it says so in one line.
 - Normal, everyday food you can buy at any supermarket in Montevideo.
 
@@ -88,13 +88,13 @@ The first version goes from a chat to a priced shopping list and the supermarket
 - Converts to how things are sold: "1,1 kg of rice" becomes "2 × 1 kg", with what the menu uses next to it. Meat, fish, ham, cheese, fruit and vegetables show a weight (or a count), since they're sold loose or by weight. It always rounds up, never down.
 - Accounts for raw vs. cooked: the menu's amounts are raw as bought, and the chat converts cooked amounts you give it (plans often say cooked rice; you buy it dry).
 - Cross out what you already have at home, or buy less of it with −; or tell the chat. Your marks stay when the menu changes, until you tap "Lista nueva" or tell the chat you're starting a new week.
-- Under each item, what to buy at the store the list is bought in: "2 × Arroz Blanco SAMAN 1 kg · Ta-Ta · $ 118", with a link to the product's page.
+- On top, one tab per supermarket, with its icon and its total for what's left to buy ([ADR 0031](adr/0031-list-shows-one-store-at-a-time.md)). It opens on the recommended store (§6), marked "Recomendado". Tap another to see the list there.
+- Under each item, what to buy at the selected store: "2 × Arroz Blanco SAMAN 1 kg · Ta-Ta · $ 118", with a link to the product's page. If that store doesn't sell it: "No está en Ta-Ta".
 - Share (the phone's share sheet, with WhatsApp) or copy as text, with only what's left to buy.
-- Fill the supermarket's cart from the list ([ADR 0030](adr/0030-cart-filling-tata-link-gdu-team-extension.md)):
-  - "Armar carrito en Ta-Ta", when the store or split you're buying in includes Ta-Ta. It opens Ta-Ta's cart in another tab with what's left to buy at Ta-Ta, in the units the list shows, and you log in and pay there. Under it: how many products, the estimated total without delivery, and what doesn't go in and why.
+- Under the list, "Pedir ahora en {store}" fills that supermarket's cart ([ADR 0030](adr/0030-cart-filling-tata-link-gdu-team-extension.md), [ADR 0031](adr/0031-list-shows-one-store-at-a-time.md)):
+  - Ta-Ta: it opens Ta-Ta's cart in another tab with what's left to buy there, in the units the list shows, and you log in and pay there. Under it: how many products, the estimated total without delivery, and what doesn't go in and why.
   - What that browser's Ta-Ta cart already had stays. A second tap doesn't add anything twice.
-  - "Armar todo en Ta-Ta · $X" (with "faltan N" when something stays out), when that puts more of the list in a cart than the option you're buying in: you're buying at Disco or Géant, Ta-Ta sells more than its part of a split, or no store or split has the whole list.
-  - Disco and Géant can't be filled for you yet: their part says to add those products from each one's link.
+  - Disco and Géant: the button shows "Muy pronto" for now; add their products from each one's link.
 
 #### 6. Save money
 
@@ -102,15 +102,15 @@ The first version goes from a chat to a priced shopping list and the supermarket
 - Prices only what's left to buy: crossed-out items aren't priced, and partly-had ones are priced on what's left.
 - Each store is costed on the whole units you'd add to the cart: packs, or pieces, trays and bags for food sold by weight ([ADR 0023](adr/0023-scraper-prices-for-the-unit-of-sale.md)). What's left over is paid for.
 - Shows what the whole list costs at each supermarket.
-- Under the chosen total (the recommended one, or the split if you picked it), what it comes to per day of the menu: "$ 277 por día · menú de 7 días". It's what's left to buy divided by the menu's days, so it drops as you cross things out. Not shown for a 1-day menu, or when neither one store nor two have the whole list.
-- With a budget, it says whether the list fits and how much is left, or how much is missing, and when a split between two stores would fit.
+- Under the tabs, the selected store's total over the menu's days: "$ 277 por día · menú de 7 días". It's what's left to buy divided by the menu's days, so it drops as you cross things out. Not shown for a 1-day menu.
+- With a budget, it says whether the selected store's total fits and how much is left, or how much is missing. The chat's list card also says when a split between two stores would fit.
 - Prices are estimates and show the date they were checked. A menu saved before real prices asks you to rebuild it in the chat.
 - A product the store stopped listing (not read in the 14 days before that store's latest read) counts as not sold there, in the price and in the cart ([ADR 0030](adr/0030-cart-filling-tata-link-gdu-team-extension.md)).
 
 **Which store to buy at.** The app picks the cheapest way to buy the whole *list*, not the cheapest store for each item, so you never end up with an order at every store:
 
 1. By default it recommends one store: the cheapest one that has the whole list. "The whole list" means every item at least one store sells.
-2. It suggests splitting between two stores, each item at the cheaper of the two, only if that saves at least 10% of the one-store total, or if no single store has everything. It shows how much the split saves and you choose; one store stays the default.
+2. In the chat it suggests splitting between two stores (the List shows one store at a time, [ADR 0031](adr/0031-list-shows-one-store-at-a-time.md)), each item at the cheaper of the two, only if that saves at least 10% of the one-store total, or if no single store has everything. It shows how much the split saves and you choose; one store stays the default.
 3. It never suggests more than two stores. If neither one store nor two have the whole list, it shows each store's total and recommends nothing.
 4. A store that is missing items shows "N items not found". Items no store has are marked "not found online" and left out of every total.
 

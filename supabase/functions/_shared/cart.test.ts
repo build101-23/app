@@ -1,6 +1,6 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { cartFor, optionCarts, tataCartUrl } from './cart.ts'
+import { cartFor, tataCartUrl } from './cart.ts'
 import { itemId } from './list.ts'
 import { days, type MenuData, type ProductPick } from './menu.ts'
 import { pricing } from './offers.ts'
@@ -49,26 +49,19 @@ const rows = [
 ]
 const ids = (p: ReturnType<typeof pricing>) => p.needs.map((need) => need.id)
 
-test('one store: the chosen option\'s items, weighed food left out where the cart can\'t take it', () => {
+test('a store\'s cart: its products for what is left to buy, weighed food left out where the cart can\'t take it', () => {
   const p = pricing(menu, {}, rows)
-  assert.deepEqual(p.plan.single?.stores, ['disco'])
-  const [disco] = optionCarts(p, p.plan.single!)
+  const disco = cartFor(p, 'disco', ids(p))
   assert.deepEqual(
     disco.lines.map((line) => [line.sku, line.qty, line.cost]),
     [['1', 1, 60], ['5', 1, 50], ['6', 1, 80]],
   )
-  assert.deepEqual(disco.skipped, [{ id: 'chicken_breast', reason: 'weighed' }])
+  assert.deepEqual(disco.skipped, [
+    { id: 'chicken_breast', reason: 'weighed' },
+    { id: itemId('other', quinoa, 'g'), reason: 'not_found' },
+  ])
   assert.equal(disco.total, 190)
   assert.equal(disco.lines[0].url, 'https://www.example.uy/p/1')
-})
-
-test('a split: each store gets only the items the option buys there', () => {
-  const p = pricing(menu, {}, rows)
-  assert.deepEqual(p.plan.split?.stores, ['disco', 'tata'])
-  const [disco, tata] = optionCarts(p, p.plan.split!)
-  assert.deepEqual(disco.lines.map((line) => line.sku), ['1', '5'])
-  assert.deepEqual(tata.lines.map((line) => [line.sku, line.qty, line.cost]), [['2', 1, 30]])
-  assert.deepEqual(tata.skipped, [])
 })
 
 test('the whole list at Ta-Ta: one line per product, Ta-Ta takes weighed food, and says what stays out', () => {

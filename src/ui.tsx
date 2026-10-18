@@ -1,8 +1,8 @@
 import type { ReactNode } from 'react'
 import type { StoreKey } from '../supabase/functions/_shared/stores.ts'
-import disco from './assets/stores/disco.svg'
-import geant from './assets/stores/geant.svg'
-import tata from './assets/stores/tata.svg'
+import disco from './assets/stores/disco.png'
+import geant from './assets/stores/geant.png'
+import tata from './assets/stores/tata.png'
 
 // The VIVERI mark as seven circles. Centers and radii are taken unchanged from the approved icon
 // (C:\prompt-lab\assets\logo-app\v1\recommended-icon.svg); the viewBox only crops away the tile.
@@ -152,15 +152,15 @@ export function EmptyState({ text, action, onAction }: { text: string; action: s
   )
 }
 
-// Each supermarket's own logo, copied unchanged from its website (docs/design.md, "Store logos").
-const storeLogos: Record<StoreKey, string> = { disco, geant, tata }
+// Each supermarket's own square icon, from its website (docs/design.md, "Store icons").
+const storeIcons: Record<StoreKey, string> = { disco, geant, tata }
 
-// A supermarket's logo on a white pill, the same in both themes, so it's never recolored. Decorative: the store's name
+// A supermarket's icon on a white tile, the same in both themes, so it's never recolored. Decorative: the store's name
 // is always written next to it.
-export function StoreLogo({ store }: { store: StoreKey }) {
+export function StoreIcon({ store }: { store: StoreKey }) {
   return (
-    <span className="store-logo" aria-hidden="true">
-      <img src={storeLogos[store]} alt="" />
+    <span className="store-icon" aria-hidden="true">
+      <img src={storeIcons[store]} alt="" />
     </span>
   )
 }

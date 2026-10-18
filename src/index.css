@@ -6,10 +6,8 @@
   --surface: #ffffff;
   --surface-sunk: #e8eee9;
   --line: #d8e1db;
-  /* The pill behind a supermarket's logo: white in both themes, since the logos are never recolored. */
-  --store-logo-bg: #ffffff;
-  --store-logo-h: 24px;
-  --store-logo-w: 64px;
+  /* The tile behind a supermarket's icon: white in both themes, since the icons are never recolored. */
+  --store-icon-bg: #ffffff;
   --line-strong: #74877d;
   --ink: #14211b;
   --ink-muted: #55645c;
@@ -1402,58 +1400,88 @@ a.button {
   border-bottom: 0;
 }
 
-/* A supermarket's logo on its white pill (StoreLogo in src/ui.tsx). */
-.store-logo {
-  display: inline-flex;
+/* A supermarket's icon on its white tile (StoreIcon in src/ui.tsx). The size comes from where it sits. */
+.store-icon {
+  display: inline-grid;
   flex: none;
-  align-items: center;
-  justify-content: center;
-  width: var(--store-logo-w);
-  height: var(--store-logo-h);
-  padding: 4px 8px;
+  place-items: center;
+  width: var(--store-icon-size, 32px);
+  height: var(--store-icon-size, 32px);
+  padding: 3px;
   border: 1px solid var(--line);
-  border-radius: 999px;
-  background: var(--store-logo-bg);
-  vertical-align: middle;
+  border-radius: 8px;
+  background: var(--store-icon-bg);
 }
 
-.store-logo img {
-  display: block;
-  width: auto;
+.store-icon img {
+  width: 100%;
   height: 100%;
+  object-fit: contain;
 }
 
-/* The cart buttons, at the bottom of the card above the prices' date (docs/plans/2026-10-18-fill-cart.md). */
-.cart {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  padding-top: 12px;
-  border-top: 1px solid var(--line);
+/* The supermarket tabs, then the selected store's per-day, budget, saving and date lines. Not a card: each tab is. */
+.stores {
+  display: grid;
+  gap: 8px;
 }
 
-.cart-store {
+/* One tab per supermarket on top of the list (ADR 0031). The selected one gets a 2px primary edge instead of its line. */
+.store-tabs {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.store-tab {
+  --store-icon-size: 40px;
+  display: grid;
+  justify-items: center;
+  align-content: start;
+  gap: 4px;
+  padding: 12px 6px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-card);
+  background: var(--surface);
+  text-align: center;
+  overflow-wrap: anywhere;
+}
+
+.store-tab[aria-pressed='true'] {
+  border-color: transparent;
+  box-shadow: inset 0 0 0 2px var(--primary);
+}
+
+.store-tab-total {
+  font-weight: 650;
+  font-variant-numeric: tabular-nums;
+}
+
+.store-tab small {
+  font-size: 0.8125rem;
+}
+
+/* The order button under the list, with what goes in under it. */
+.order {
   display: grid;
   justify-items: start;
   gap: 4px;
+  margin-top: 24px;
 }
 
-.cart p {
-  font-size: 0.875rem;
-}
-
-/* The status line stays mounted to be announced; empty, it takes no gap. */
-.cart [role='status']:empty {
-  margin-top: -12px;
-}
-
-/* A label that wraps stays flush left. A quiet button lines its text up with the card's. */
-.cart .button {
+.order .button {
+  --store-icon-size: 28px;
   text-align: start;
 }
 
-.cart .button.quiet {
-  margin-left: -12px;
+.order p {
+  font-size: 0.875rem;
+}
+
+.order-soon {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
 }
 
 .list-actions {
