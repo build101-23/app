@@ -10,7 +10,7 @@ import { money, nameOf } from './format'
 import { usePrices } from './prices'
 import { supabase } from './supabase'
 import { t } from './strings'
-import { Alert, EmptyState, PageSkeleton } from './ui'
+import { Alert, EmptyState, PageSkeleton, StoreLogo } from './ui'
 
 // updated_at is the menu's version: writing have doesn't touch it.
 export type MenuRow = { data: MenuData; have: Have; updated_at: string }
@@ -51,6 +51,8 @@ const listText = (items: Item[], have: Have) =>
   ].join('\n')
 
 const day = (iso: string) => new Date(iso).toLocaleDateString('es-UY', { day: 'numeric', month: 'long' })
+// The option's stores as logos, before its text.
+const logos = ({ stores }: Option) => stores.map((store) => <StoreLogo key={store} store={store} />)
 const optionText = ({ stores, total }: Option) =>
   stores.length === 1
     ? t.prices.oneStore(t.stores[stores[0]], money(total))
@@ -240,19 +242,21 @@ export default function List({ session, onOpenChat }: { session: Session; onOpen
             <div role="radiogroup" aria-labelledby="where">
               <label>
                 <input type="radio" name="where" checked={chosen === single} onChange={() => pick(false)} />
-                <span>{optionText(single)}</span>
+                <span>
+                  {logos(single)} {optionText(single)}
+                </span>
               </label>
               <label>
                 <input type="radio" name="where" checked={chosen === split} onChange={() => pick(true)} />
                 <span>
-                  {optionText(split)} · {t.prices.cheaperThan(money(single.total - split.total), t.stores[single.stores[0]])}
+                  {logos(split)} {optionText(split)} · {t.prices.cheaperThan(money(single.total - split.total), t.stores[single.stores[0]])}
                 </span>
               </label>
             </div>
           ) : (
             chosen && (
               <p>
-                {optionText(chosen)}
+                {logos(chosen)} {optionText(chosen)}
                 {!single && ` ${t.prices.noOneStore}`}
               </p>
             )
@@ -263,7 +267,7 @@ export default function List({ session, onOpenChat }: { session: Session; onOpen
           <ul>
             {plan.perStore.map(({ store, total, missing }) => (
               <li key={store}>
-                {t.stores[store]} {money(total)}
+                <StoreLogo store={store} /> {t.stores[store]} {money(total)}
                 {missing > 0 && ` · ${t.prices.missing(missing)}`}
               </li>
             ))}

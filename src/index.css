@@ -6,6 +6,10 @@
   --surface: #ffffff;
   --surface-sunk: #e8eee9;
   --line: #d8e1db;
+  /* The pill behind a supermarket's logo: white in both themes, since the logos are never recolored. */
+  --store-logo-bg: #ffffff;
+  --store-logo-h: 24px;
+  --store-logo-w: 64px;
   --line-strong: #74877d;
   --ink: #14211b;
   --ink-muted: #55645c;
@@ -1396,6 +1400,27 @@ a.button {
 
 .list .prices li {
   border-bottom: 0;
+}
+
+/* A supermarket's logo on its white pill (StoreLogo in src/ui.tsx). */
+.store-logo {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: var(--store-logo-w);
+  height: var(--store-logo-h);
+  padding: 4px 8px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--store-logo-bg);
+  vertical-align: middle;
+}
+
+.store-logo img {
+  display: block;
+  width: auto;
+  height: 100%;
 }
 
 /* The cart buttons, at the bottom of the card above the prices' date (docs/plans/2026-10-18-fill-cart.md). */
