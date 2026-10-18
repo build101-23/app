@@ -47,7 +47,7 @@ The first version goes from a chat to a priced shopping list and the supermarket
 - Ask from the list for something you'd eat differently ("cambiame la carne por pollo", "sacame el brócoli del menú") and it changes the menu in the background, says in one line what changed, and shows the updated list.
 - It builds the menu only with products it found at Disco, Géant and Ta-Ta ([ADR 0024](adr/0024-agent-builds-the-menu-from-real-products.md)), and can tell you the total, what it comes to per day, where it's cheapest and whether it fits your budget: the same numbers as the List tab. Whenever it says the total, it says the per-day amount too. It never writes the list or makes up a price.
 - Tell it a budget for the shopping ("tengo $ 1.500") and it builds to fit: the split between two stores if that does it, otherwise cheaper foods your plan allows, never smaller amounts. If it still doesn't fit, it says how much is missing. With room, it picks known brands.
-- Ask it to order or fill your cart ("pedímelo", "armame el carrito") and it sends you to the "Pedir ahora" button in the List tab ([§5](#5-shopping-list)). It never says it placed an order or filled a cart.
+- Ask it to order or fill your cart ("pedímelo", "armame el carrito") and it sends you to the "Comprar ahora" button in the List tab ([§5](#5-shopping-list)). It never says it placed an order or filled a cart.
 - If you ask for something the stores don't sell, or something it can't do, it says so in one line.
 - Normal, everyday food you can buy at any supermarket in Montevideo.
 
@@ -92,7 +92,7 @@ The first version goes from a chat to a priced shopping list and the supermarket
 - Under them, the cheapest split between two stores, "Géant y Ta-Ta" with its total, whenever it costs less than the cheapest store that has everything (or no store has everything) ([ADR 0037](adr/0037-list-shows-the-cheapest-split.md)). Each item goes to the cheaper of the two.
 - Under each item, what to buy at the selected store, or on the split at the store it goes to: "2 × Arroz Blanco SAMAN 1 kg · Ta-Ta · $ 118", with a link to the product's page. If that store doesn't sell it: "No está en Ta-Ta".
 - Share (the phone's share sheet, with WhatsApp) or copy as text, with only what's left to buy.
-- Under the list, "Pedir ahora en {store}" fills that supermarket's cart ([ADR 0030](adr/0030-cart-filling-tata-link-gdu-team-extension.md), [ADR 0034](adr/0034-list-shows-one-store-at-a-time.md)). On the split there's one per store, each with only what goes there:
+- Under the list, "Comprar ahora en {store}" fills that supermarket's cart ([ADR 0030](adr/0030-cart-filling-tata-link-gdu-team-extension.md), [ADR 0034](adr/0034-list-shows-one-store-at-a-time.md)). On the split there's one per store, each with only what goes there:
   - Ta-Ta: it opens Ta-Ta's cart in another tab with what's left to buy there, in the units the list shows, and you log in and pay there. Under it: how many products, the estimated total without delivery, and what doesn't go in and why.
   - What that browser's Ta-Ta cart already had stays. A second tap doesn't add anything twice.
   - Disco and Géant: the button shows "Muy pronto" for now; add their products from each one's link.

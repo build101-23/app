@@ -1894,14 +1894,13 @@ a.button {
   margin-top: 0;
 }
 
-/* In the actions row: the same height as its neighbors, at the right edge. */
-.list-actions .order.compact {
+/* In the actions row, the order buttons (two on the split) at the right edge; when they wrap, they stay there. */
+.list-orders {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
   margin-left: auto;
-}
-
-/* The split's second store, next to the first. */
-.list-actions .order.compact + .order.compact {
-  margin-left: 0;
 }
 
 .order.compact .button {
