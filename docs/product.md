@@ -22,7 +22,7 @@ This app starts from your diet. It knows what you need, how much, and which swap
 ## How it works
 
 1. You chat with the AI nutritionist. If you have a nutritionist's plan, you describe it in the chat.
-2. The app combines that with your likes and restrictions and proposes a weekly menu. You change it as you like. Your plan is your profile plus that menu.
+2. The app combines that with your likes and restrictions, looks for the products the supermarkets sell, and proposes a menu with them: for the week, or for the days you ask ("para el finde"). You change it as you like. Your plan is your profile plus that menu.
 3. The menu comes with its shopping list, priced at each supermarket, with the cheapest way to buy it on top. Change the menu and the list follows.
 4. You share the list on WhatsApp or copy it.
 5. *(Later)* The app places the order for you.
@@ -45,7 +45,9 @@ The first version goes from a chat to a priced shopping list, in Montevideo only
 - Ask for the shopping list ("dale", "mostrame la lista") and it shows it in the chat: what's left to buy by section, the total at the end, and a button to the List tab. Then it asks what you already have at home.
 - Tell it what you already have at home ("tengo dos bananas", "tengo medio kilo de pollo"), to take something off the list or to buy less, and the list in the chat updates with its new total. That never changes the menu. "Arranco semana nueva" clears it.
 - Ask from the list for something you'd eat differently ("cambiame la carne por pollo", "sacame el brócoli del menú") and it changes the menu in the background, says in one line what changed, and shows the updated list.
-- It never writes prices itself: the totals in the chat are the List tab's.
+- It builds the menu only with products it found at Disco, Géant and Ta-Ta ([ADR 0024](adr/0024-agent-builds-the-menu-from-real-products.md)), and can tell you the total, where it's cheapest and whether it fits your budget: the same numbers as the List tab. It never writes the list or makes up a price.
+- Tell it a budget for the shopping ("tengo $ 1.500") and it builds to fit: the split between two stores if that does it, otherwise cheaper foods your plan allows, never smaller amounts. If it still doesn't fit, it says how much is missing. With room, it picks known brands.
+- If you ask for something the stores don't sell, or something it can't do, it says so in one line.
 - Normal, everyday food you can buy at any supermarket in Montevideo.
 
 #### 2. Likes and restrictions
@@ -70,11 +72,11 @@ The first version goes from a chat to a priced shopping list, in Montevideo only
 
 #### 4. Weekly menu
 
-- Day by day, each meal with amounts and short instructions.
+- The whole week, or the days you ask for (one to seven), day by day, each meal with amounts and short instructions.
 - Change a meal or a day ("swap Tuesday's dinner") by chat or by tapping it.
 - A few recipes that repeat, on purpose: too much variety makes the shopping list huge and expensive.
 - Saved as soon as the AI proposes it, with its shopping list. There's no confirm step: "confirm" sounded like a payment, and every change updates the list anyway ([ADR 0022](adr/0022-list-follows-the-menu.md)).
-- Ingredients come from a fixed list of everyday foods, with amounts raw as bought; anything else is named as is ([ADR 0013](adr/0013-menu-saved-by-a-chat-tool.md)).
+- Ingredients come from a fixed list of everyday foods, with amounts raw as bought; anything else is named as is ([ADR 0013](adr/0013-menu-saved-by-a-chat-tool.md)). Each one comes with the product the AI picked at each supermarket, from what they sell ([ADR 0024](adr/0024-agent-builds-the-menu-from-real-products.md)).
 
 #### 5. Shopping list
 
@@ -83,15 +85,17 @@ The first version goes from a chat to a priced shopping list, in Montevideo only
 - Converts to how things are sold: "1,1 kg of rice" becomes "2 × 1 kg", with what the menu uses next to it. Meat, fish, ham, cheese, fruit and vegetables show a weight (or a count), since they're sold loose or by weight. It always rounds up, never down.
 - Accounts for raw vs. cooked: the menu's amounts are raw as bought, and the chat converts cooked amounts you give it (plans often say cooked rice; you buy it dry).
 - Cross out what you already have at home, or buy less of it with −; or tell the chat. Your marks stay when the menu changes, until you tap "Lista nueva" or tell the chat you're starting a new week.
+- Under each item, what to buy at the store the list is bought in: "2 × Arroz Blanco SAMAN 1 kg · Ta-Ta · $ 118", with a link to the product's page.
 - Share (the phone's share sheet, with WhatsApp) or copy as text, with only what's left to buy.
 
 #### 6. Save money
 
-- Prices the list at Disco, Géant and Ta-Ta, with example prices for now ([ADR 0019](adr/0019-example-prices-until-matched.md)).
+- Prices the list at Disco, Géant and Ta-Ta with their real prices, read from their websites, for the products the AI picked ([ADR 0024](adr/0024-agent-builds-the-menu-from-real-products.md)). The prices are the default branch's or sales channel's, not your delivery zone's.
 - Prices only what's left to buy: crossed-out items aren't priced, and partly-had ones are priced on what's left.
-- Each store is costed on the whole packs the week needs, and loose food on the exact weight (the line rounds up). So a bigger pack only wins if it's cheaper even counting what's left over.
+- Each store is costed on the whole units you'd add to the cart: packs, or pieces, trays and bags for food sold by weight ([ADR 0023](adr/0023-scraper-prices-for-the-unit-of-sale.md)). What's left over is paid for.
 - Shows what the whole list costs at each supermarket.
-- Prices are estimates and show the date they were checked.
+- With a budget, it says whether the list fits and how much is left, or how much is missing, and when a split between two stores would fit.
+- Prices are estimates and show the date they were checked. A menu saved before real prices asks you to rebuild it in the chat.
 
 **Which store to buy at.** The app picks the cheapest way to buy the whole *list*, not the cheapest store for each item, so you never end up with an order at every store:
 

@@ -10,7 +10,8 @@ from scraper import gdu
 from scraper.db import DryRun, Supabase
 from scraper.fetch import BlockedError
 from scraper.rows import make_row
-from scraper.run import FLUSH_EVERY, SIBLING_BLOCKED, Budget, GduPass, Stop, StoreRun, attempt, gdu_step
+from scraper.run import (FLUSH_EVERY, SIBLING_BLOCKED, Budget, GduPass, Stop, StoreRun, attempt, gdu_step,
+                         read_food_pages)
 
 
 class FakeResponse:
@@ -70,6 +71,13 @@ class SkusTest(unittest.TestCase):
         s = FakeSession(pages=[[{"id": 1, "store_sku": "a"}], [{"id": 5, "store_sku": "b"}]])
         self.assertEqual(Supabase("https://x.supabase.co", "k", s).skus("devoto"), {"a", "b"})
         self.assertEqual([kw["params"]["id"] for _, _, kw in s.calls], ["gt.0", "gt.1", "gt.5"])
+        self.assertNotIn("read_from", s.calls[0][2]["params"])
+
+    def test_only_rows_read_from_a_source(self):
+        s = FakeSession(pages=[[{"id": 3, "store_sku": "a", "checked_at": "2026-10-17T21:00:00+00:00"}]])
+        db = Supabase("https://x.supabase.co", "k", s)
+        self.assertEqual(db.read_times("disco", "product_page"), {"a": "2026-10-17T21:00:00+00:00"})
+        self.assertEqual(s.calls[0][2]["params"]["read_from"], "eq.product_page")
 
 
 class StoreRunTest(unittest.TestCase):
@@ -111,6 +119,26 @@ class StoreRunTest(unittest.TestCase):
     def test_budget(self):
         with self.assertRaises(Stop):
             Budget(0).check()
+
+
+class FoodPhaseTest(unittest.TestCase):
+    def test_skips_what_listings_read_and_reads_food_pages_again_oldest_first(self):
+        class Sink(DryRun):
+            def skus(self, store_key, read_from=None):
+                return {"10"} if read_from == "category_page" else {"10", "20", "30"}
+
+            def read_times(self, store_key, read_from=None):
+                return {"20": "2026-10-17T21:00:00+00:00", "30": "2026-10-17T22:00:00+00:00"}
+
+        with tempfile.TemporaryDirectory() as tmp:
+            sr = StoreRun(Sink(Path(tmp)), "disco", Budget(1))
+            sr.skus.add("40")  # read by a listing in this run
+            products = {pid: f"banana-{pid}" for pid in ("10", "20", "30", "40", "50")}
+            urls = []
+            with mock.patch.object(StoreRun, "get", lambda self, url, **kw: urls.append(url)):
+                read_food_pages(sr, GduPass(gdu.Sitemap(products, {})), None)
+        # 10 and 40 come from listings; 50 was never read; 20 was read before 30.
+        self.assertEqual([u.rsplit("/", 1)[1] for u in urls], ["50", "20", "30"])
 
 
 class GduPassTest(unittest.TestCase):

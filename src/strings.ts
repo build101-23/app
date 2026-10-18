@@ -118,8 +118,17 @@ export const t = {
     saving: (amount: string) => `Ahorrás ${amount} frente al promedio de los súper.`,
     missing: (n: number) => (n === 1 ? '1 producto no encontrado' : `${n} productos no encontrados`),
     notFound: 'No encontrado online',
-    // Temporary example-prices label (ADR 0019).
-    sample: (date: string) => `Precios de ejemplo del ${date}, no son reales.`,
+    checked: (date: string) => `Precios de las webs de los súper del ${date}. Pueden variar.`,
+    loading: 'Buscando precios…',
+    loadError: 'No se pudieron cargar los precios.',
+    // A menu saved before real products (ADR 0024).
+    oldMenu: 'Pedile al chat que arme el menú de nuevo para ver precios reales.',
+    none: 'No encontramos estos productos en los súper.',
+    budgetFits: (budget: string, left: string) => `Entra en tu presupuesto de ${budget} (te sobran ${left}).`,
+    budgetOver: (budget: string, missing: string) => `No alcanza tu presupuesto de ${budget}: faltan ${missing}.`,
+    splitFits: (a: string, b: string) => `Entra si dividís la compra entre ${a} y ${b}.`,
+    // Under a line, what to buy at its store: "2 × Arroz Blanco SAMAN 1 kg · Ta-Ta · $ 118".
+    product: (packs: number, name: string, store: string, cost: string) => `${packs} × ${name} · ${store} · ${cost}`,
   },
   foods: {
     chicken_breast: 'Pechuga de pollo',

@@ -2,7 +2,10 @@
 // screens can be reviewed without a real account. Everything here is synthetic. The production build never
 // imports this file. Scenarios come from the query string; see docs/development.md.
 import type { Session } from '@supabase/supabase-js'
-import type { MenuData } from '../../supabase/functions/_shared/menu.ts'
+import type { Unit } from '../../supabase/functions/_shared/catalog.ts'
+import type { Ingredient, MenuData } from '../../supabase/functions/_shared/menu.ts'
+import type { ProductRow } from '../../supabase/functions/_shared/products.ts'
+import { stores, type StoreKey } from '../../supabase/functions/_shared/stores.ts'
 
 const params = new URLSearchParams(window.location.search)
 const scenario = (key: string, fallback: string) => params.get(key) ?? fallback
@@ -93,6 +96,69 @@ const week: MenuData = {
       { slot: 'Cena', recipe_id: day === 'friday' ? 'pizza' : i % 2 ? 'pollo' : 'garbanzos' },
     ],
   })),
+}
+
+// prices: ok (default), over (the total doesn't fit the budget), old (a menu saved before real products), error.
+const pricesMode = scenario('prices', 'ok')
+
+// The product the chat agent picked for each list item, with its pack size and price per store (null: not sold there).
+// Synthetic names and prices.
+type Picked = { food: Ingredient['food']; other_name?: string; unit: Unit; name: string; size: number; price: Record<StoreKey, number | null> }
+const picked: Picked[] = [
+  { food: 'oats', unit: 'g', name: 'Avena arrollada 400 g', size: 400, price: { disco: 79, geant: 75, tata: 82 } },
+  { food: 'milk', unit: 'ml', name: 'Leche entera 1 L', size: 1000, price: { disco: 52, geant: 50, tata: 49 } },
+  { food: 'banana', unit: 'g', name: 'Banana 1 kg', size: 1000, price: { disco: 79, geant: 75, tata: 82 } },
+  { food: 'chicken_breast', unit: 'g', name: 'Pechuga de pollo 1 kg', size: 1000, price: { disco: 329, geant: 315, tata: 339 } },
+  { food: 'sweet_potato', unit: 'g', name: 'Boniato 1 kg', size: 1000, price: { disco: 69, geant: 72, tata: 65 } },
+  { food: 'olive_oil', unit: 'ml', name: 'Aceite de oliva 500 ml', size: 500, price: { disco: 389, geant: 399, tata: 375 } },
+  { food: 'garlic', unit: 'g', name: 'Ajo 250 g', size: 250, price: { disco: 59, geant: 55, tata: null } },
+  { food: 'chickpeas', unit: 'g', name: 'Garbanzos secos 400 g', size: 400, price: { disco: 89, geant: 85, tata: 94 } },
+  { food: 'tomato', unit: 'g', name: 'Tomate 1 kg', size: 1000, price: { disco: 89, geant: 95, tata: 85 } },
+  { food: 'onion', unit: 'g', name: 'Cebolla 1 kg', size: 1000, price: { disco: 45, geant: 49, tata: 42 } },
+  { food: 'lettuce', unit: 'un', name: 'Lechuga', size: 1, price: { disco: 45, geant: 49, tata: 39 } },
+  { food: 'lemon', unit: 'g', name: 'Limón 1 kg', size: 1000, price: { disco: 79, geant: 85, tata: 75 } },
+  { food: 'yogurt', unit: 'g', name: 'Yogur natural 1 kg', size: 1000, price: { disco: 149, geant: 145, tata: 155 } },
+  { food: 'peanuts', unit: 'g', name: 'Maní tostado 200 g', size: 200, price: { disco: 89, geant: 92, tata: null } },
+  { food: 'other', other_name: 'Prepizza sin gluten', unit: 'un', name: 'Prepizza sin gluten 2 un', size: 2, price: { disco: null, geant: 189, tata: null } },
+  { food: 'crushed_tomato', unit: 'g', name: 'Tomate triturado 1 kg', size: 1000, price: { disco: 79, geant: 75, tata: 72 } },
+  { food: 'cheese', unit: 'g', name: 'Queso dambo 500 g', size: 500, price: { disco: 259, geant: 249, tata: 269 } },
+]
+const sku = (i: number) => String(1000 + i)
+
+// As store_products returns them for the List tab. Disco and Géant share sku ids, as on the real sites.
+const productRows: ProductRow[] = picked.flatMap((p, i) =>
+  stores.flatMap((store) =>
+    p.price[store] == null
+      ? []
+      : [
+          {
+            store_key: store,
+            store_sku: sku(i),
+            name: p.name,
+            url_path: `/${sku(i)}`,
+            base_qty: p.size,
+            base_unit: p.unit,
+            size_qty: null,
+            size_unit: null,
+            size_source: null,
+            price: p.price[store],
+            currency: 'UYU',
+            availability: 'InStock',
+            checked_at: '2026-10-16T09:00:00Z',
+            stores: { base_url: `https://ejemplo.com/${store}` },
+          },
+        ],
+  ),
+)
+
+if (pricesMode !== 'old') {
+  week.budget = pricesMode === 'over' ? 2500 : 3200
+  week.products = picked.map((p, i) => ({
+    food: p.food,
+    other_name: p.other_name ?? null,
+    unit: p.unit,
+    ...(Object.fromEntries(stores.map((store) => [store, p.price[store] == null ? null : sku(i)])) as Record<StoreKey, string | null>),
+  }))
 }
 
 const longChat: Row[] = [
@@ -222,6 +288,10 @@ class Query {
     this.filters[column] = value
     return this
   }
+  in(column: string, values: unknown[]) {
+    this.filters[column] = values
+    return this
+  }
   order(_column: string, _options?: unknown) {
     return this
   }
@@ -250,6 +320,11 @@ class Query {
     }
     if (this.table === 'messages') {
       return { data: messages.get(String(this.filters.conversation_id)) ?? [], error: null }
+    }
+    if (this.table === 'store_products') {
+      if (pricesMode === 'error') return failure
+      const skus = this.filters.store_sku as string[]
+      return { data: productRows.filter((row) => row.store_key === this.filters.store_key && skus.includes(row.store_sku)), error: null }
     }
     if (this.table === 'menus') {
       if (menuMode === 'error') return failure

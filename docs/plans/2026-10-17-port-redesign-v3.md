@@ -151,5 +151,22 @@ Before the pull request, `main` moved again (to `3adc3b2`), mainly with real sup
    - `src/List.tsx`: `main`'s pricing, budget and product links, inside the port's layout, skeleton, empty state and alerts;
    - the docs: keep both sides.
 3. **Fixture.** Serve `store_products` rows for the saved week, so List and the list card show real-style prices, the budget line and product links.
-4. **Design.** The budget line and the product links follow the system: ink text, the alert pattern when over budget, and no tangerine. Update `design.md` where it still says "example prices".
+4. **Design.** The budget line and the product links follow the system, with no tangerine:
+   - the budget line is plain ink: over budget is announced, but it isn't an error, so it doesn't take the danger alert;
+   - prices that can't be read are an error, so they show the inline alert.
+
+   Update `design.md` where it still says "example prices".
 5. **Verify.** Lint, types, tests, the build, and the List and chat cards in the fixture.
+
+**Results**
+- **Merged** `origin/main` at `3adc3b2`.
+  - Conflicts in `src/List.tsx`, the ADR index, `milestones.md` and `open-decisions.md`, all resolved by keeping both sides.
+  - The renumber went in its own commit before the merge, so `main`'s new 0023 and 0024 kept their numbers and links.
+- **List.** `main`'s pricing, budget line and product links sit in the port's page. Two changes on top:
+  - a failed price read shows the inline alert;
+  - the old rule that indented the store tag under the checkbox is gone, so the product line sits right under the name.
+- **Fixture.** A new `prices` scenario (`ok`, `over`, `old`, `error`) serves synthetic `store_products` rows for the saved week.
+- **Checks.**
+  - Lint 0 warnings, `tsc -b` passes, `npm test` 45 of 45, and the build passes with no fixture code in `dist/`.
+  - In the fixture at 375 px: every price state on List and in the chat's card, no horizontal scroll, and product links in muted ink, underlined.
+- **Not re-measured:** the full geometry and contrast runs. List rows are taller now, with one more caption line, but the clearance under the dock comes from padding, not from row height.

@@ -814,7 +814,7 @@ textarea {
 }
 
 /* The list as it stands, under the reply that showed or changed it: what to buy by section (pre-wrapped
-   text, as shared), then the total and the example-prices note. */
+   text, as shared), then the total, the budget line and the prices' date. */
 .list-preview {
   display: grid;
   gap: 12px;
@@ -1331,7 +1331,7 @@ textarea {
   justify-self: start;
 }
 
-/* Where to buy: one flat card at the top, with the example-prices note (ADR 0019). */
+/* Where to buy: one flat card at the top, priced from the chat's products (ADR 0024). */
 .prices {
   display: grid;
   gap: 8px;
@@ -1399,6 +1399,15 @@ textarea {
   padding: 6px 0;
   overflow-wrap: anywhere;
 }
+/* The name, then the store tag or the product to buy there, one under the other. */
+.list label .item {
+  display: flex;
+  flex-direction: column;
+  padding: 4px 0;
+}
+.list label .item a {
+  color: inherit;
+}
 
 .list input[type='checkbox'],
 .list input[type='radio'] {
@@ -1409,15 +1418,13 @@ textarea {
   accent-color: var(--brand);
 }
 
-/* The name shrinks and wraps beside its checkbox; a store or "not found" tag goes on its own line under it. */
-.list label span {
+/* The name, with the tag or product under it, shrinks and wraps beside its checkbox. */
+.list label > span {
   flex: 1;
   min-width: 0;
 }
 
 .list label small {
-  flex-basis: 100%;
-  padding-left: 30px;
   font-size: 0.8125rem;
 }
 

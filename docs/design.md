@@ -347,7 +347,7 @@ A 44px tangerine circle with a white up arrow. Disabled: sunk surface with a mut
 - **Chats list:** replaces the conversation when open. Rows of title and date, 48px tall, hairlines between them; the open chat is at weight 650. It keeps the same clearance as the messages. If the list can't be read, it says so with a "Reintentar" of its own; a conversation that can't open shows its alert in the conversation.
 - **Scroll padding:** the page area, the messages and the chats list also pad their top by 8px when scrolling to a focused control, so its focus ring isn't cut under the top bar.
 - **Menu card:** when the chat saves or shows the week, it appears under that reply as an assistant bubble with the days and their meals, and a secondary "Ver menú" button. Each successful save adds one; a turn that only shows the week adds at most one, and none after a save in that turn (rules in [architecture.md](architecture.md#data-flow)).
-- **List card:** when the chat shows or changes the list, an assistant bubble under the reply with what's left to buy by section (as shared), the total where to buy it in 650 weight, the example-prices note, and a secondary "Ver lista" button. It's drawn live from the saved menu, so only the latest one shows ([ADR 0022](adr/0022-list-follows-the-menu.md)).
+- **List card:** when the chat shows or changes the list, an assistant bubble under the reply with what's left to buy by section (as shared), the total where to buy it in 650 weight, the budget line when there's a budget, a muted note with how many products weren't found and the prices' date, and a secondary "Ver lista" button. Until the prices are read, or when they can't be, one muted line says so. It's drawn live from the saved menu, so only the latest one shows ([ADR 0022](adr/0022-list-follows-the-menu.md)).
 - **Voice:** where the browser has speech recognition, a 44px microphone circle sits between the field and send, in ink. While listening it fills with the primary color and pulses slowly; tangerine stays on send.
 
 ### Menu
@@ -358,9 +358,13 @@ A 44px tangerine circle with a white up arrow. Disabled: sunk surface with a mut
 - "Cambiar" takes you to the chat with a draft ready to finish.
 
 ### List
-- A page. On top, when the list is priced, a flat card "Dónde comprar": the recommended store or split (radio buttons when there's a choice), the saving, the total per store, and the muted note that the prices are examples with their date ([ADR 0019](adr/0019-example-prices-until-matched.md)).
+- A page. On top, when the list is priced from the products the chat picked ([ADR 0024](adr/0024-agent-builds-the-menu-from-real-products.md)), a flat card "Dónde comprar":
+  - the recommended store or split (radio buttons when there's a choice);
+  - the budget line, in plain ink, when the menu has a budget: it fits, or what's missing and whether a split fits. Over budget is announced, but it isn't an error, so it doesn't use the alert;
+  - the saving, the total per store, and the muted note with the date the prices were read.
+- While the prices load, or for a menu saved before real products, the card holds one muted line instead. If they can't be read, the inline alert takes its place.
 - Then the hint, and secondary "Compartir" and "Copiar" buttons with a "Lista nueva" link.
-- Sections (Frutas y verduras, Almacén…) list items in rows with hairlines: a checkbox (brand green), the name (it wraps beside the checkbox), a store or "No encontrado online" tag on its own line, the amount to buy on the right with what the menu uses under it, and 44px − and + circles.
+- Sections (Frutas y verduras, Almacén…) list items in rows with hairlines: a checkbox (brand green), the name (it wraps beside the checkbox), the amount to buy on the right with what the menu uses under it, and 44px − and + circles. Under the name, in caption type, either "No encontrado online" or the product to buy at the chosen store ("2 × Boniato 1 kg · Géant · $ 144"), linked to its page: muted ink, underlined.
 - Crossed-out items (you have them at home) turn muted and struck through.
 - Loading shows the page skeleton; with no menu yet, the empty state; a failed load, the inline alert.
 
@@ -450,6 +454,6 @@ Drawn for this app on a 24px grid: 1.75px round strokes, `currentColor` (the sen
 - **Don't** give any screen but the Chat an accessory, or float a second action bar over the dock: a screen's main action goes in its content.
 - **Don't** use muted ink on glass; every label on glass is ink.
 - **Don't** add a display typeface; the logo is the brand's lettering.
-- **Don't** show prices or savings the product doesn't compute, or without saying what they are: today's example prices always carry their "no son reales" note and date ([ADR 0019](adr/0019-example-prices-until-matched.md)). No medical claims.
+- **Don't** show prices or savings the product doesn't compute, or without saying what they are: prices always carry the date they were read and that they may change. No medical claims.
 - **Don't** make something look available before the product has it.
 - **Don't** add a CSS framework or a component library for styling.
