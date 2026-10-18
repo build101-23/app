@@ -5,7 +5,7 @@ Status: **code done**, waiting on the prerequisites and an iPhone test.
 ## Context
 Sign-in is Supabase's magic link only. On an installed iOS app the link opens Safari, so the session lands outside the app. This adds Google as a second way in, next to the email form.
 
-Supabase's redirect flow (`signInWithOAuth`) would have the same problem: the page leaves the app for Google and can come back in Safari. Google's own button (Google Identity Services) instead returns a signed ID token to the page, and `supabase.auth.signInWithIdToken` turns it into a Supabase session, so the app never navigates away. Reasoning in [ADR 0023](../adr/0023-google-sign-in-button.md).
+Supabase's redirect flow (`signInWithOAuth`) would have the same problem: the page leaves the app for Google and can come back in Safari. Google's own button (Google Identity Services) instead returns a signed ID token to the page, and `supabase.auth.signInWithIdToken` turns it into a Supabase session, so the app never navigates away. Reasoning in [ADR 0025](../adr/0025-google-sign-in-button.md).
 
 ## Prerequisites (you run these: they need your Google and Supabase logins)
 1. Google Cloud Console → a project for the app → **Google Auth Platform**: set it up as **External**, with the scopes `openid`, `email` and `profile`. While it's in **Testing**, only the emails added as test users can sign in. Publish it before the pilot (these scopes don't need Google's verification).
@@ -20,4 +20,4 @@ Supabase's redirect flow (`signInWithOAuth`) would have the same problem: the pa
 4. `.env`: add an empty `VITE_GOOGLE_CLIENT_ID=`.
 5. `.claude/launch.json`: a second dev server entry that runs on Windows (the existing one points at Homebrew's npm).
 6. Verify: `npm run build`, `npm run lint`, and the sign-in screen in the browser with and without a client ID. Real sign-in, including on an iPhone with the app installed, needs the prerequisites done first.
-7. Docs: `docs/architecture.md` (Auth, sign-in data flow), `docs/development.md` (Google setup, `VITE_GOOGLE_CLIENT_ID`), ADR 0023 and `docs/adr/README.md`, and a line in `docs/notes/milestones.md`.
+7. Docs: `docs/architecture.md` (Auth, sign-in data flow), `docs/development.md` (Google setup, `VITE_GOOGLE_CLIENT_ID`), ADR 0025 and `docs/adr/README.md`, and a line in `docs/notes/milestones.md`.

@@ -182,7 +182,7 @@ components:
 
 # Design System: VIVERI
 
-Living doc: how the interface looks *now*. Tokens live as CSS custom properties at the top of [`src/index.css`](../src/index.css); this file explains them. The decision to adopt this system is [ADR 0021](adr/0021-viveri-identity-and-ui-system.md).
+Living doc: how the interface looks *now*. Tokens live as CSS custom properties at the top of [`src/index.css`](../src/index.css); this file explains them. The decision to adopt this system is [ADR 0023](adr/0023-viveri-identity-and-ui-system.md).
 
 ## Overview
 
@@ -197,7 +197,7 @@ It is a working tool for people planning meals on a phone, at home or in a super
 - the mark as the state glyph;
 - a green-tinted ground instead of grey or cream.
 
-The navigation is a neutral glass dock floating over that content ([ADR 0022](adr/0022-glass-navigation-layer.md)): it takes no color of its own, so it never repeats the content's green. The app deliberately avoids the category's wellness look (sage, cream, leaf illustrations) and the AI look (gradients, sparkles).
+The navigation is a neutral glass dock floating over that content ([ADR 0024](adr/0024-glass-navigation-layer.md)): it takes no color of its own, so it never repeats the content's green. The app deliberately avoids the category's wellness look (sage, cream, leaf illustrations) and the AI look (gradients, sparkles).
 
 **Key Characteristics:**
 - The app's name on every screen: the approved logo in a light top bar. The dock, not a title, says which section you're in.
@@ -258,7 +258,7 @@ A green-tinted neutral ground, the icon's deep green for the user's words and ac
 ## Layout
 
 - **Shell (every width):**
-  - The shell is a full-height grid: the title bar, then the scrolling work area, which runs to the bottom edge of the screen. The dock floats over the work area at every width; there is no side rail.
+  - The shell is a full-height grid: the top bar, then the scrolling work area, which runs to the bottom edge of the screen. The dock floats over the work area at every width; there is no side rail.
   - The shell uses `100dvh`, falling back to `100svh`. The viewport sets `interactive-widget=resizes-content`, so on Android the layout shrinks above the keyboard.
 - **Dock clearance:**
   - Content scrolls under the dock. Every scroller pads its bottom, and sets `scroll-padding-bottom`, to the dock's clearance: `--dock-clear`, which is the dock's 64 px, its bottom offset, and 16 px of air.
@@ -272,7 +272,7 @@ A green-tinted neutral ground, the icon's deep green for the user's words and ac
   - Pages pad 20px on top and the dock's clearance at the bottom.
   - Profile groups are 28px apart, and headings sit closer to their content than to the group above.
 - **Safe areas:** `--safe-top/right/bottom/left` wrap `env(safe-area-inset-*)`.
-  - The title bar pads the top inset, and the gutters pad the side insets.
+  - The top bar pads the top inset, and the gutters pad the side insets.
   - The dock sits `max(12px, bottom inset)` above the bottom edge and 12px plus the side insets from each side.
 - **Keyboard:**
   - On touch screens (`pointer: coarse`, at any width), the dock is hidden only while the on-screen keyboard is up *and* focus is in the composer, so the keyboard doesn't stack on it. The composer accessory then drops to 8px above the keyboard. With a mouse or trackpad the rule never applies, so shrinking a desktop window never hides the dock.
@@ -282,9 +282,9 @@ A green-tinted neutral ground, the icon's deep green for the user's words and ac
 
 ## Elevation & Depth
 
-Flat content, glass navigation ([ADR 0022](adr/0022-glass-navigation-layer.md)).
+Flat content, glass navigation ([ADR 0024](adr/0024-glass-navigation-layer.md)).
 
-- **Content** (cards, bubbles, fields, chips, the title bar) is flat. Depth comes from tone (ground vs. white surface vs. sunk surface) and 1px lines, never from shadows. Each element declares one edge: a border or a fill change, never both plus a shadow.
+- **Content** (cards, bubbles, fields, chips, the top bar) is flat. Depth comes from tone (ground vs. white surface vs. sunk surface) and 1px lines, never from shadows. Each element declares one edge: a border or a fill change, never both plus a shadow.
 - **The navigation layer is the one exception.** The phone dock and the chat's composer accessory are glass:
   - a translucent tint;
   - an 18px `backdrop-filter` blur (with the `-webkit-` prefix, and no `saturate()`);
@@ -320,7 +320,7 @@ Round, from the dots. Pills (999px) for buttons, chips, the status pill and the 
 
 ### Sign-in
 - At the window's left edge at every width: the logo (44px) in the corner, then a column of at most 400px with the title "Ingresar", Google's button, an "o con tu email" divider (a hairline on each side), the email hint and the form.
-- **Google's button** is Google's own (Google Identity Services, [ADR 0023](adr/0023-google-sign-in-button.md)): we choose only its theme (outline, or dark when the system is dark), large size, the pill shape that matches our buttons, "Continuar con Google" and the `es-419` locale. Its 44px slot is reserved so the form doesn't jump while Google's script loads. Without a client ID it isn't shown, and neither is the divider.
+- **Google's button** is Google's own (Google Identity Services, [ADR 0025](adr/0025-google-sign-in-button.md)): we choose only its theme (outline, or dark when the system is dark), large size, the pill shape that matches our buttons, "Continuar con Google" and the `es-419` locale. Its 44px slot is reserved so the form doesn't jump while Google's script loads. Without a client ID it isn't shown, and neither is the divider.
 - A failed Google sign-in shows the inline alert under the button, and the email form stays available.
 
 ### Send button
@@ -336,23 +336,25 @@ A 44px tangerine circle with a white up arrow. Disabled: sunk surface with a mut
   - One caption line under the field, always visible: "No reemplaza a tu nutricionista." It sits on glass, so it is ink.
   - It continues with an underlined "Tus datos de salud" link. The link opens a dialog explaining that health-data consent is coming ("Muy pronto") and saying only what's true today: what you tell the chat stays saved in your account.
 - **Intent cards (empty chat):**
-  - Below the welcome bubble, four cards in the user's voice, the only things the chat does today: "Armemos mi plan desde cero", "Tengo un plan de mi nutricionista", "Hay cosas que no puedo comer" and "Tengo poco tiempo para cocinar".
+  - Below the welcome bubble, four cards in the user's voice, four ways to start what the chat does: "Armemos mi plan desde cero", "Tengo un plan de mi nutricionista", "Hay cosas que no puedo comer" and "Tengo poco tiempo para cocinar".
   - They are surface cards (16px radius, 1px line) in a 2 × 2 grid, sitting low near the composer, and tapping one sends its text as your message.
-  - They don't promise anything the product doesn't do yet: no plans, prices or numbers.
+  - They only promise what the chat does today (a plan and its menu, your restrictions, your time) and never savings, real prices or calories.
 - **Status line:**
   - While a reply is pending, a muted caption line under the last bubble says "Armando la respuesta…"; once words arrive, it says "Escribiendo…".
   - It disappears when the reply stops streaming (the turn may still be saving), and is a `role="status"` region.
   - The waiting bubble still shows the animated mark.
 - **Chat bar:** above the conversation, on the ground and aligned to the content column: "Chats" (or "Volver") on the left, "Nuevo chat" on the right, both green-ink links. Disabled while a turn is saving.
 - **Chats list:** replaces the conversation when open. Rows of title and date, 48px tall, hairlines between them; the open chat is at weight 650. It keeps the same clearance as the messages. If the list can't be read, it says so with a "Reintentar" of its own; a conversation that can't open shows its alert in the conversation.
-- **Scroll padding:** the page area, the messages and the chats list also pad their top by 8px when scrolling to a focused control, so its focus ring isn't cut under the title bar.
-- **Menu card:** when the chat saves or shows the week, it appears under that reply as an assistant bubble with the days and their meals, and a secondary "Ver menú" button.
+- **Scroll padding:** the page area, the messages and the chats list also pad their top by 8px when scrolling to a focused control, so its focus ring isn't cut under the top bar.
+- **Menu card:** when the chat saves or shows the week, it appears under that reply as an assistant bubble with the days and their meals, and a secondary "Ver menú" button. Each successful save adds one; a turn that only shows the week adds at most one, and none after a save in that turn (rules in [architecture.md](architecture.md#data-flow)).
+- **List card:** when the chat shows or changes the list, an assistant bubble under the reply with what's left to buy by section (as shared), the total where to buy it in 650 weight, the example-prices note, and a secondary "Ver lista" button. It's drawn live from the saved menu, so only the latest one shows ([ADR 0022](adr/0022-list-follows-the-menu.md)).
 - **Voice:** where the browser has speech recognition, a 44px microphone circle sits between the field and send, in ink. While listening it fills with the primary color and pulses slowly; tangerine stays on send.
 
 ### Menu
-- A page (20px top, dock clearance at the bottom). On top, one primary "Confirmar menú" button, busy as "Confirmando…", or the muted "Menú confirmado." line once confirmed. Focus moves to that line, since the button it replaces is gone.
+- A page (20px top, dock clearance at the bottom). There's no confirm step: the list follows the menu ([ADR 0022](adr/0022-list-follows-the-menu.md)).
 - Loading shows the page skeleton; with no menu yet, the empty state; a failed load, the inline alert.
 - Each day is a section: its name (capitalized, 1rem/650) with a green-ink "Cambiar" link on the right. Each meal is a row that opens: the slot in muted ink, the recipe, then its ingredients, short instructions and its own "Cambiar".
+- With the numbers switch on ([ADR 0021](adr/0021-numbers-switch-in-the-profile.md)), the day's total goes under its heading and each meal's macros under its name, in muted caption type with tabular figures. Off by default: the app talks about meals, not numbers.
 - "Cambiar" takes you to the chat with a draft ready to finish.
 
 ### List
@@ -360,7 +362,11 @@ A 44px tangerine circle with a white up arrow. Disabled: sunk surface with a mut
 - Then the hint, and secondary "Compartir" and "Copiar" buttons with a "Lista nueva" link.
 - Sections (Frutas y verduras, Almacén…) list items in rows with hairlines: a checkbox (brand green), the name (it wraps beside the checkbox), a store or "No encontrado online" tag on its own line, the amount to buy on the right with what the menu uses under it, and 44px − and + circles.
 - Crossed-out items (you have them at home) turn muted and struck through.
-- Loading shows the page skeleton; with no menu yet, the empty state; before the menu is confirmed, one line and a primary "Ver menú" button; a failed load, the inline alert.
+- Loading shows the page skeleton; with no menu yet, the empty state; a failed load, the inline alert.
+
+### Profile
+- What the chat saved (facts in a card, then chips by group), or the empty state; then "Preferencias", a card with the numbers switch; then "Cuenta", with the email and a secondary "Cerrar sesión".
+- **Switch:** a real checkbox with `role="switch"`, drawn as a 44 × 26px track (strong line off, primary on) with a surface knob. It changes at once and goes back, with an inline alert, if saving fails. In forced colors it uses system colors.
 
 ### Chips
 Sunk-surface pills (6px 14px) listing what the chat saved: can't eat, dislikes, likes, wants. Read-only; long items wrap.
@@ -399,7 +405,7 @@ Sunk-surface pills (6px 14px) listing what the chat saved: can't eat, dislikes, 
 - **Skeletons:** sunk-surface shapes in the layout of what's loading (bubbles, definition rows; `PageSkeleton` in `src/ui.tsx` for Menu and List), with a slow opacity pulse, inside a `role="status"` region with a screen-reader label.
 - **Not available yet:** something in the product plan but not in the app yet shows a "Muy pronto" pill and says only what's true today. Today that's the health-data consent dialog.
 - **Empty screens** (Profile, Menu, List; `EmptyState` in `src/ui.tsx`): the mark, one line of copy, and an "Ir al chat" primary button.
-- **Results that appear in place** (the chat's status line, "Menú confirmado.", "Lista copiada.") live in a `role="status"` element that is always mounted, so screen readers announce each change of its text.
+- **Results that appear in place** (the chat's status line, "Lista copiada.") live in a `role="status"` element that is always mounted, so screen readers announce each change of its text.
 
 ### The mark (signature component)
 `Mark` in [`src/ui.tsx`](../src/ui.tsx) draws the approved icon's seven circles, with unchanged centers and radii, cropped to the dots. It is the system's state glyph: inside an assistant bubble while a reply hasn't started (with the visible status line below it), on the splash after a 400ms delay, and static on the empty profile. The `converge` animation lights the dots from the outer pair inward to the apex, 1.2s per loop, 0.15s apart.
@@ -439,7 +445,7 @@ Drawn for this app on a 24px grid: 1.75px round strokes, `currentColor` (the sen
 ### Don't:
 - **Don't** recolor, redraw or rearrange the mark or the wordmark, or set "VIVERI" in a font as a stand-in logo.
 - **Don't** use shadows or blur for depth outside the navigation layer, or stack a border, a fill change and a shadow on one element.
-- **Don't** put glass anywhere but the dock and the chat's composer accessory: not on the title bar, cards or sheets.
+- **Don't** put glass anywhere but the dock and the chat's composer accessory: not on the top bar, cards or sheets.
 - **Don't** use gradients, or put the logo or the mark on anything but `ground` or `surface`.
 - **Don't** give any screen but the Chat an accessory, or float a second action bar over the dock: a screen's main action goes in its content.
 - **Don't** use muted ink on glass; every label on glass is ink.

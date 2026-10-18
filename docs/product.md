@@ -22,8 +22,8 @@ This app starts from your diet. It knows what you need, how much, and which swap
 ## How it works
 
 1. You chat with the AI nutritionist. If you have a nutritionist's plan, you describe it in the chat.
-2. The app combines that with your likes and restrictions and proposes a weekly menu. You change it and confirm it. Your plan is your profile plus that menu.
-3. You get a shopping list, priced at each supermarket, with the cheapest way to buy it on top.
+2. The app combines that with your likes and restrictions and proposes a weekly menu. You change it as you like. Your plan is your profile plus that menu.
+3. The menu comes with its shopping list, priced at each supermarket, with the cheapest way to buy it on top. Change the menu and the list follows.
 4. You share the list on WhatsApp or copy it.
 5. *(Later)* The app places the order for you.
 
@@ -41,8 +41,11 @@ The first version goes from a chat to a priced shopping list, in Montevideo only
 - Voice as dictation: tap the mic, speak, and the text appears in the box for you to check and send. It uses the browser's speech recognition ([ADR 0010](adr/0010-browser-speech-recognition.md)); where that's missing, the keyboard's dictation still works. No live voice conversation.
 - If you don't have a plan, it builds one from scratch.
 - If you have a nutritionist's plan, it follows what you tell it about that plan.
-- It asks as little as possible: your goal and what you can't eat. It doesn't ask whether you have a nutritionist's plan; if you mention one, it follows it. Everything else it assumes, tells you, and lets you correct. Then it builds your weekly menu right away and shows a preview of the week in the chat, with a button to the Menu tab, and tells you to confirm it there to get the shopping list. Ask it to see the menu and it shows the same preview.
-- Tell it what you already have at home ("ya tengo arroz", "tengo medio kilo de pollo") and the shopping list buys less. "Arranco semana nueva" clears it.
+- It asks as little as possible: your goal and what you can't eat. It doesn't ask whether you have a nutritionist's plan; if you mention one, it follows it. Everything else it assumes, tells you, and lets you correct. Then it builds your weekly menu right away and shows a preview of the week in the chat, with a button to the Menu tab, and tells you the shopping list is ready too. Ask it to see the menu and it shows the same preview.
+- Ask for the shopping list ("dale", "mostrame la lista") and it shows it in the chat: what's left to buy by section, the total at the end, and a button to the List tab. Then it asks what you already have at home.
+- Tell it what you already have at home ("tengo dos bananas", "tengo medio kilo de pollo"), to take something off the list or to buy less, and the list in the chat updates with its new total. That never changes the menu. "Arranco semana nueva" clears it.
+- Ask from the list for something you'd eat differently ("cambiame la carne por pollo", "sacame el brócoli del menú") and it changes the menu in the background, says in one line what changed, and shows the updated list.
+- It never writes prices itself: the totals in the chat are the List tab's.
 - Normal, everyday food you can buy at any supermarket in Montevideo.
 
 #### 2. Likes and restrictions
@@ -60,20 +63,21 @@ The first version goes from a chat to a priced shopping list, in Montevideo only
 #### 3. Numbers are optional
 
 - Numbers are hidden by default: the app talks about meals, not numbers.
-- If you want, you can set calories and protein yourself, or see the numbers per meal and per day.
-- Turned on with a switch in your profile.
+- A switch in your profile shows them: kcal, protein, carbs and fat per meal and per day in the Menu tab. They're estimates from a table per food; foods outside the catalog are left out of the totals, and the line says which ([ADR 0021](adr/0021-numbers-switch-in-the-profile.md)).
+- Ask the chat to show or hide them. Talk in numbers or technical terms (calories, grams of protein, macros) and it turns them on by itself, says so in one line and offers to go back. Once you turn them off, it doesn't turn them on again unless you ask.
+- With numbers on, give the chat a calorie or protein target and it builds the menu to it, with the same values the Menu tab adds up.
 
 #### 4. Weekly menu
 
 - Day by day, each meal with amounts and short instructions.
 - Change a meal or a day ("swap Tuesday's dinner") by chat or by tapping it.
 - A few recipes that repeat, on purpose: too much variety makes the shopping list huge and expensive.
-- Saved as soon as the AI proposes it. A button at the top confirms it as your plan; any later change needs confirming again.
+- Saved as soon as the AI proposes it, with its shopping list. There's no confirm step: "confirm" sounded like a payment, and every change updates the list anyway ([ADR 0022](adr/0022-list-follows-the-menu.md)).
 - Ingredients come from a fixed list of everyday foods, with amounts raw as bought; anything else is named as is ([ADR 0013](adr/0013-menu-saved-by-a-chat-tool.md)).
 
 #### 5. Shopping list
 
-- Shows once the menu is confirmed.
+- Built from the saved menu as soon as there is one, and it follows every change to the menu. Also shown in the chat ([§1](#1-chat-with-the-ai-nutritionist)).
 - Adds up the whole week and groups it by section, in the order you walk the store: fruit and vegetables, pantry, meat and fish, dairy, cold cuts and eggs, and "Otros" for foods outside the catalog.
 - Converts to how things are sold: "1,1 kg of rice" becomes "2 × 1 kg", with what the menu uses next to it. Meat, fish, ham, cheese, fruit and vegetables show a weight (or a count), since they're sold loose or by weight. It always rounds up, never down.
 - Accounts for raw vs. cooked: the menu's amounts are raw as bought, and the chat converts cooked amounts you give it (plans often say cooked rice; you buy it dry).
@@ -141,7 +145,7 @@ The key questions: do people come back every week to make their list, and do the
 | Do they come back weekly? | How many make a 2nd and a 4th list | 60% make a 2nd, 40% make a 4th |
 | Do they actually save? | Estimated saving per week, and whether they bought at the suggested store (asked after shopping) | Average estimated saving of 10% or more; half of those who shop use the suggested store |
 | Do they accept a split? | How many accept a two-store split when it's offered | 30% |
-| Does the AI build plans people accept? | How many confirm their first plan with 2 changes or fewer | 70% |
+| Does the AI build plans people accept? | How many shop from their first plan with 2 menu changes or fewer (the event is [open](notes/open-decisions.md): there's no confirm step any more) | 70% |
 | Is the list useful at the store? | A short survey after shopping, and how many items people edit | Average 4 out of 5; under 20% of items edited |
 | Do they want ordering? | How many tap "Order it for me" | 30% |
 | Who signs up? | Gym, nutritionist patient or other, asked at sign-up | No target: tells us who to build for next |

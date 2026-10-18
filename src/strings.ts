@@ -51,17 +51,13 @@ export const t = {
     noChats: 'Todavía no tenés chats.',
     noReply: 'No pude responder eso. Probá decirlo de otra forma.',
     openMenu: 'Ver menú',
+    openList: 'Ver lista',
   },
   menu: {
     empty: 'Todavía no hay menú. Pedíselo al chat.',
     loading: 'Cargando el menú…',
     loadError: 'No se pudo cargar el menú.',
     change: 'Cambiar',
-    confirm: 'Confirmar menú',
-    confirming: 'Confirmando…',
-    confirmed: 'Menú confirmado.',
-    confirmError: 'No se pudo confirmar. Probá de nuevo.',
-    changed: 'El menú cambió desde que lo abriste: este es el nuevo.',
     // Lowercase to fit inside a sentence; headings capitalize them with CSS.
     days: {
       monday: 'lunes',
@@ -76,11 +72,18 @@ export const t = {
     // Drafts left in the chat box for the user to finish.
     changeDay: (day: string) => `Cambiar el ${day}: `,
     changeMeal: (slot: string, day: string) => `Cambiar ${slot.toLowerCase()} del ${day}: `,
+    // With the numbers switch on. Amounts come in already formatted ("1.850").
+    macros: (kcal: string, protein: string, carbs: string, fat: string) =>
+      `${kcal} kcal · ${protein} g prote · ${carbs} g carbos · ${fat} g grasa`,
+    dayTotal: 'Total del día',
+    // After the macros when some foods have no values: "(sin contar espinaca, mayonesa)".
+    without: (names: string) => `sin contar ${names.toLowerCase()}`,
   },
   list: {
     loading: 'Cargando la lista…',
     hint: 'Tachá lo que ya tenés en casa.',
-    confirmFirst: 'Confirmá el menú y acá te armo la lista de compras.',
+    // The chat's list card when everything is crossed out.
+    nothingLeft: 'No te falta comprar nada.',
     share: 'Compartir',
     copy: 'Copiar',
     copied: 'Lista copiada.',
@@ -196,6 +199,10 @@ export const t = {
     dislike: 'No me gusta',
     like: 'Me gusta',
     want: 'Quiero comer',
+    // The numbers switch (product.md: numbers are optional, hidden by default).
+    settings: 'Preferencias',
+    numbers: 'Mostrar números (calorías y macros)',
+    numbersError: 'No se pudo guardar. Probá de nuevo.',
     account: 'Cuenta',
     signOut: 'Cerrar sesión',
   },

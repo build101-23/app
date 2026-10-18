@@ -1,6 +1,6 @@
-# 0021. VIVERI identity and a token-based UI system
+# 0023. VIVERI identity and a token-based UI system
 
-- Status: Proposed (navigation and depth amended by [0022](0022-glass-navigation-layer.md))
+- Status: Proposed (navigation and depth amended by [0024](0024-glass-navigation-layer.md))
 - Date: 2026-10-17
 
 ## Context

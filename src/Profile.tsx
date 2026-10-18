@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import type { Session } from '@supabase/supabase-js'
 import { supabase } from './supabase'
 import { t } from './strings'
-import { AlertIcon, EmptyState } from './ui'
+import { Alert, AlertIcon, EmptyState } from './ui'
 
 // The shape the chat's save_profile tool writes (supabase/functions/chat/index.ts).
 type ProfileData = {
@@ -15,11 +15,14 @@ type ProfileData = {
   dislike?: string[]
   like?: string[]
   want?: string[]
+  // null or missing: never set, numbers hidden. Also set by the switch below, through set_show_numbers.
+  show_numbers?: boolean | null
 }
 
 export default function Profile({ session, onOpenChat }: { session: Session; onOpenChat: () => void }) {
   const [data, setData] = useState<ProfileData | null>(null)
   const [failed, setFailed] = useState(false)
+  const [numbersError, setNumbersError] = useState('')
 
   function load() {
     supabase
@@ -37,6 +40,18 @@ export default function Profile({ session, onOpenChat }: { session: Session; onO
   function retry() {
     setFailed(false)
     load()
+  }
+
+  // The switch changes at once, and goes back if saving fails.
+  async function setNumbers(on: boolean) {
+    const before = data?.show_numbers
+    setNumbersError('')
+    setData((d) => d && { ...d, show_numbers: on })
+    const { error } = await supabase.rpc('set_show_numbers', { show_numbers: on })
+    if (error) {
+      setData((d) => d && { ...d, show_numbers: before })
+      setNumbersError(t.profile.numbersError)
+    }
   }
 
   return (
@@ -61,6 +76,24 @@ export default function Profile({ session, onOpenChat }: { session: Session; onO
           <span className="skeleton-line" />
           <span className="skeleton-line" />
         </div>
+      )}
+      {/* Even with nothing saved yet: numbers are optional and can be turned on any time. */}
+      {data && (
+        <section className="settings">
+          <h2>{t.profile.settings}</h2>
+          <div className="card settings-card">
+            <label className="switch">
+              <span>{t.profile.numbers}</span>
+              <input
+                type="checkbox"
+                role="switch"
+                checked={data.show_numbers === true}
+                onChange={(e) => setNumbers(e.target.checked)}
+              />
+            </label>
+          </div>
+          {numbersError && <Alert text={numbersError} />}
+        </section>
       )}
       <section className="account">
         <h2>{t.profile.account}</h2>

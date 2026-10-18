@@ -26,7 +26,7 @@
   --danger-surface: #fcedea;
   --success-surface: #e3f1e8;
 
-  /* Navigation layer (ADR 0022): neutral glass, its opaque fallback, the active capsule */
+  /* Navigation layer (ADR 0024): neutral glass, its opaque fallback, the active capsule */
   /* Tints measured on real pixels against the worst content beneath (docs/design.md, Navigation) */
   --glass: rgb(255 255 255 / 0.5);
   --glass-solid: #ffffff;
@@ -437,9 +437,12 @@ textarea {
   gap: 16px;
 }
 
-/* Reserves the button's height, so the form doesn't jump when Google's script loads. */
+/* Reserves the button's height, so the form doesn't jump when Google's script loads. Google's iframe document
+   is light: inheriting the dark color-scheme would make the browser paint it as an opaque white box. Its own
+   dark theme ('filled_black') still applies. */
 .google-button {
   min-height: 44px;
+  color-scheme: light;
 }
 
 .divider {
@@ -545,7 +548,7 @@ textarea {
   scrollbar-gutter: auto;
 }
 
-/* The navigation layer (ADR 0022), at every width: the glass dock, and the chat's composer floating above it.
+/* The navigation layer (ADR 0024), at every width: the glass dock, and the chat's composer floating above it.
    Labels and the focus ring are ink, since muted ink and the green ring don't hold contrast on glass. */
 .shell > nav {
   --focus: var(--ink);
@@ -804,9 +807,25 @@ textarea {
   text-transform: capitalize;
 }
 
-.menu-preview .button {
+.menu-preview .button,
+.list-preview .button {
   justify-self: start;
   min-height: 44px;
+}
+
+/* The list as it stands, under the reply that showed or changed it: what to buy by section (pre-wrapped
+   text, as shared), then the total and the example-prices note. */
+.list-preview {
+  display: grid;
+  gap: 12px;
+}
+
+.list-preview strong {
+  font-weight: 650;
+}
+
+.list-preview small {
+  font-size: 0.8125rem;
 }
 
 .messages .alert {
@@ -893,7 +912,7 @@ textarea {
   }
 }
 
-/* The composer is the dock's accessory: a glass capsule floating above it (ADR 0022). It may grow to the
+/* The composer is the dock's accessory: a glass capsule floating above it (ADR 0024). It may grow to the
    content column's width on wide screens, while the dock stays narrow. */
 .composer {
   --focus: var(--ink);
@@ -1103,6 +1122,78 @@ textarea {
   overflow-wrap: anywhere;
 }
 
+.settings h2 {
+  margin-bottom: 10px;
+  font-size: 1rem;
+}
+
+.settings .alert {
+  margin-top: 10px;
+}
+
+/* The numbers switch: the label, then a track with a knob. A real checkbox with role="switch", drawn here. */
+.switch {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  min-height: 52px;
+  padding: 8px 12px 8px 16px;
+  cursor: pointer;
+}
+
+.switch input {
+  flex: none;
+  position: relative;
+  width: 44px;
+  height: 26px;
+  margin: 0;
+  border-radius: 999px;
+  background: var(--line-strong);
+  cursor: pointer;
+  appearance: none;
+  transition: background-color var(--dur-fast) var(--ease);
+}
+
+.switch input::before {
+  content: '';
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--surface);
+  transition: transform var(--dur) var(--ease);
+}
+
+.switch input:checked {
+  background: var(--primary);
+}
+
+.switch input:checked::before {
+  transform: translateX(18px);
+}
+
+@media (forced-colors: active) {
+  .switch input {
+    border: 1px solid CanvasText;
+  }
+
+  .switch input::before {
+    background: CanvasText;
+  }
+
+  .switch input:checked {
+    background: Highlight;
+  }
+
+  /* Highlight and HighlightText are the system's guaranteed pair. */
+  .switch input:checked::before {
+    background: HighlightText;
+  }
+}
+
 .account-card {
   display: flex;
   flex-wrap: wrap;
@@ -1174,12 +1265,17 @@ textarea {
   gap: 8px;
 }
 
-.menu > .button {
-  justify-self: start;
-}
-
 .menu section {
   margin-top: 16px;
+}
+
+/* With the numbers switch on: the day's total under its heading, and each meal's under its name. */
+.menu .macros {
+  display: block;
+  margin: 0 0 4px;
+  color: var(--ink-muted);
+  font-size: 0.8125rem;
+  font-variant-numeric: tabular-nums;
 }
 
 .menu-day {

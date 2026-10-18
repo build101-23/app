@@ -29,7 +29,7 @@ Since then `main` added several things the redesign never saw:
 ## Steps
 1. Save this plan.
 2. Merge `redesign/v3-source` with `--no-commit`. Take each non-overlapping change as is.
-3. **ADRs.** The redesign's 0008 and 0009 collide with `main`'s 0008 and 0009, so they become **0021** ("VIVERI identity and UI system") and **0022** ("Glass navigation layer"). Update their cross-links, `docs/adr/README.md`, and every reference in `docs/design.md` and the plans.
+3. **ADRs.** The redesign's 0008 and 0009 collide with `main`'s 0008 and 0009, so they became 0021 and 0022, and then, once `main` added its own 0021 and 0022, **0023** ("VIVERI identity and UI system") and **0024** ("Glass navigation layer"). Update their cross-links, `docs/adr/README.md`, and every reference in `docs/design.md` and the plans.
 4. **Code conflicts.** Keep all of `main`'s behavior and apply the redesign's look and structure on top.
    - `src/App.tsx`: `main`'s tabs, routing and data, inside the redesign's shell (title field, glass dock, splash, sign-in).
    - `src/Chat.tsx`:
@@ -55,7 +55,7 @@ Since then `main` added several things the redesign never saw:
    - a contrast re-check of the dock with v3's measuring scripts.
 10. **Docs step:**
     - `docs/design.md` (step 7);
-    - ADRs 0021 and 0022 and the ADR index;
+    - ADRs 0023 and 0024 and the ADR index;
     - `docs/development.md` (fixture);
     - `docs/architecture.md` (stack line).
 
@@ -70,7 +70,7 @@ Since then `main` added several things the redesign never saw:
 **Merge.**
 - `redesign/v3-source` (`8b20de0`, base `6bf25ae`) merged into this branch, which starts from `main` at `8f3f071`.
 - Conflicts in seven files were resolved by hand: `docs/adr/README.md`, `docs/development.md`, `docs/notes/open-decisions.md`, `src/App.tsx`, `src/Chat.tsx`, `src/index.css` and `src/strings.ts`. Everything else merged on its own.
-- The redesign's ADRs are now 0021 and 0022, with every reference updated.
+- The redesign's ADRs are now 0023 and 0024, with every reference updated.
 
 **Code adapted on top of the merge.**
 - `Menu.tsx`, `List.tsx` and the menu card: page layout, button classes, `Alert`, `PageSkeleton` and `EmptyState`.
@@ -100,3 +100,41 @@ Since then `main` added several things the redesign never saw:
 **Not verified.**
 - Real devices and real Supabase. The fixture stands in for both.
 - The on-screen keyboard on a phone.
+
+## Revision: merging `main` again
+After the port and the brand-header commit (`8a6fcc6`), `main` moved on. The new commits added:
+- the numbers switch (ADR 0021);
+- the list following the menu, with no confirm step and a live list card in the chat (ADR 0022);
+- one menu card per turn;
+- a default-calories rule in the chat prompt.
+
+**Steps**
+1. Merge `origin/main` at `0ba9cea` and resolve the conflicts in `App`, `Chat`, `Menu`, `List`, `Profile`, `strings`, `index.css` and the docs. Keep every behavior from `main`, and keep the port's look and fixes.
+2. **ADRs.** `main` now owns 0021 and 0022. The redesign's ADRs become **0023** (identity) and **0024** (glass), and Google's becomes **0025**. Update every reference.
+3. **The new pieces in the system.**
+   - **The confirm step is gone** from Menu and List, along with its focus and announcement code.
+   - **The chat's list card** becomes an assistant bubble with a secondary "Ver lista".
+   - **The Menu's macros** use muted caption type with tabular figures.
+   - **The numbers switch** goes in a "Preferencias" card on Perfil. It is a real checkbox with `role="switch"`, drawn as a track and a knob, and it shows even when nothing is saved yet.
+4. **Fixture.**
+   - A turn that shows the list.
+   - The `menu` scenarios become `saved`, `none` and `error`.
+   - A new `numbers` scenario: `off`, `on` or `error`.
+   - An `rpc` stub for `set_show_numbers`.
+5. **Verify.** Lint, types, tests and the build. Then an adversarial review of the merge.
+6. **Merge `origin/main` again at `d470768`**, which adds the default-calories prompt rule. It should merge cleanly.
+7. **Docs:** `design.md`, `architecture.md`, `development.md`, the ADR index, `milestones.md`, and the results here.
+
+**Results**
+- **Merged and checked.** Lint 0 warnings, `tsc -b` passes, `npm test` 30 of 30, build passes with no fixture code in `dist/`.
+- **Adversarial review.** Three reviewers (parity with the new `main`, design and accessibility, docs), each checked by a skeptic: 12 confirmed findings (one reported twice), 1 rejected. All fixed:
+  - **Google button in dark mode.** It sat in an opaque white box, because Google's iframe inherited the dark `color-scheme`. The fix is `color-scheme: light` on its slot, so Google's own dark button shows.
+  - **The switch in forced colors.** Its knob was hard to see when on; it now uses `HighlightText` on `Highlight`.
+  - **The chat when the menu can't be read.** It now opens without its list card instead of failing; this was inherited from `main`.
+  - **The fixture's `numbers=error`.** It no longer saves the value it reports as failed, and `profile=empty` keeps the switch.
+  - **Docs.** A stale ADR number, the menu-card rule, the intent-card rule, and this revision.
+- **Measured** in headless Chrome, 156 runs: 360×640, 390×844 and 1280×800, light and dark, with and without iPhone safe areas.
+  - Geometry: 0 failures. The list card clears the composer by about 31 px, and Menu (with macros), List and Perfil clear the dock by 16 px.
+  - Focus is never under the glass.
+  - Dock contrast over the new content is at least the uniform worst case: labels ≥ 5.87:1 light, ≥ 11.26:1 dark.
+  - The switch is at least 3.1:1 against the card in every state.

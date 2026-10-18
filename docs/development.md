@@ -52,7 +52,7 @@ Vite reads `.env`, then `.env.local` (gitignored), which overrides it.
 - The database password lives in the team's shared password vault. Never commit it.
 - The secret key and the Anthropic API key (`ANTHROPIC_API_KEY`, created inside an Anthropic Console workspace: org-level keys are rejected without a workspace header) are stored only as Supabase Edge Function secrets (dashboard → Edge Functions → Secrets, or `supabase secrets set`), so Edge Functions can read them. They never go in `.env.local` or the repo. Supabase also gives every Edge Function `SUPABASE_SERVICE_ROLE_KEY`, which `chat` writes with.
 - The one exception is the price scraper's own secret key, named `scraper` (dashboard → Project Settings → API Keys → Secret keys). Like any secret key it acts as `service_role`; it's a separate key only so it can be revoked on its own. It lives only in `scraper/.env.local` (gitignored) on the machine that runs the scraper.
-- Every table enables row-level security in its migration, with an owner policy (`auth.uid() = user_id`) that only allows `select`, unless the browser has to write that table. What the browser writes today is listed in [architecture.md](architecture.md). Edge Functions write everything else with the service-role key ([ADR 0014](adr/0014-client-reads-chat-function-writes.md)). The price catalog is the exception: every signed-in user reads all of it, and only the scraper writes it ([ADR 0016](adr/0016-price-catalog-one-row-per-product-per-chain.md)). Check Database → Advisors → Security after each milestone.
+- Every table enables row-level security in its migration, with an owner policy (`auth.uid() = user_id`) that only allows `select`, unless the browser has to write that table. What the browser writes today, column grants and the `set_show_numbers` function included, is listed in [architecture.md](architecture.md). Edge Functions write everything else with the service-role key ([ADR 0014](adr/0014-client-reads-chat-function-writes.md)). The price catalog is the exception: every signed-in user reads all of it, and only the scraper writes it ([ADR 0016](adr/0016-price-catalog-one-row-per-product-per-chain.md)). Check Database → Advisors → Security after each milestone.
 
 ## Testing
 
@@ -63,7 +63,7 @@ Vite reads `.env`, then `.env.local` (gitignored), which overrides it.
 - Scraper: `scraper/.venv/bin/python -m unittest discover -s scraper/tests -t .`. Hand-written fixtures, no network.
 
 ### Screens with synthetic data
-`npm run dev:fixture` runs the app with `src/dev/fixture.ts` in place of the Supabase client (`vite.config.ts` swaps it in fixture mode only; the production build never includes it). You're signed in as `persona@ejemplo.com` with three sample chats (the latest one saves a week, so its menu card shows), a weekly menu, its shopping list and a profile, so every screen can be checked without an account. What you send is kept in its chat until you reload. Pick states with query parameters, combined freely:
+`npm run dev:fixture` runs the app with `src/dev/fixture.ts` in place of the Supabase client (`vite.config.ts` swaps it in fixture mode only; the production build never includes it). You're signed in as `persona@ejemplo.com` with three sample chats (the latest one saves a week and then shows the list, so both chat cards appear), a weekly menu, its shopping list and a profile, so every screen can be checked without an account. What you send is kept in its chat until you reload. Pick states with query parameters, combined freely:
 
 | Parameter | Values (default first) | What it shows |
 | --- | --- | --- |
@@ -71,7 +71,8 @@ Vite reads `.env`, then `.env.local` (gitignored), which overrides it.
 | `otp` | `ok`, `error`, `slow` | Sign-in link sent, refused (rate limit), or slow |
 | `chat` | `long`, `empty`, `error` | Three chats opening on the long one, no chats (a new chat with the intent cards), or a load error with retry |
 | `reply` | `ok`, `error`, `limit`, `slow`, `trickle` | The streamed reply to a sent message. `limit` answers 429 (the daily cap); `slow` waits 3 s for the first words; `trickle` streams one chunk every 600 ms, to see the status line |
-| `menu` | `confirmed`, `draft`, `none`, `error` | The week confirmed (List shows items and example prices), saved but not confirmed, no menu yet, or a load error |
+| `menu` | `saved`, `none`, `error` | The week saved (Menu, List with example prices, and the chat's menu and list cards), no menu yet, or a load error (Menu and List show it; the chat opens without its list card) |
+| `numbers` | `off`, `on`, `error` | The numbers switch off or on (Menu shows macros), or saving it fails and nothing changes. Works with `profile=empty` too |
 | `profile` | `full`, `empty`, `error` | Saved profile, nothing saved, or a load error |
 | `loading` | `session`, `data` | Stuck on the splash, or on the skeletons |
 | `safe` | `iphone` | Simulated 47 px top and 34 px bottom safe areas |

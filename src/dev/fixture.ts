@@ -128,7 +128,16 @@ const longChat: Row[] = [
     ],
   },
   { role: 'user', content: [{ type: 'tool_result', tool_use_id: 'toolu_fixture_menu', content: 'saved' }] },
-  text('assistant', 'Miralo en Menú y confirmalo cuando te cierre. Con eso te armo la lista.'),
+  text('assistant', 'Miralo en Menú. Si querés cambiar algo, decime.'),
+  text('user', '¿Me pasás la lista de compras?'),
+  {
+    role: 'assistant',
+    content: [
+      { type: 'text', text: 'Acá está, con lo que ya tenés en casa tachado.' },
+      { type: 'tool_use', id: 'toolu_fixture_list', name: 'show_shopping_list', input: {} },
+    ],
+  },
+  { role: 'user', content: [{ type: 'tool_result', tool_use_id: 'toolu_fixture_list', content: 'shown' }] },
 ]
 
 const messages = new Map<string, Row[]>([
@@ -169,13 +178,14 @@ const fullProfile = {
   dislike: ['brócoli', 'hígado'],
   like: ['pollo', 'avena', 'zapallo', 'boniato'],
   want: ['pizza los viernes', 'más legumbres'],
+  // numbers=on starts with the numbers switch on.
+  show_numbers: scenario('numbers', 'off') === 'on',
 }
 
-// menu: confirmed (default), draft, none, error. One item starts crossed out on the list.
-const menuMode = scenario('menu', 'confirmed')
+// menu: saved (default), none, error. One item starts crossed out on the list.
+const menuMode = scenario('menu', 'saved')
 const menuRow = {
   data: week,
-  confirmed_at: menuMode === 'confirmed' ? '2026-10-17T18:30:00Z' : null,
   have: { banana: null } as Record<string, number | null>,
   updated_at: '2026-10-17T18:25:00Z',
 }
@@ -251,7 +261,11 @@ class Query {
     }
     const profile = scenario('profile', 'full')
     if (profile === 'error') return failure
-    return { data: profile === 'empty' ? null : { data: fullProfile }, error: null }
+    // An empty profile has no row, unless the numbers switch was set: set_show_numbers creates it.
+    if (profile === 'empty') {
+      return { data: fullProfile.show_numbers ? { data: { show_numbers: true } } : null, error: null }
+    }
+    return { data: { data: fullProfile }, error: null }
   }
 }
 
@@ -284,6 +298,14 @@ export const supabase = {
     },
   },
   from: (table: string) => new Query(table),
+  // set_show_numbers: the only function the browser calls (ADR 0021).
+  async rpc(name: string, args: { show_numbers?: boolean }) {
+    await wait(300)
+    // A failed save changes nothing.
+    if (scenario('numbers', 'off') === 'error') return { data: null, error: { message: 'fixture error' } }
+    if (name === 'set_show_numbers') fullProfile.show_numbers = args.show_numbers === true
+    return { data: null, error: null }
+  },
 }
 
 const reply =

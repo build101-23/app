@@ -16,17 +16,19 @@ One file per decision: `NNNN-short-title.md`. ADRs are append-only: never rewrit
 | 0010 | [Voice dictation with the browser's speech recognition](0010-browser-speech-recognition.md) | Accepted | 2026-10-17 |
 | 0011 | [The saved profile travels into each chat](0011-profile-in-each-chat.md) | Accepted | 2026-10-17 |
 | 0012 | [Fill supermarket carts from the user's computer](0012-fill-carts-from-the-users-computer.md) | Accepted | 2026-10-17 |
-| 0013 | [Weekly menu saved by a chat tool, keyed to a fixed food catalog](0013-menu-saved-by-a-chat-tool.md) | Accepted | 2026-10-17 |
-| 0014 | [The client only reads; the chat function writes, under a daily cap](0014-client-reads-chat-function-writes.md) | Accepted | 2026-10-17 |
+| 0013 | [Weekly menu saved by a chat tool, keyed to a fixed food catalog](0013-menu-saved-by-a-chat-tool.md) | Accepted (confirm step removed by 0022) | 2026-10-17 |
+| 0014 | [The client only reads; the chat function writes, under a daily cap](0014-client-reads-chat-function-writes.md) | Accepted (`menus.confirmed_at` write gone with 0022) | 2026-10-17 |
 | 0015 | [The price scraper is a Python job with a time budget](0015-price-scraper-python-job-with-time-budget.md) | Accepted (coverage and write path superseded by 0018) | 2026-10-17 |
 | 0016 | [Price catalog: one row per product per chain](0016-price-catalog-one-row-per-product-per-chain.md) | Accepted | 2026-10-17 |
-| 0017 | [The shopping list is derived in the browser; only what you have is stored](0017-shopping-list-derived-in-the-browser.md) | Accepted | 2026-10-17 |
+| 0017 | [The shopping list is derived in the browser; only what you have is stored](0017-shopping-list-derived-in-the-browser.md) | Accepted (marks reach the chat model as numbers: 0022) | 2026-10-17 |
 | 0018 | [The scraper reads GDU through listings and a few food pages](0018-gdu-listings-and-food-pages.md) | Accepted | 2026-10-17 |
 | 0019 | [Example prices bundled with the app until real prices are matched](0019-example-prices-until-matched.md) | Accepted | 2026-10-17 |
 | 0020 | [CI on Tenki runners](0020-ci-on-tenki-runners.md) | Accepted | 2026-10-17 |
-| 0021 | [VIVERI identity and a token-based UI system](0021-viveri-identity-and-ui-system.md) | Proposed (navigation and depth amended by 0022) | 2026-10-17 |
-| 0022 | [Glass navigation layer](0022-glass-navigation-layer.md) | Proposed | 2026-10-17 |
-| 0023 | [Sign in with Google's own button](0023-google-sign-in-button.md) | Accepted | 2026-10-17 |
+| 0021 | [The numbers switch lives in the profile; macros come from a fixed table](0021-numbers-switch-in-the-profile.md) | Accepted | 2026-10-17 |
+| 0022 | [The shopping list follows the menu, and shows in the chat](0022-list-follows-the-menu.md) | Accepted | 2026-10-17 |
+| 0023 | [VIVERI identity and a token-based UI system](0023-viveri-identity-and-ui-system.md) | Proposed (navigation and depth amended by 0024) | 2026-10-17 |
+| 0024 | [Glass navigation layer](0024-glass-navigation-layer.md) | Proposed | 2026-10-17 |
+| 0025 | [Sign in with Google's own button](0025-google-sign-in-button.md) | Accepted | 2026-10-17 |
 
 ## Template
 

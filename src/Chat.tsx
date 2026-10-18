@@ -4,10 +4,12 @@ import type { MenuData } from '../supabase/functions/_shared/menu.ts'
 import { supabase } from './supabase'
 import { t } from './strings'
 import { MenuPreview } from './Menu'
+import { ListPreview, type MenuRow } from './List'
 import { Alert, AlertIcon, Mark, SendIcon } from './ui'
 
 type Role = 'user' | 'assistant'
-type Bubble = { role: Role; text: string; menu?: MenuData }
+// turn: counts the user's messages, so a turn's cards can be found. saved: a menu card from a save_menu call.
+type Bubble = { role: Role; text: string; menu?: MenuData; saved?: boolean; list?: true; turn: number }
 type Block = {
   type: string
   text?: string
@@ -40,8 +42,8 @@ declare global {
 // Missing in Firefox and some installed iPhone apps: there the keyboard's dictation still works.
 const Recognition = window.SpeechRecognition ?? window.webkitSpeechRecognition
 
-// Shows text, plus a preview after each save_menu call that saved and each show_menu call. Thinking, other
-// tool calls, tool results and the server's profile and menu copies stay hidden.
+// Shows text, plus a preview after each save_menu call that saved and the turn's first show_menu call, and the list
+// card. Thinking, other tool calls, tool results and the server's profile and menu copies stay hidden.
 function toBubbles(rows: Row[]): Bubble[] {
   const saved = new Set(
     rows
@@ -50,22 +52,43 @@ function toBubbles(rows: Row[]): Bubble[] {
   )
   // The menu as it stood at each point of the chat: the server adds its copy whenever the saved one changed.
   let latest: MenuData | undefined
-  return rows.flatMap((row) => {
+  // The model may call show_menu right after save_menu, or twice: one card per turn is enough.
+  let shown = false
+  let turn = 0
+  const bubbles = rows.flatMap((row) => {
     const text = row.content
       .filter((block) => block.type === 'text' && !block.text?.startsWith('<saved_'))
       .map((block) => block.text)
       .join('\n')
-    const menus: Bubble[] = []
+    if (row.role === 'user' && text) {
+      shown = false
+      turn++
+    }
+    const cards: Bubble[] = []
     for (const block of row.content) {
       if (block.text?.startsWith('<saved_menu>')) {
         latest = JSON.parse(block.text.slice('<saved_menu>'.length, -'</saved_menu>'.length))
       }
       const savedMenu = block.name === 'save_menu' && saved.has(block.id)
       if (savedMenu) latest = block.input as MenuData
-      if (savedMenu || (block.name === 'show_menu' && latest)) menus.push({ role: row.role, text: '', menu: latest })
+      if (savedMenu || (block.name === 'show_menu' && latest && !shown)) {
+        cards.push({ role: row.role, text: '', menu: latest, saved: savedMenu, turn })
+        shown = true
+      }
+      if ((block.name === 'show_shopping_list' || block.name === 'update_shopping_list') && saved.has(block.id)) {
+        cards.push({ role: row.role, text: '', list: true, turn })
+      }
     }
-    return [...(text ? [{ role: row.role, text }] : []), ...menus]
+    return [...(text ? [{ role: row.role, text, turn }] : []), ...cards]
   })
+  // The list card is live, drawn from the saved menu, so only the last one shows: older ones would repeat it. Once the
+  // list has been shown, a turn that shows it again hides the menus it saved: the menu changed in the background, and
+  // the reply says so. The first turn keeps them, as the model may show a new menu and its list together.
+  const listTurns = bubbles.filter((bubble) => bubble.list).map((bubble) => bubble.turn)
+  const last = bubbles.findLastIndex((bubble) => bubble.list)
+  return bubbles.filter((bubble, i) =>
+    bubble.list ? i === last : !(bubble.saved && bubble.turn !== listTurns[0] && listTurns.includes(bubble.turn)),
+  )
 }
 
 const day = (iso: string) => new Date(iso).toLocaleDateString('es-UY', { day: 'numeric', month: 'short' })
@@ -75,17 +98,21 @@ export default function Chat({
   initialDraft,
   onBusy,
   onOpenMenu,
+  onOpenList,
 }: {
   session: Session
   initialDraft: string
   onBusy: (busy: boolean) => void
   onOpenMenu: () => void
+  onOpenList: () => void
 }) {
   const [conversations, setConversations] = useState<Conversation[]>([])
   // null is a new chat that has no row yet: it gets one with its first message.
   const [conversationId, setConversationId] = useState<string | null>(null)
   const [showList, setShowList] = useState(false)
   const [bubbles, setBubbles] = useState<Bubble[]>([])
+  // The saved menu and marks, for the live list card. null when there's no menu.
+  const [menuRow, setMenuRow] = useState<MenuRow | null>(null)
   const [draft, setDraft] = useState(initialDraft)
   // Starts true: sending waits until the latest chat is open (the effect below).
   const [busy, setBusy] = useState(true)
@@ -166,12 +193,16 @@ export default function Chat({
   }
 
   async function loadMessages(id: string) {
-    const { data, error } = await supabase
-      .from('messages')
-      .select('role, content')
-      .eq('conversation_id', id)
-      .order('id')
-    if (!error) setBubbles(toBubbles(data))
+    // With the saved menu and marks, for the live list card.
+    const [{ data, error }, { data: menu, error: menuError }] = await Promise.all([
+      supabase.from('messages').select('role, content').eq('conversation_id', id).order('id'),
+      supabase.from('menus').select('data, have, updated_at').maybeSingle(),
+    ])
+    // The menu only feeds the list card: if it can't be read, the chat still opens, without that card.
+    if (!error) {
+      setBubbles(toBubbles(data))
+      setMenuRow(menuError ? null : menu)
+    }
     return !error
   }
 
@@ -250,8 +281,10 @@ export default function Chat({
     setError('')
     setLoadFailed(false)
     setDraft('')
-    setBubbles((b) => [...b, { role: 'user', text }, { role: 'assistant', text: '' }])
-    const setReply = (reply: string) => setBubbles((b) => [...b.slice(0, -1), { role: 'assistant', text: reply }])
+    // turn only matters for cards, which come with the reload below.
+    setBubbles((b) => [...b, { role: 'user', text, turn: 0 }, { role: 'assistant', text: '', turn: 0 }])
+    const setReply = (reply: string) =>
+      setBubbles((b) => [...b.slice(0, -1), { role: 'assistant', text: reply, turn: 0 }])
 
     let failure = t.chat.error
     try {
@@ -290,10 +323,11 @@ export default function Chat({
       }
       setStreaming(false)
       if (!reply) setReply(t.chat.noReply)
-      // The stream is text only: the stored turn also has the save_menu calls, for the preview.
-      // Awaited while the box is locked, so it can't overwrite the next message's bubbles. The turn is on
-      // screen already, so a failed reload only says so under it; a failed list refresh shows in the list.
-      if (reply && !(await loadMessages(id))) setError(t.chat.loadError)
+      // The stream is text only: the stored turn also has the save_menu and list calls, for the cards. A clean end
+      // means the turn was stored, even with no text. Awaited while the box is locked, so it can't overwrite the next
+      // message's bubbles. The turn is on screen already, so a failed reload only says so under it; a failed list
+      // refresh shows in the list.
+      if (!(await loadMessages(id))) setError(t.chat.loadError)
       loadConversations()
     } catch {
       // The server stores nothing from a failed turn, so drop both bubbles and give the text back.
@@ -393,7 +427,9 @@ export default function Chat({
             </div>
           )}
           {bubbles.map((bubble, i) =>
-            bubble.menu ? (
+            bubble.list ? (
+              menuRow && <ListPreview key={i} row={menuRow} busy={busy} onOpen={onOpenList} />
+            ) : bubble.menu ? (
               <MenuPreview key={i} menu={bubble.menu} busy={busy} onOpen={onOpenMenu} />
             ) : bubble.text ? (
               <p key={i} className={`bubble ${bubble.role}`}>
