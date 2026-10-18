@@ -82,18 +82,26 @@ class Supabase:
         return saved
 
 
-    def skus(self, store_key: str) -> set[str]:
-        """The ids of every product saved for a chain."""
-        out: set[str] = set()
+    def skus(self, store_key: str, read_from: str | None = None) -> set[str]:
+        """The ids of every product saved for a chain, or only those last read from `read_from`."""
+        return {p["store_sku"] for p in self._products(store_key, read_from, "store_sku")}
+
+    def read_times(self, store_key: str, read_from: str | None = None) -> dict[str, str]:
+        """When each product saved for a chain was last read (store_sku -> checked_at), or only those
+        last read from `read_from`."""
+        return {p["store_sku"]: p["checked_at"] for p in self._products(store_key, read_from, "store_sku,checked_at")}
+
+    def _products(self, store_key: str, read_from: str | None, columns: str):
         last = 0
         while True:
-            page = self._call("GET", "store_products", params={
-                "select": "id,store_sku", "store_key": f"eq.{store_key}", "id": f"gt.{last}", "order": "id",
-                "limit": PAGE_SIZE,
-            }).json()
+            params = {"select": f"id,{columns}", "store_key": f"eq.{store_key}", "id": f"gt.{last}", "order": "id",
+                      "limit": PAGE_SIZE}
+            if read_from:
+                params["read_from"] = f"eq.{read_from}"
+            page = self._call("GET", "store_products", params=params).json()
             if not page:
-                return out
-            out.update(p["store_sku"] for p in page)
+                return
+            yield from page
             last = page[-1]["id"]
 
     def count(self, store_key: str) -> int:
@@ -137,8 +145,11 @@ class DryRun:
         return len(rows)
 
 
-    def skus(self, store_key: str) -> set[str]:
+    def skus(self, store_key: str, read_from: str | None = None) -> set[str]:
         return set()
+
+    def read_times(self, store_key: str, read_from: str | None = None) -> dict[str, str]:
+        return {}
 
     def count(self, store_key: str) -> int:
         return self.counts[store_key]

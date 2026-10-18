@@ -17,6 +17,36 @@ def norm_text(s: str | None) -> str:
     return re.sub(r"\s+", " ", s).strip()
 
 
+_CP1252 = "€‚ƒ„…†‡ˆ‰Š‹ŒŽ‘’“”•–—˜™š›œžŸ"  # bytes 0x80-0x9f as Windows-1252 shows them
+# A UTF-8 lead byte (Â, Ã, â) and its continuation bytes, as Latin-1 or Windows-1252 shows them.
+_MOJIBAKE_RE = re.compile(f"[ÂÃâ][\x80-\xbf{_CP1252}]+")
+
+
+def _as_byte(c: str) -> int:
+    return ord(c) if ord(c) < 256 else c.encode("cp1252")[0]
+
+
+def _repair(m: re.Match) -> str:
+    try:
+        return bytes(_as_byte(c) for c in m.group()).decode("utf-8")
+    except UnicodeDecodeError:
+        return m.group()
+
+
+def fix_mojibake(s: str | None) -> str | None:
+    """UTF-8 text that was decoded as Latin-1 or Windows-1252 somewhere upstream: "VacÃ­o" -> "Vacío".
+    Each broken run is repaired on its own, so a name that also has correct accents is repaired too, and
+    twice-broken text gets a second pass. Text that isn't broken stays as it is."""
+    for _ in range(3):
+        if not s:
+            return s
+        fixed = _MOJIBAKE_RE.sub(_repair, s)
+        if fixed == s:
+            return s
+        s = fixed
+    return s
+
+
 # ---------------------------------------------------------------- EAN / GTIN
 
 
@@ -104,14 +134,24 @@ _VTEX_UNITS = {"kg": ("g", 1000), "g": ("g", 1), "l": ("ml", 1000), "lt": ("ml",
 def size_from_unit(measurement_unit: str | None, multiplier: float | None) -> dict | None:
     """Size of a product sold by weight or volume, from VTEX's measurementUnit and unitMultiplier.
 
-    One unit of the SKU is `multiplier` × `measurement_unit`, and its price is for that amount.
+    One unit of the SKU, what goes in the cart, is `multiplier` × `measurement_unit`. Its price is for
+    that amount, except in kg over 1 kg: then the price is per kg (Ta-Ta's 1.4 kg pork loin at $199).
     Units ("un") say nothing about the content, so they give no size.
     """
     unit = (measurement_unit or "").strip().lower()
     if unit not in _VTEX_UNITS or not multiplier or multiplier <= 0:
         return None
+    if unit == "kg" and multiplier > 1:
+        return priced_per_kg(multiplier * 1000)
     base_unit, factor = _VTEX_UNITS[unit]
     return _size(float(multiplier), unit, 1, base_unit, multiplier * factor)
+
+
+def priced_per_kg(sale_g: float) -> dict:
+    """Size of an item whose price is per kg, and whose unit of sale (what goes in the cart) weighs
+    `sale_g` grams: base 1000 g, unit of sale in kg from 1 kg up, else in g."""
+    qty, unit = (round(sale_g / 1000, 3), "kg") if sale_g >= 1000 else (round(sale_g, 3), "g")
+    return _size(qty, unit, 1, "g", 1000.0)
 
 
 def _size(qty, unit, pack_count, base_unit, base_qty) -> dict:

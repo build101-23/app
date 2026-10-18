@@ -92,8 +92,31 @@ class NodeRowTest(unittest.TestCase):
     def test_price_is_for_the_amount_sold_not_the_name(self):
         row = tata.node_row(node("8747", "Aguja Sin Hueso En Trozo 780 G", price=346.51, measurementUnit="kg",
                                  unitMultiplier=0.827), self.paths, 4, "t")
-        self.assertEqual((row["size_source"], row["base_qty"]), ("unit", 827))
+        self.assertEqual((row["size_source"], row["base_qty"], row["size_qty"], row["size_unit"]), ("unit", 827, 0.827, "kg"))
         self.assertIn("priced for 0.827 kg", row["notes"])
+
+    def test_over_one_kg_the_price_is_per_kg(self):
+        row = tata.node_row(node("13220", "Lomo De Cerdo 1.4 Kg", price=199, measurementUnit="kg", unitMultiplier=1.4),
+                            self.paths, 4, "t")
+        self.assertEqual((row["price"], row["base_qty"], row["base_unit"]), (199, 1000, "g"))
+        self.assertEqual((row["size_source"], row["size_qty"], row["size_unit"], row["pack_count"]), ("unit", 1.4, "kg", 1))
+        self.assertIsNone(row["notes"])
+
+    def test_over_one_kg_a_name_that_disagrees_is_noted(self):
+        row = tata.node_row(node("13221", "Lomo De Cerdo 2 Kg", price=199, measurementUnit="kg", unitMultiplier=1.4),
+                            self.paths, 4, "t")
+        self.assertEqual((row["base_qty"], row["size_qty"]), (1000, 1.4))
+        self.assertEqual(row["notes"], "sold as 1.4 kg; the name says otherwise")
+
+    def test_one_kg_tray_is_sold_whole(self):
+        row = tata.node_row(node("14482", "Carne Picada Bandeja 1 Kg", price=380, measurementUnit="kg", unitMultiplier=1),
+                            self.paths, 4, "t")
+        self.assertEqual((row["price"], row["base_qty"], row["size_qty"], row["size_unit"]), (380, 1000, 1, "kg"))
+        self.assertIsNone(row["notes"])
+
+    def test_mis_encoded_names_are_repaired(self):
+        row = tata.node_row(node("9", "VacÃ\xado Novillo CaÃ±uelas 1 Kg", brand={"name": "CaÃ±uelas"}), self.paths, 4, "t")
+        self.assertEqual((row["name"], row["brand"]), ("Vacío Novillo Cañuelas 1 Kg", "Cañuelas"))
 
     def test_multicurrency_currency_is_not_guessed(self):
         row = tata.node_row(node("8", "Televisor 50", hasMulticurrencyPrice=True), self.paths, 4, "t")
