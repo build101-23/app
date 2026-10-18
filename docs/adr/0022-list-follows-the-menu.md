@@ -1,6 +1,6 @@
 # 0022. The shopping list follows the menu, and shows in the chat
 
-- Status: Accepted
+- Status: Accepted (the model sees prices: 0024)
 - Date: 2026-10-17
 
 ## Context

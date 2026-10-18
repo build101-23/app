@@ -23,13 +23,14 @@ Sign-in uses Supabase's default magic link email. The link only sends you back t
 | `npx supabase migration new <name>` | Create an empty migration in `supabase/migrations/` |
 | `npx supabase db push` | Apply new migrations to the hosted database (asks for the database password) |
 | `npx supabase functions deploy chat` | Deploy the `chat` Edge Function. Functions aren't deployed by pushing to `main`. |
+| `deno check --no-lock --node-modules-dir=none supabase/functions/chat/index.ts` | Type-check the `chat` function (Deno 2), which `npm run build` doesn't cover |
 | `scraper/.venv/bin/python -m scraper` | Read supermarket prices into Supabase, 25 minutes at most ([below](#price-scraper)) |
 
 When a migration takes away a write that the deployed function still makes with the user's token, deploy the function first, then `db push`. The other way round, the function breaks until it's deployed.
 
 `db push` connects straight to Postgres on ports 5432 and 6543, which some Wi-Fi networks block. If it hangs at "Initialising login role...", switch to another network (a phone hotspot works).
 
-There's no local Supabase (that needs Docker), so Edge Functions are tested against the hosted project after deploying. Their logs are in the dashboard under Edge Functions → chat → Logs.
+There's no local Supabase (that needs Docker), so Edge Functions are tested against the hosted project after deploying. Their logs are in the dashboard under Edge Functions → chat → Logs. Each Claude call in a chat turn logs one JSON line with its round, the milliseconds since the turn started, its token usage and the tools it called: that's where a turn's time and cost show.
 
 ## Environment variables
 
@@ -55,7 +56,7 @@ Vite reads `.env`, then `.env.local` (gitignored), which overrides it.
 - `npm test` runs Node's built-in test runner on `supabase/functions/_shared/*.test.ts`. That code is plain TS, so it runs without Deno.
 - Node only strips types from the tests, so `npm run build` type-checks them (`tsconfig.node.json` includes `_shared`).
 - CI ([workflow](../.github/workflows/ci.yml), [ADR 0020](adr/0020-ci-on-tenki-runners.md)) runs lint, build and tests, and the scraper's tests, on pull requests and on pushes to `main`, on Tenki runners, and skips pull requests from forks. It uses Node 24, like Cloudflare; your local Node may be newer. It doesn't block Cloudflare deploys.
-- The `chat` function itself has no tests: try it against the hosted project after deploying.
+- The `chat` function itself has no tests: keep its logic in `_shared`, type-check it with `deno check` and try it against the hosted project after deploying.
 - Scraper: `scraper/.venv/bin/python -m unittest discover -s scraper/tests -t .`. Hand-written fixtures, no network.
 
 ## Deploy
@@ -71,6 +72,7 @@ Vite reads `.env`, then `.env.local` (gitignored), which overrides it.
 How it works and why: [ADR 0015](adr/0015-price-scraper-python-job-with-time-budget.md), [ADR 0018](adr/0018-gdu-listings-and-food-pages.md) and [ADR 0023](adr/0023-scraper-prices-for-the-unit-of-sale.md). Reading rules: [ADR 0008](adr/0008-how-we-read-supermarket-sites.md).
 
 - `scraper/.venv/bin/python -m scraper` reads all four chains for 25 minutes at most and saves as it goes. Ctrl-C stops it and keeps what it read.
+- Run it with `--stores disco,geant,tata` at least weekly, and before a demo: the chat's product search only sees products read within 14 days of their store's newest read, and saved menus price their products as the last run read them ([ADR 0024](adr/0024-agent-builds-the-menu-from-real-products.md)).
 - Narrow a run with `--minutes`, `--stores devoto,tata`, `--limit N` (at most N pages per chain and phase) and `--phases` (`categories,brands,food`; `brands` needs `categories`). `--phases food` reads the food product pages again, oldest first, without reading the listings ([ADR 0023](adr/0023-scraper-prices-for-the-unit-of-sale.md)). A 25-minute run of all phases rarely gets through all of them.
 - `--dry-run` writes NDJSON to `scraper/data/out/` instead of Supabase, and needs no key.
 - The GDU sitemap is cached for 24 hours in `scraper/data/cache/`. `--refresh-sitemap` reads it again.
