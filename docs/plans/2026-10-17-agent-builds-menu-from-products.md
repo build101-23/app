@@ -1,6 +1,6 @@
 # The chat agent builds the menu from real products
 
-Status: **in progress**. It finishes milestone 5's open sub-item in [milestones](../notes/milestones.md) ("Price the list from the catalog"), the hackathon version. Branch `feat/real-prices`, cut from `main` after pulling (it includes build101-23/app#8, #9 and #11: ADRs 0021 and 0022 are taken, the scraper session takes 0023). Step 1 saves this plan as `docs/plans/2026-10-17-agent-builds-menu-from-products.md`.
+Status: **in review** (search and ranking migrations pushed, `chat` deployed; the web app ships on merge). It finishes milestone 5's open sub-item in [milestones](../notes/milestones.md) ("Price the list from the catalog"), the hackathon version. Branch `feat/real-prices`, cut from `main` after pulling (it includes build101-23/app#8, #9 and #11: ADRs 0021 and 0022 are taken, the scraper session takes 0023). Step 1 saves this plan as `docs/plans/2026-10-17-agent-builds-menu-from-products.md`.
 
 ## Context
 - The List tab prices the list with made-up prices ([ADR 0019](../adr/0019-example-prices-until-matched.md)), and the chat can't see prices.
@@ -216,7 +216,15 @@ Delete `prices.ts` and its test, the `sample` label, the prompt passage, the `st
 - `notes/open-decisions.md`: real prices are settled; legal is assumed for the hackathon; "most similar" is the agent's judgment.
 - `notes/roadmap.md`: embeddings if search falls short, a cache of searches if cost or time rises, choosing brands one by one, the cart, macros from product labels.
 
+## Results (first real turn, 2026-10-18)
+- "armame un plan para el fin de semana… pollo, arroz y carne", then the goal: one `search_products` call with 19 queries, then `save_menu`.
+  - The first `save_menu` was refused: the bread it picked is sold per unit, not by weight. The model fixed it alone.
+  - The result: a 2-day menu priced at Géant $ 863, Disco $ 923 and Ta-Ta $ 1.420.
+- About 34 s for the turn. About US$ 0.10, from the logged usage at Sonnet 5.5 prices: about 8k tokens written to the cache, 53k read from it, and 3.8k output after the search round.
+- Ta-Ta comes out much dearer, partly because it sells meat in whole 1 kg units and partly because of the picks. Worth a look in a follow-up.
+
 ## What changed while building it
+- **Anthropic answered 400 "compiled grammar is too large"** once `save_menu` carried the products. `save_menu` isn't strict any more: `menuShapeProblems` checks its shape in code, and `search_products` was never strict.
 - `main` had moved on: no confirm step and a list card in the chat ([ADR 0022](../adr/0022-list-follows-the-menu.md)). So prices reach the model through `save_menu` and the existing list tools (`show_shopping_list`, `update_shopping_list`), not a separate `get_prices` tool.
 - Turns stop calling tools after 100 s instead of 110 s, to leave room for the reply.
 - After the scraper's unit-of-sale run, a second migration ranks names that start with the query's first word first, then the closest names, and leaves out products with no size: ties by price had put juices before fresh bananas and ornaments before potatoes.
