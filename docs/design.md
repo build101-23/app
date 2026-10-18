@@ -374,7 +374,7 @@ A 44px tangerine circle with a white up arrow. Disabled: sunk surface with a mut
   - **What the taps do:** with a price, − and + move by one unit of sale of the selected store (a pack, a piece, a tray), so every tap changes what's paid and the list adds up to what the cart adds ([ADR 0036](adr/0036-list-steps-by-unit-of-sale.md)). Without a price they move by the food's own step.
 - Under the list, "Pedir ahora en {store}": a primary button with the store's icon at 28px, at the right edge ([ADR 0030](adr/0030-cart-filling-tata-link-gdu-team-extension.md)). Its notes stay on the left, under it. On the split, one per store, one under the other, each with only what goes there.
   - For Ta-Ta it's a link that opens the cart in another tab. Muted lines under it give how many products and the estimated total, then what stays out, one line per reason. After a tap, one muted line appears in an always-mounted `role="status"`.
-  - For Disco and Géant it's disabled, with the "Muy pronto" pill beside it and one muted line.
+  - For Disco and Géant it's disabled, with the "Muy pronto" pill on its left and one muted line. The pill goes on the left in the actions row too, so every order button keeps the right edge and the pill never sits between the split's two buttons.
 - Crossed-out items (you have them at home) turn muted and struck through.
 - Loading shows the page skeleton; with no menu yet, the empty state; a failed load, the inline alert.
 
