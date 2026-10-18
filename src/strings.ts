@@ -55,7 +55,6 @@ export const t = {
     loadError: 'No se pudo cargar la conversación.',
     listError: 'No se pudo cargar la lista de chats.',
     chats: 'Chats',
-    back: 'Volver',
     newChat: 'Nuevo chat',
     noChats: 'Todavía no tenés chats.',
     noReply: 'No pude responder eso. Probá decirlo de otra forma.',
