@@ -1908,8 +1908,10 @@ a.button {
   --store-icon-size: 24px;
 }
 
+/* "Muy pronto" on the left of its button, so the button keeps the right edge like the others, even when it wraps. */
 .order-soon {
   display: flex;
+  flex-direction: row-reverse;
   flex-wrap: wrap;
   align-items: center;
   gap: 8px;
