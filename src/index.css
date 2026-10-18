@@ -1820,6 +1820,22 @@ a.button {
   font-size: 0.8125rem;
 }
 
+/* The cheapest split between two stores (ADR 0037): a full-width row under the three, icons, names and total. */
+.store-tab.split {
+  grid-column: 1 / -1;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  justify-items: start;
+  gap: 12px;
+  padding: 12px;
+  text-align: start;
+}
+
+.store-tab-icons {
+  display: flex;
+  gap: 6px;
+}
+
 /* The order button under the list, with what goes in under it. */
 .order {
   display: grid;
@@ -1851,6 +1867,11 @@ a.button {
 /* In the actions row: the same height as its neighbors, at the right edge. */
 .list-actions .order.compact {
   margin-left: auto;
+}
+
+/* The split's second store, next to the first. */
+.list-actions .order.compact + .order.compact {
+  margin-left: 0;
 }
 
 .order.compact .button {

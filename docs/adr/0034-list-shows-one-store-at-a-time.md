@@ -1,6 +1,6 @@
 # 0034. The List shows one supermarket at a time
 
-- Status: Accepted
+- Status: Accepted (the List shows the cheapest split again, as a fourth tab: [ADR 0037](0037-list-shows-the-cheapest-split.md))
 - Date: 2026-10-18
 
 ## Context

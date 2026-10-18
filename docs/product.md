@@ -89,9 +89,10 @@ The first version goes from a chat to a priced shopping list and the supermarket
 - Accounts for raw vs. cooked: the menu's amounts are raw as bought, and the chat converts cooked amounts you give it (plans often say cooked rice; you buy it dry).
 - Cross out what you already have at home, or buy less of it with −; or tell the chat. With a price, − takes off one unit of the store's (a pack, a piece, a tray), so the price drops at every tap. Your marks stay when the menu changes, until you tap "Restablecer lista" or tell the chat you're starting a new week.
 - On top, one tab per supermarket, with its icon and its total for what's left to buy ([ADR 0034](adr/0034-list-shows-one-store-at-a-time.md)). It opens on the recommended store (§6), marked "Recomendado". Tap another to see the list there.
-- Under each item, what to buy at the selected store: "2 × Arroz Blanco SAMAN 1 kg · Ta-Ta · $ 118", with a link to the product's page. If that store doesn't sell it: "No está en Ta-Ta".
+- Under them, the cheapest split between two stores, "Géant y Ta-Ta" with its total, whenever it costs less than the cheapest store that has everything (or no store has everything) ([ADR 0037](adr/0037-list-shows-the-cheapest-split.md)). Each item goes to the cheaper of the two.
+- Under each item, what to buy at the selected store, or on the split at the store it goes to: "2 × Arroz Blanco SAMAN 1 kg · Ta-Ta · $ 118", with a link to the product's page. If that store doesn't sell it: "No está en Ta-Ta".
 - Share (the phone's share sheet, with WhatsApp) or copy as text, with only what's left to buy.
-- Under the list, "Pedir ahora en {store}" fills that supermarket's cart ([ADR 0030](adr/0030-cart-filling-tata-link-gdu-team-extension.md), [ADR 0034](adr/0034-list-shows-one-store-at-a-time.md)):
+- Under the list, "Pedir ahora en {store}" fills that supermarket's cart ([ADR 0030](adr/0030-cart-filling-tata-link-gdu-team-extension.md), [ADR 0034](adr/0034-list-shows-one-store-at-a-time.md)). On the split there's one per store, each with only what goes there:
   - Ta-Ta: it opens Ta-Ta's cart in another tab with what's left to buy there, in the units the list shows, and you log in and pay there. Under it: how many products, the estimated total without delivery, and what doesn't go in and why.
   - What that browser's Ta-Ta cart already had stays. A second tap doesn't add anything twice.
   - Disco and Géant: the button shows "Muy pronto" for now; add their products from each one's link.
@@ -110,7 +111,7 @@ The first version goes from a chat to a priced shopping list and the supermarket
 **Which store to buy at.** The app picks the cheapest way to buy the whole *list*, not the cheapest store for each item, so you never end up with an order at every store:
 
 1. By default it recommends one store: the cheapest one that has the whole list. "The whole list" means every item at least one store sells.
-2. In the chat it suggests splitting between two stores (the List shows one store at a time, [ADR 0034](adr/0034-list-shows-one-store-at-a-time.md)), each item at the cheaper of the two, only if that saves at least 10% of the one-store total, or if no single store has everything. It shows how much the split saves and you choose; one store stays the default.
+2. In the chat it suggests splitting between two stores, each item at the cheaper of the two, only if that saves at least 10% of the one-store total, or if no single store has everything. It shows how much the split saves and you choose; one store stays the default. The List shows the cheapest split as one more tab whenever it saves anything ([ADR 0037](adr/0037-list-shows-the-cheapest-split.md)).
 3. It never suggests more than two stores. If neither one store nor two have the whole list, it shows each store's total and recommends nothing.
 4. A store that is missing items shows "N items not found". Items no store has are marked "not found online" and left out of every total.
 

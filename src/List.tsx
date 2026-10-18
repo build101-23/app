@@ -54,12 +54,15 @@ const day = (iso: string) => new Date(iso).toLocaleDateString('es-UY', { day: 'n
 // The chosen total over the menu's days, on what's left to buy like the total. A one-day menu's total already is that.
 const perDay = (total: number, days: number) => (days > 1 ? t.prices.perDay(money(total / days), days) : '')
 
-// The store the List tab shows, picked for this menu version (ADR 0034). Another menu opens on the recommended one.
+// What the List tab shows: one store (ADR 0034) or the cheapest split between two (ADR 0037).
+type Tab = StoreKey | 'split'
+
+// The tab picked for this menu version. Another menu opens on the recommended store.
 // shortcut: the pick lives in this browser; move it next to menus.have if people switch devices
-function readTab(version: string): StoreKey | null {
+function readTab(version: string): Tab | null {
   try {
     const saved = JSON.parse(localStorage.getItem('storeTab') ?? 'null')
-    return saved?.version === version && stores.includes(saved.store) ? saved.store : null
+    return saved?.version === version && (stores.includes(saved.store) || saved.store === 'split') ? saved.store : null
   } catch {
     return null
   }
@@ -180,7 +183,7 @@ export default function List({ session, onOpenChat }: { session: Session; onOpen
   const [menu, setMenu] = useState<MenuRow | null | undefined>(undefined)
   const [error, setError] = useState('')
   const [notice, setNotice] = useState('')
-  const [picked, setPicked] = useState<{ version: string; store: StoreKey } | null>(null)
+  const [picked, setPicked] = useState<{ version: string; store: Tab } | null>(null)
   const rows = usePrices(menu?.data)
 
   // Reads again whenever the app comes back to the screen, so marks saved from the chat or another device
@@ -223,16 +226,25 @@ export default function List({ session, onOpenChat }: { session: Session; onOpen
   const waiting = noPrices(rows, p)
   const priced = !!p && !waiting
   const plan = p?.plan
-  // The store whose products and prices the list shows (ADR 0034).
-  const tab: StoreKey | null = plan
-    ? (picked?.version === updated_at ? picked.store : null) ?? readTab(updated_at) ?? bestStore(plan)
-    : null
-  const tabTotal = plan && tab ? plan.perStore.find((s) => s.store === tab)!.total : null
+  // The store whose products and prices the list shows, or the split. A split picked before is gone once crossing items
+  // leaves no pair cheaper than one store.
+  const saved = (picked?.version === updated_at ? picked.store : null) ?? readTab(updated_at)
+  const tab: Tab | null = plan ? ((saved === 'split' && !plan.pair ? null : saved) ?? bestStore(plan)) : null
+  const pair = tab === 'split' ? plan!.pair : null
+  const tabTotal = pair ? pair.total : plan && tab ? plan.perStore.find((s) => s.store === tab)!.total : null
   const recommended = plan?.single?.stores[0] ?? null
+  // The savings card's option: the split's, or the recommended store's.
+  const option = pair ?? (tab === recommended ? plan?.single : null)
+  // Where to order: the selected store, or each store of the split with only what it buys there.
+  const orders = pair
+    ? pair.stores.map((store) => ({ store, ids: Object.keys(pair.at).filter((id) => pair.at[id] === store) }))
+    : tab && tab !== 'split'
+      ? [{ store: tab, ids: undefined }]
+      : []
   const budget = p && budgetText(p, tabTotal)
   const daily = tabTotal != null ? perDay(tabTotal, menu.data.days.length) : ''
 
-  function pick(store: StoreKey) {
+  function pick(store: Tab) {
     try {
       localStorage.setItem('storeTab', JSON.stringify({ version: updated_at, store }))
     } catch {
@@ -303,15 +315,28 @@ export default function List({ session, onOpenChat }: { session: Session; onOpen
                 )}
               </button>
             ))}
+            {plan.pair && (
+              <button type="button" className="store-tab split" aria-pressed={!!pair} onClick={() => pick('split')}>
+                <span className="store-tab-icons">
+                  {plan.pair.stores.map((store) => (
+                    <StoreIcon key={store} store={store} />
+                  ))}
+                </span>
+                <span className="store-tab-name">
+                  {t.chat.listCard.splitAt(t.stores[plan.pair.stores[0]], t.stores[plan.pair.stores[1]])}
+                </span>
+                <span className="store-tab-total">{money(plan.pair.total)}</span>
+              </button>
+            )}
           </div>
           {daily && <p>{daily}</p>}
           {budget && <p role={budget.alert ? 'alert' : undefined}>{budget.text}</p>}
-          {tab === recommended && plan.single!.saving > 0 && (
+          {option && option.saving > 0 && (
             <section className="saving-card">
-              <strong>{t.prices.saving.title(money(plan.single!.saving))}</strong>
+              <strong>{t.prices.saving.title(money(option.saving))}</strong>
               <span>{t.prices.saving.vsAverage}</span>
               {/* This menu repeated for 30 days, at today's prices: an estimate, and the note says so. */}
-              <p>{t.prices.saving.perMonth(money(Math.round((plan.single!.saving * 30) / menu.data.days.length)))}</p>
+              <p>{t.prices.saving.perMonth(money(Math.round((option.saving * 30) / menu.data.days.length)))}</p>
               <small className="muted">{t.prices.saving.perMonthNote}</small>
             </section>
           )}
@@ -336,7 +361,10 @@ export default function List({ session, onOpenChat }: { session: Session; onOpen
           </button>
         )}
         {/* The same size as its neighbors, at the right edge; the full one, with its notes, is under the list. */}
-        {priced && p && tab && !nothingToBuy && <Order p={p} store={tab} compact />}
+        {priced &&
+          p &&
+          !nothingToBuy &&
+          orders.map(({ store, ids }) => <Order key={store} p={p} store={store} ids={ids} compact />)}
       </div>
       {/* Always mounted, so "Lista copiada." is announced when its text appears. */}
       <p className="muted" role="status">
@@ -355,9 +383,9 @@ export default function List({ session, onOpenChat }: { session: Session; onOpen
                 const buy = toBuy(item, have)
                 const crossed = buy === 0
                 const needs = qty(item.amount, item.unit)
-                const store = priced && tab ? tab : undefined
+                const store = !priced || !tab ? undefined : tab === 'split' ? pair?.at[item.id] : tab
                 const need = p?.needs.find((n) => n.id === item.id)
-                // What to buy for this line at the selected store, and its link.
+                // What to buy for this line at the selected store (or where the split buys it), and its link.
                 const offer = store && p?.prices[item.id]?.[store]
                 const tag =
                   !priced || !plan || crossed
@@ -435,7 +463,7 @@ export default function List({ session, onOpenChat }: { session: Session; onOpen
           </section>
         )
       })}
-      {priced && p && tab && !nothingToBuy && <Order p={p} store={tab} />}
+      {priced && p && !nothingToBuy && orders.map(({ store, ids }) => <Order key={store} p={p} store={store} ids={ids} />)}
     </div>
   )
 }
