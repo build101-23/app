@@ -5,7 +5,16 @@ import { buildList, itemId, listLines, type Have } from '../_shared/list.ts'
 import { days, foodProblems, menuProblems, menuShapeProblems, type Ingredient, type MenuData } from '../_shared/menu.ts'
 import { nutritionText } from '../_shared/nutrition.ts'
 import { pricing, verdict } from '../_shared/offers.ts'
-import { productColumns, productProblems, searchText, skusByStore, type ProductRow, type SearchRow } from '../_shared/products.ts'
+import {
+  freshRows,
+  productColumns,
+  productProblems,
+  searchText,
+  skusByStore,
+  type Newest,
+  type ProductRow,
+  type SearchRow,
+} from '../_shared/products.ts'
 import { MAX_REPEAT_DAYS, nextOrder, todayInMontevideo } from '../_shared/repeat.ts'
 import { stores } from '../_shared/stores.ts'
 import { MENU_TAG, PROFILE_TAG, REPEAT_TAG, SYSTEM_PROMPT, TODAY_TAG } from './prompt.ts'
@@ -195,7 +204,7 @@ const showShoppingList: Anthropic.Beta.BetaTool = {
   input_schema: object({}),
 }
 
-// The recurring order (ADR 0030): repeat_every and repeat_from on the menus row, which the Menu tab writes too.
+// The recurring order (ADR 0039): repeat_every and repeat_from on the menus row, which the Menu tab writes too.
 const setRepeat: Anthropic.Beta.BetaTool = {
   name: 'set_repeat',
   description:
@@ -299,19 +308,24 @@ Deno.serve(async (req) => {
   const newRows: MessageParam[] = [{ role: 'user', content }]
   messages.push(newRows[0])
 
-  // The picked products as store_products has them now, one query per store: Disco and Géant share sku ids.
+  // The picked products as store_products has them now, one query per store: Disco and Géant share sku ids. Rows a
+  // store no longer lists are left out, as in the List tab (freshRows).
   async function productRows(menu: MenuData): Promise<ProductRow[]> {
     const skus = skusByStore(menu)
-    const reads = await Promise.all(
-      stores
+    const [newest, ...reads] = await Promise.all([
+      supabase.rpc('store_newest'),
+      ...stores
         .filter((store) => skus[store].length)
         .map((store) =>
           supabase.from('store_products').select(productColumns).eq('store_key', store).in('store_sku', skus[store]),
         ),
-    )
+    ])
     const failed = reads.find((read) => read.error)
     if (failed?.error) throw new Error(failed.error.message)
-    return reads.flatMap((read) => (read.data ?? []) as unknown as ProductRow[])
+    // Without the newest reads, no row is dropped: the rule is a filter, and the price still shows.
+    if (newest.error) console.error(newest.error)
+    const rows = reads.flatMap((read) => (read.data ?? []) as unknown as ProductRow[])
+    return freshRows(rows, (newest.data ?? []) as Newest)
   }
 
   // The price as the model reads it. Never an error: a saved menu stays saved if prices can't be read.

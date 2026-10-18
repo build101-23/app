@@ -1,6 +1,6 @@
 # 0012. Fill supermarket carts from the user's computer
 
-- Status: Accepted
+- Status: Accepted (partly changed by [0030](0030-cart-filling-tata-link-gdu-team-extension.md): the extension is team-only until the legal read; Devoto, delivery answers, weekly run, zone check and substitutes)
 - Date: 2026-10-17
 
 ## Context

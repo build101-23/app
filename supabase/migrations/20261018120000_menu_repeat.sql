@@ -1,5 +1,5 @@
 -- A recurring order: the menu's shopping repeats every repeat_every days from repeat_from, the day it was set
--- (ADR 0030). Both null when it doesn't repeat. Set from the Menu tab or by the chat's set_repeat; save_menu leaves them.
+-- (ADR 0039). Both null when it doesn't repeat. Set from the Menu tab or by the chat's set_repeat; save_menu leaves them.
 alter table menus
   add column repeat_every smallint check (repeat_every between 1 and 28),
   add column repeat_from date,

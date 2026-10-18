@@ -15,7 +15,7 @@ One file per decision: `NNNN-short-title.md`. ADRs are append-only: never rewrit
 | 0009 | [The AI nutritionist uses judgment, not gatekeeping](0009-judgment-not-gatekeeping.md) | Accepted | 2026-10-17 |
 | 0010 | [Voice dictation with the browser's speech recognition](0010-browser-speech-recognition.md) | Accepted | 2026-10-17 |
 | 0011 | [The saved profile travels into each chat](0011-profile-in-each-chat.md) | Accepted | 2026-10-17 |
-| 0012 | [Fill supermarket carts from the user's computer](0012-fill-carts-from-the-users-computer.md) | Accepted | 2026-10-17 |
+| 0012 | [Fill supermarket carts from the user's computer](0012-fill-carts-from-the-users-computer.md) | Accepted (partly changed by 0030: the extension is team-only until the legal read; Devoto, delivery answers, weekly run, zone check and substitutes) | 2026-10-17 |
 | 0013 | [Weekly menu saved by a chat tool, keyed to a fixed food catalog](0013-menu-saved-by-a-chat-tool.md) | Accepted (confirm step removed by 0022; seven fixed days superseded by 0024) | 2026-10-17 |
 | 0014 | [The client only reads; the chat function writes, under a daily cap](0014-client-reads-chat-function-writes.md) | Accepted (`menus.confirmed_at` write gone with 0022) | 2026-10-17 |
 | 0015 | [The price scraper is a Python job with a time budget](0015-price-scraper-python-job-with-time-budget.md) | Accepted (coverage and write path superseded by 0018) | 2026-10-17 |
@@ -28,12 +28,21 @@ One file per decision: `NNNN-short-title.md`. ADRs are append-only: never rewrit
 | 0022 | [The shopping list follows the menu, and shows in the chat](0022-list-follows-the-menu.md) | Accepted (the model sees prices: 0024) | 2026-10-17 |
 | 0023 | [Scraper prices for the unit of sale](0023-scraper-prices-for-the-unit-of-sale.md) | Accepted | 2026-10-17 |
 | 0024 | [The chat agent searches real products and builds the menu from them](0024-agent-builds-the-menu-from-real-products.md) | Accepted (days' order and start from 0028) | 2026-10-17 |
-| 0025 | [VIVERI identity and a token-based UI system](0025-viveri-identity-and-ui-system.md) | Proposed (navigation and depth amended by 0026) | 2026-10-17 |
-| 0026 | [Glass navigation layer](0026-glass-navigation-layer.md) | Proposed | 2026-10-17 |
+| 0025 | [VIVERI identity and a token-based UI system](0025-viveri-identity-and-ui-system.md) | Proposed (navigation and depth amended by 0026; neutrals by 0031; dark theme removed by 0033; logo and icon files replaced by 0035) | 2026-10-17 |
+| 0026 | [Glass navigation layer](0026-glass-navigation-layer.md) | Proposed (dark tint and capsule colors superseded by 0033) | 2026-10-17 |
 | 0027 | [Sign in with Google's own button](0027-google-sign-in-button.md) | Accepted | 2026-10-17 |
 | 0028 | [Menus in calendar order from tomorrow, named by weekday](0028-menus-of-1-to-7-days.md) | Accepted | 2026-10-17 |
 | 0029 | [The chat streams the step it's on](0029-chat-streams-its-steps.md) | Accepted | 2026-10-18 |
-| 0030 | [A recurring order is stored on the menu, every as many days as the menu lasts](0030-recurring-order-on-the-menu.md) | Accepted | 2026-10-18 |
+| 0030 | [Cart filling: Ta-Ta by link, Disco and Géant by a team extension](0030-cart-filling-tata-link-gdu-team-extension.md) | Accepted (the buttons moved under the list by 0034) | 2026-10-18 |
+| 0031 | [A cleaner neutral palette](0031-cleaner-neutral-palette.md) | Accepted | 2026-10-18 |
+| 0032 | [The Menu tab shows one day at a time](0032-menu-shows-one-day-at-a-time.md) | Accepted | 2026-10-18 |
+| 0033 | [Light theme only](0033-light-theme-only.md) | Accepted | 2026-10-18 |
+| 0034 | [The List shows one supermarket at a time](0034-list-shows-one-store-at-a-time.md) | Accepted (split tab added by 0037) | 2026-10-18 |
+| 0035 | [The mark is the first V of VIVERI](0035-mark-is-the-first-v.md) | Accepted | 2026-10-18 |
+| 0036 | [The List steps by unit of sale](0036-list-steps-by-unit-of-sale.md) | Accepted | 2026-10-18 |
+| 0037 | [The List shows the cheapest split](0037-list-shows-the-cheapest-split.md) | Accepted | 2026-10-18 |
+| 0038 | [The Profile is built from cards](0038-profile-as-cards.md) | Accepted | 2026-10-18 |
+| 0039 | [A recurring order is stored on the menu, every as many days as the menu lasts](0039-recurring-order-on-the-menu.md) | Accepted | 2026-10-18 |
 
 ## Template
 

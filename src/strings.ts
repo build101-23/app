@@ -60,13 +60,27 @@ export const t = {
     noChats: 'Todavía no tenés chats.',
     noReply: 'No pude responder eso. Probá decirlo de otra forma.',
     openMenu: 'Ver menú',
+    // The menu card in the chat: its title, and how long the menu is.
+    menuCard: { title: 'Tu menú', length: (days: number) => (days === 1 ? '1 día' : `${days} días`) },
+    // The list card in the chat: its title, how many products are left to buy, and where the total buys them.
+    listCard: {
+      title: 'Tu lista',
+      count: (n: number) => (n === 1 ? '1 producto' : `${n} productos`),
+      allAt: (store: string) => `Todo en ${store}`,
+      splitAt: (a: string, b: string) => `${a} y ${b}`,
+    },
     openList: 'Ver lista',
   },
   menu: {
     empty: 'Todavía no hay menú. Pedíselo al chat, para la semana o para los días que quieras.',
     loading: 'Cargando el menú…',
     loadError: 'No se pudo cargar el menú.',
-    change: 'Cambiar',
+    // The day strip's name for screen readers, and the headings inside an opened meal.
+    dayPicker: 'Día del menú',
+    ingredients: 'Ingredientes',
+    how: 'Cómo se hace',
+    changeThisDay: (day: string) => `Cambiar el ${day}`,
+    changeThisMeal: 'Cambiar este plato',
     // Lowercase to fit inside a sentence; headings capitalize them with CSS.
     days: {
       monday: 'lunes',
@@ -87,7 +101,7 @@ export const t = {
     dayTotal: 'Total del día',
     // After the macros when some foods have no values: "(sin contar espinaca, mayonesa)".
     without: (names: string) => `sin contar ${names.toLowerCase()}`,
-    // The recurring order card on top of the menu (ADR 0030). The date comes in formatted ("sábado 25 de octubre").
+    // The recurring order card on top of the menu (ADR 0039). The date comes in formatted ("sábado 25 de octubre").
     repeat: {
       title: 'Pedido recurrente',
       off: (days: number) => (days === 1 ? 'Repetí este pedido todos los días.' : `Repetí este pedido cada ${days} días, lo que dura el menú.`),
@@ -109,7 +123,7 @@ export const t = {
     copied: 'Lista copiada.',
     copyError: 'No se pudo copiar.',
     saveError: 'No se pudo guardar. Se guarda con tu próximo cambio.',
-    reset: 'Lista nueva',
+    reset: 'Restablecer lista',
     resetConfirm: '¿Desmarcar todo lo que tenés en casa?',
     // The first line of the shared or copied text.
     title: 'Lista de compras',
@@ -131,16 +145,24 @@ export const t = {
   // The List tab's price block. Amounts come in already formatted ("$ 1.937").
   prices: {
     where: 'Dónde comprar',
-    oneStore: (store: string, total: string) => `Todo en ${store} · ${total}`,
-    split: (a: string, b: string, total: string) => `${a} y ${b} · ${total}`,
     cheaperThan: (amount: string, store: string) => `${amount} menos que todo en ${store}`,
     noOneStore: 'Ningún súper tiene toda la lista.',
-    saving: (amount: string) => `Ahorrás ${amount} frente al promedio de los súper.`,
+    // The savings card on the recommended store's tab: this list against the stores' average, and over a month of it.
+    saving: {
+      title: (amount: string) => `Ahorrás ${amount}`,
+      vsAverage: 'frente al promedio de los súper',
+      perMonth: (amount: string) => `Unos ${amount} al mes`,
+      perMonthNote: 'Si repetís este menú todo el mes, con los precios de hoy.',
+    },
     // Under the chosen total, for menus of 2 days or more: "$ 277 por día · menú de 7 días".
     perDay: (amount: string, days: number) => `${amount} por día · menú de ${days} días`,
     missing: (n: number) => (n === 1 ? '1 producto no encontrado' : `${n} productos no encontrados`),
     notFound: 'No encontrado online',
-    checked: (date: string) => `Precios de las webs de los súper del ${date}. Pueden variar.`,
+    // Under a line the selected store doesn't sell (ADR 0034).
+    notAt: (store: string) => `No está en ${store}`,
+    // On the tab of the store the rule recommends: the cheapest that has the whole list.
+    cheapest: 'Recomendado',
+    checked: (date: string) => `Precios de las webs de los súper del ${date}, sin envío. Pueden variar.`,
     loading: 'Buscando precios…',
     loadError: 'No se pudieron cargar los precios.',
     // A menu saved before real products (ADR 0024).
@@ -149,8 +171,27 @@ export const t = {
     budgetFits: (budget: string, left: string) => `Entra en tu presupuesto de ${budget} (te sobran ${left}).`,
     budgetOver: (budget: string, missing: string) => `No alcanza tu presupuesto de ${budget}: faltan ${missing}.`,
     splitFits: (a: string, b: string) => `Entra si dividís la compra entre ${a} y ${b}.`,
-    // Under a line, what to buy at its store: "2 × Arroz Blanco SAMAN 1 kg · Ta-Ta · $ 118".
-    product: (packs: number, name: string, store: string, cost: string) => `${packs} × ${name} · ${store} · ${cost}`,
+    // Under a line, the product to buy at its store: "Arroz Blanco SAMAN 1 kg · Ta-Ta". The amount and the price have their own places.
+    product: (name: string, store: string) => `${name} · ${store}`,
+  },
+  // The cart buttons at the bottom of "Dónde comprar" (docs/plans/2026-10-18-fill-cart.md).
+  // The order button under the list (ADR 0034).
+  cart: {
+    order: (store: string) => `Pedir ahora en ${store}`,
+    // On the button in the actions row, next to its siblings: the store's icon says where; the name is for screen readers.
+    orderShort: 'Pedir',
+    adds: (n: number, total: string) =>
+      `Se ${n === 1 ? 'agrega 1 producto' : `agregan ${n} productos`} a tu carrito · ${total} estimado, sin envío. Lo que ya tenías en el carrito queda.`,
+    // What the cart leaves out, one line per reason, worded so nothing has to agree with the names ("Ajo, Lentejas").
+    left: {
+      not_here: (store: string, names: string) => `${store} no tiene: ${names}.`,
+      weighed: (_store: string, names: string) => `Agregar a mano (por peso): ${names}.`,
+      not_found: (_store: string, names: string) => `Ningún súper tiene: ${names}.`,
+    },
+    // Disco and Géant, until the extension.
+    byHand: (store: string) => `Por ahora, agregá los productos de ${store} desde el link de cada uno.`,
+    // After the tap: the store's cart opens in another tab.
+    opened: (store: string) => `Abrimos tu carrito de ${store} en otra pestaña. Revisalo y pagá ahí.`,
   },
   foods: {
     chicken_breast: 'Pechuga de pollo',
@@ -220,6 +261,9 @@ export const t = {
     loadError: 'No se pudo cargar tu perfil.',
     empty: 'Todavía no hay nada guardado. Contáselo al chat.',
     openChat: 'Ir al chat',
+    // The two cards of what the chat saved: the facts, then the lists.
+    about: 'Sobre vos',
+    tastes: 'Tus gustos',
     goal: 'Objetivo',
     meals: 'Comidas por día',
     cookingTime: 'Tiempo para cocinar',
@@ -231,10 +275,9 @@ export const t = {
     like: 'Me gusta',
     want: 'Quiero comer',
     // The numbers switch (product.md: numbers are optional, hidden by default).
-    settings: 'Preferencias',
-    numbers: 'Mostrar números (calorías y macros)',
+    numbers: 'Mostrar números',
+    numbersHint: 'Calorías y macros en tu menú',
     numbersError: 'No se pudo guardar. Probá de nuevo.',
-    account: 'Cuenta',
     signOut: 'Cerrar sesión',
   },
 }

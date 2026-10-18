@@ -37,4 +37,4 @@ An order here is the saved menu's shopping. It repeats every as many days as the
 - `docs/product.md`: a recurring orders section; take scheduled orders off "Out".
 - `docs/architecture.md`: the new columns, what the browser writes, the `set_repeat` tool.
 - `docs/notes/roadmap.md`: scheduled orders started; automating them is next.
-- ADR 0030 (recurring order stored on the menu, interval = the menu's days), and `docs/adr/README.md`.
+- ADR 0039 (recurring order stored on the menu, interval = the menu's days), and `docs/adr/README.md`.

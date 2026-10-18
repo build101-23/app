@@ -1,6 +1,6 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import type { Have } from './list.ts'
+import { buildList, stepHave, type Have } from './list.ts'
 import { days, type MenuData, type ProductPick } from './menu.ts'
 import { costliest, lineOf, needsFor, pricing, verdict } from './offers.ts'
 import { row } from './testing.ts'
@@ -53,6 +53,27 @@ test('whole units of sale: 600 g of chicken is three 250 g pieces, or one 1 kg t
   )
   assert.equal(p.base?.stores[0], 'disco')
   assert.equal(p.status, 'ok')
+})
+
+test('stepping by the store\'s unit changes the price on every tap, in packs and in food sold by weight', () => {
+  const p = pricing(menu(null, products), {}, rows)
+  const item = (id: string) => buildList(menu(null, products)).find((it) => it.id === id)!
+  // The Disco line of an item at the unit the store sells it in, after each tap of −.
+  const costs = (id: string) => {
+    const offer = p.prices[id]!.disco!
+    const taps: number[] = []
+    let have: Have = {}
+    for (let i = 0; i < 4; i++) {
+      const need = pricing(menu(null, products), have, rows).needs.find((n) => n.id === id)
+      taps.push(need ? lineOf(need, offer).cost : 0)
+      have = stepHave(item(id), have, -1, offer.base_qty)
+    }
+    return taps
+  }
+  // 600 g of chicken in 250 g pieces at $ 100: three, two, one, none.
+  assert.deepEqual(costs('chicken_breast'), [300, 200, 100, 0])
+  // 600 g of rice in a 1 kg bag at $ 60: one bag, then none.
+  assert.deepEqual(costs('rice'), [60, 0, 0, 0])
 })
 
 test('the plan is the store rule on the picked products', () => {

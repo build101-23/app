@@ -25,6 +25,21 @@ export type ProductRow = {
   checked_at: string
   stores?: { base_url: string } | null
 }
+// A row this much older than its store's newest read is no longer listed by the store, so a saved pick that points at
+// it counts as not sold there. search_products uses the same window when the agent picks
+// (supabase/migrations/*_product_search_ranking.sql).
+export const FRESH_DAYS = 14
+// Each store's newest checked_at, as the store_newest() RPC returns it (supabase/migrations/*_store_newest.sql).
+export type Newest = { store_key: string; newest: string | null }[]
+
+// The rows still listed. A store with no newest read keeps all of its rows.
+export function freshRows<T extends Pick<ProductRow, 'store_key' | 'checked_at'>>(rows: T[], newest: Newest): T[] {
+  const cutoff = new Map(
+    newest.flatMap(({ store_key, newest }) => (newest ? [[store_key, Date.parse(newest) - FRESH_DAYS * 86_400_000]] : [])),
+  )
+  return rows.filter((row) => Date.parse(row.checked_at) > (cutoff.get(row.store_key) ?? -Infinity))
+}
+
 // One row of the search_products RPC (supabase/migrations/*_product_search.sql).
 export type SearchRow = Pick<
   ProductRow,
@@ -69,7 +84,9 @@ export function offerOf(row: ProductRow, unit: Unit): Offer | null {
   const qty = sale && inUnit(sale, unit)
   if (!sale || !qty) return null
   const url = row.stores?.base_url ? `${row.stores.base_url}${row.url_path}` : undefined
-  return { price: sale.price, base_qty: qty, sku: row.store_sku, name: row.name, url }
+  const offer: Offer = { price: sale.price, base_qty: qty, sku: row.store_sku, name: row.name, url }
+  if (row.size_source === 'unit') offer.weighed = true
+  return offer
 }
 
 export const rowKey = (store: string, sku: string) => `${store}:${sku}`

@@ -1,4 +1,4 @@
-// A recurring order (ADR 0030): the menu's shopping repeats every `every` days from `from`, the day it was set.
+// A recurring order (ADR 0039): the menu's shopping repeats every `every` days from `from`, the day it was set.
 // Plain TS shared by the chat function and the web app. Dates are YYYY-MM-DD, today's in Montevideo, from the caller.
 
 export const MAX_REPEAT_DAYS = 28

@@ -6,7 +6,7 @@ Living doc: how the product is *now*. Future ideas live in [notes/roadmap.md](no
 
 Following a diet means turning a plan into meals, a shopping list and a trip to the store, every week. It's tedious, and it's easy to overspend.
 
-**VIVERI** is a phone app that turns your diet into food at home, with two promises: **it's convenient, and it saves you money.** You build the diet by chatting with an AI nutritionist, and if you already have a nutritionist's plan, you tell it about it in the chat. The app turns it into a weekly menu and a shopping list, finds those products in the supermarkets and tells you where the whole list is cheapest. Later, it will order the food for you every week.
+**VIVERI** is a phone app that turns your diet into food at home, with two promises: **it's convenient, and it saves you money.** You build the diet by chatting with an AI nutritionist, and if you already have a nutritionist's plan, you tell it about it in the chat. The app turns it into a weekly menu and a shopping list, finds those products in the supermarkets, tells you where the whole list is cheapest and puts it in the supermarket's cart (Ta-Ta for now). Later, it will order the food for you every week.
 
 ### What makes it different
 
@@ -25,12 +25,12 @@ This app starts from your diet. It knows what you need, how much, and which swap
 2. The app combines that with your likes and restrictions, looks for the products the supermarkets sell, and proposes a menu with them: for the week, or for the days you ask ("para el finde", "los 3 días que vienen"), from tomorrow unless you say otherwise. You change it as you like. Your plan is your profile plus that menu.
 3. The menu comes with its shopping list, priced at each supermarket, with the cheapest way to buy it on top. Change the menu and the list follows.
 4. You share the list on WhatsApp or copy it.
-5. If you want the same shopping again, you make the order recurring and the app shows when the next one is.
-6. *(Later)* The app places the order for you.
+5. The app puts the list in the supermarket's cart (Ta-Ta for now), and you log in and pay there. *(Later)* It places the order for you.
+6. If you want the same shopping again, you make the order recurring and the app shows when the next one is.
 
 ## Scope
 
-The first version goes from a chat to a priced shopping list, in Montevideo only. Ordering comes next.
+The first version goes from a chat to a priced shopping list and the supermarket's cart, in Montevideo only. Placing the order and paying stay with you.
 
 ### In
 
@@ -48,6 +48,7 @@ The first version goes from a chat to a priced shopping list, in Montevideo only
 - Ask from the list for something you'd eat differently ("cambiame la carne por pollo", "sacame el brócoli del menú") and it changes the menu in the background, says in one line what changed, and shows the updated list.
 - It builds the menu only with products it found at Disco, Géant and Ta-Ta ([ADR 0024](adr/0024-agent-builds-the-menu-from-real-products.md)), and can tell you the total, what it comes to per day, where it's cheapest and whether it fits your budget: the same numbers as the List tab. Whenever it says the total, it says the per-day amount too. It never writes the list or makes up a price.
 - Tell it a budget for the shopping ("tengo $ 1.500") and it builds to fit: the split between two stores if that does it, otherwise cheaper foods your plan allows, never smaller amounts. If it still doesn't fit, it says how much is missing. With room, it picks known brands.
+- Ask it to order or fill your cart ("pedímelo", "armame el carrito") and it sends you to the "Pedir ahora" button in the List tab ([§5](#5-shopping-list)). It never says it placed an order or filled a cart.
 - If you ask for something the stores don't sell, or something it can't do, it says so in one line.
 - Normal, everyday food you can buy at any supermarket in Montevideo.
 
@@ -87,49 +88,56 @@ The first version goes from a chat to a priced shopping list, in Montevideo only
 - Adds up the whole menu and groups it by section, in the order you walk the store: fruit and vegetables, pantry, meat and fish, dairy, cold cuts and eggs, and "Otros" for foods outside the catalog.
 - Converts to how things are sold: "1,1 kg of rice" becomes "2 × 1 kg", with what the menu uses next to it. Meat, fish, ham, cheese, fruit and vegetables show a weight (or a count), since they're sold loose or by weight. It always rounds up, never down.
 - Accounts for raw vs. cooked: the menu's amounts are raw as bought, and the chat converts cooked amounts you give it (plans often say cooked rice; you buy it dry).
-- Cross out what you already have at home, or buy less of it with −; or tell the chat. Your marks stay when the menu changes, until you tap "Lista nueva" or tell the chat you're starting a new week.
-- Under each item, what to buy at the store the list is bought in: "2 × Arroz Blanco SAMAN 1 kg · Ta-Ta · $ 118", with a link to the product's page.
+- Cross out what you already have at home, or buy less of it with −; or tell the chat. With a price, − takes off one unit of the store's (a pack, a piece, a tray), so the price drops at every tap. Your marks stay when the menu changes, until you tap "Restablecer lista" or tell the chat you're starting a new week.
+- On top, one tab per supermarket, with its icon and its total for what's left to buy ([ADR 0034](adr/0034-list-shows-one-store-at-a-time.md)). It opens on the recommended store (§6), marked "Recomendado". Tap another to see the list there.
+- Under them, the cheapest split between two stores, "Géant y Ta-Ta" with its total, whenever it costs less than the cheapest store that has everything (or no store has everything) ([ADR 0037](adr/0037-list-shows-the-cheapest-split.md)). Each item goes to the cheaper of the two.
+- Under each item, what to buy at the selected store, or on the split at the store it goes to: "2 × Arroz Blanco SAMAN 1 kg · Ta-Ta · $ 118", with a link to the product's page. If that store doesn't sell it: "No está en Ta-Ta".
 - Share (the phone's share sheet, with WhatsApp) or copy as text, with only what's left to buy.
+- Under the list, "Pedir ahora en {store}" fills that supermarket's cart ([ADR 0030](adr/0030-cart-filling-tata-link-gdu-team-extension.md), [ADR 0034](adr/0034-list-shows-one-store-at-a-time.md)). On the split there's one per store, each with only what goes there:
+  - Ta-Ta: it opens Ta-Ta's cart in another tab with what's left to buy there, in the units the list shows, and you log in and pay there. Under it: how many products, the estimated total without delivery, and what doesn't go in and why.
+  - What that browser's Ta-Ta cart already had stays. A second tap doesn't add anything twice.
+  - Disco and Géant: the button shows "Muy pronto" for now; add their products from each one's link.
 
 #### 6. Save money
 
-- Prices the list at Disco, Géant and Ta-Ta with their real prices, read from their websites, for the products the AI picked ([ADR 0024](adr/0024-agent-builds-the-menu-from-real-products.md)). The prices are the default branch's or sales channel's, not your delivery zone's.
+- Prices the list at Disco, Géant and Ta-Ta with their real prices, read from their websites, for the products the AI picked ([ADR 0024](adr/0024-agent-builds-the-menu-from-real-products.md)). The prices are the default branch's or sales channel's, not your delivery zone's. Totals don't include delivery, and the price note says so.
 - Prices only what's left to buy: crossed-out items aren't priced, and partly-had ones are priced on what's left.
-- Each store is costed on the whole units you'd add to the cart: packs, or pieces, trays and bags for food sold by weight ([ADR 0023](adr/0023-scraper-prices-for-the-unit-of-sale.md)). What's left over is paid for.
+- Each store is costed on the whole units you'd add to the cart: packs, or pieces, trays and bags for food sold by weight ([ADR 0023](adr/0023-scraper-prices-for-the-unit-of-sale.md)). What's left over is paid for. The List's total and the cart's estimate count the same units, and − and + move by them ([ADR 0036](adr/0036-list-steps-by-unit-of-sale.md)).
 - Shows what the whole list costs at each supermarket.
-- Under the chosen total (the recommended one, or the split if you picked it), what it comes to per day of the menu: "$ 277 por día · menú de 7 días". It's what's left to buy divided by the menu's days, so it drops as you cross things out. Not shown for a 1-day menu, or when neither one store nor two have the whole list.
-- With a budget, it says whether the list fits and how much is left, or how much is missing, and when a split between two stores would fit.
+- Under the tabs, the selected store's total over the menu's days: "$ 277 por día · menú de 7 días". It's what's left to buy divided by the menu's days, so it drops as you cross things out. Not shown for a 1-day menu.
+- With a budget, it says whether the selected store's total fits and how much is left, or how much is missing. The chat's list card also says when a split between two stores would fit.
 - Prices are estimates and show the date they were checked. A menu saved before real prices asks you to rebuild it in the chat.
+- A product the store stopped listing (not read in the 14 days before that store's latest read) counts as not sold there, in the price and in the cart ([ADR 0030](adr/0030-cart-filling-tata-link-gdu-team-extension.md)).
 
 **Which store to buy at.** The app picks the cheapest way to buy the whole *list*, not the cheapest store for each item, so you never end up with an order at every store:
 
 1. By default it recommends one store: the cheapest one that has the whole list. "The whole list" means every item at least one store sells.
-2. It suggests splitting between two stores, each item at the cheaper of the two, only if that saves at least 10% of the one-store total, or if no single store has everything. It shows how much the split saves and you choose; one store stays the default.
+2. In the chat it suggests splitting between two stores, each item at the cheaper of the two, only if that saves at least 10% of the one-store total, or if no single store has everything. It shows how much the split saves and you choose; one store stays the default. The List shows the cheapest split as one more tab whenever it saves anything ([ADR 0037](adr/0037-list-shows-the-cheapest-split.md)).
 3. It never suggests more than two stores. If neither one store nor two have the whole list, it shows each store's total and recommends nothing.
 4. A store that is missing items shows "N items not found". Items no store has are marked "not found online" and left out of every total.
 
-**How much you saved.** Each week the app shows the saving compared with the average price of the same list across the supermarkets it checks: each item's average over the stores that sell it, added up. It's rounded down and shown only when it's above zero.
+**How much you saved.** Each week the app shows the saving compared with the average price of the same list across the supermarkets it checks: each item's average over the stores that sell it, added up. It's rounded down and shown only when it's above zero. Next to it the app says what that would add up to over a month if you repeated the same menu: the saving × 30 ÷ the menu's days, as an estimate at today's prices.
 
 #### 7. Basics
 
 - User account; your plan, preferences and chats are saved.
 - Clear consent for health data, which Uruguay's personal data law (Law 18.331) treats as sensitive.
 - Foods and package sizes that exist in Uruguay.
-- An "Order it for me" button that, for now, only records interest.
+- The cart buttons in the List tab (§5) take the place of an "Order it for me" button.
 
 #### 8. Recurring order
 
-- Make your order repeat: tap "Repetir pedido" on top of the Menu tab, or tell the chat ("que se repita", "pedido recurrente", "todas las semanas"). It repeats every as many days as your menu lasts: weekly for a week, every 3 days for 3 days. Tell the chat another interval ("cada dos semanas") and it uses that, from 1 to 28 days ([ADR 0030](adr/0030-recurring-order-on-the-menu.md)).
+- Make your order repeat: tap "Repetir pedido" on top of the Menu tab, or tell the chat ("que se repita", "pedido recurrente", "todas las semanas"). It repeats every as many days as your menu lasts: weekly for a week, every 3 days for 3 days. Tell the chat another interval ("cada dos semanas") and it uses that, from 1 to 28 days ([ADR 0039](adr/0039-recurring-order-on-the-menu.md)).
 - The Menu tab shows how often it repeats and the date of the next order, with "Dejar de repetir". The chat stops it too.
 - Changing the menu keeps it. A new menu with another number of days keeps the old interval, and the chat offers to match it.
-- For now nothing is ordered on that date: we place the order by hand for people in the pilot who ask.
+- For now nothing happens on its own on that date: you fill the cart from the List tab as usual, or we place the order by hand for people in the pilot who ask.
 
 ### Out
 
 Left out so we can first check that people use the plan and the list every week, and actually save. See the [roadmap](notes/roadmap.md) for what comes after.
 
 - Uploading a nutritionist's plan (PDF, photo or pasted text).
-- Ordering from stores, payments, and doing anything automatically on a recurring order's date.
+- Placing the order, payments, and doing anything automatically on a recurring order's date. Filling Disco and Géant carts: a team-only extension is planned ([ADR 0030](adr/0030-cart-filling-tata-link-gdu-team-extension.md)).
 - Small local shops (butchers, produce shops) and finding stores near you. At first, only big supermarkets.
 - Cities other than Montevideo.
 - Weekly promotions and bank-card discount days.
@@ -163,5 +171,5 @@ The key questions: do people come back every week to make their list, and do the
 | Do they accept a split? | How many accept a two-store split when it's offered | 30% |
 | Does the AI build plans people accept? | How many shop from their first plan with 2 menu changes or fewer (the event is [open](notes/open-decisions.md): there's no confirm step any more) | 70% |
 | Is the list useful at the store? | A short survey after shopping, and how many items people edit | Average 4 out of 5; under 20% of items edited |
-| Do they want ordering? | How many tap "Order it for me" | 30% |
+| Do they want ordering? | How many tap a cart button (not recorded yet) | 30% |
 | Who signs up? | Gym, nutritionist patient or other, asked at sign-up | No target: tells us who to build for next |

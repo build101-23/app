@@ -2,12 +2,14 @@
 
 :root {
   /* Color: light */
-  --ground: #f3f6f2;
+  --ground: #f8f9f8;
   --surface: #ffffff;
-  --surface-sunk: #e8eee9;
-  --line: #d8e1db;
+  --surface-sunk: #e9f2ec;
+  --line: #e3e8e4;
+  /* The tile behind a supermarket's icon: white, since the icons are never recolored. */
+  --store-icon-bg: #ffffff;
   --line-strong: #74877d;
-  --ink: #14211b;
+  --ink: #0f1713;
   --ink-muted: #55645c;
   --brand: #1e8a5e;
   --brand-ink: #156b49;
@@ -64,6 +66,7 @@
   /* Motion */
   --dur-fast: 120ms;
   --dur: 200ms;
+  --dur-slow: 300ms;
   --ease: cubic-bezier(0.2, 0.7, 0.2, 1);
 
   --font: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
@@ -76,37 +79,6 @@
   -webkit-font-smoothing: antialiased;
   -webkit-text-size-adjust: 100%;
   text-size-adjust: 100%;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --ground: #0d1613;
-    --surface: #16221d;
-    --surface-sunk: #1d2b25;
-    --line: #26352e;
-    --line-strong: #5c7067;
-    --ink: #e6eee9;
-    --ink-muted: #9aaba3;
-    --brand-ink: #5cc495;
-    --primary: #5cc495;
-    --primary-hover: #7bd3aa;
-    --on-primary: #0b3d2b;
-    --bubble-user: #1d5a42;
-    --on-bubble-user: #e6eee9;
-    --focus: #5cc495;
-    --danger: #ff8a7a;
-    --danger-surface: #2a1715;
-    --success-surface: #13291f;
-    --glass: rgb(13 22 19 / 0.68);
-    --glass-solid: #0d1613;
-    --glass-line: rgb(230 238 233 / 0.12);
-    --glass-edge: rgb(255 255 255 / 0.08);
-    --glass-shadow: 0 1px 2px rgb(0 0 0 / 0.3), 0 12px 32px -8px rgb(0 0 0 / 0.6);
-    --capsule: #16221d;
-    --capsule-shadow: 0 1px 3px rgb(0 0 0 / 0.5);
-
-    color-scheme: dark;
-  }
 }
 
 /* Glass is a progressive enhancement: solid where it can't be drawn, or where people ask for less
@@ -244,6 +216,12 @@ textarea {
   cursor: progress;
 }
 
+a.button {
+  text-decoration: none;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
 .button.primary {
   background: var(--primary);
   color: var(--on-primary);
@@ -252,6 +230,13 @@ textarea {
 .button.secondary {
   box-shadow: inset 0 0 0 1px var(--line-strong);
   color: var(--ink);
+}
+
+/* Smaller, for a secondary action beside bigger buttons. */
+.button.small {
+  min-height: 40px;
+  padding: 0 16px;
+  font-size: 0.875rem;
 }
 
 .button.quiet {
@@ -367,20 +352,38 @@ textarea {
   flex: none;
 }
 
+/* While waiting, the V assembles: the pairs slide in along their arms from the outer pair inward, the
+   point lands last, the V holds, then fades out before the next cycle. 6 units along each arm, so the
+   outer dots start outside the viewBox, which is cropped to the dots: let them draw there. */
+.mark.animated {
+  overflow: visible;
+}
+
 .mark.animated .dot {
-  animation: converge 1.2s ease-in-out infinite both;
+  animation: assemble 1.6s ease infinite both;
+}
+
+.mark.animated .left {
+  --assemble-from: translate(-2.68px, -5.37px);
+}
+
+.mark.animated .right {
+  --assemble-from: translate(2.68px, -5.37px);
 }
 
 .mark.animated .step-2 {
-  animation-delay: 0.15s;
+  animation-delay: 80ms;
 }
 
 .mark.animated .step-3 {
-  animation-delay: 0.3s;
+  animation-delay: 160ms;
 }
 
 .mark.animated .step-4 {
-  animation-delay: 0.45s;
+  transform-box: fill-box;
+  transform-origin: center;
+  animation-name: assemble-point;
+  animation-delay: 240ms;
 }
 
 .splash {
@@ -437,12 +440,9 @@ textarea {
   gap: 16px;
 }
 
-/* Reserves the button's height, so the form doesn't jump when Google's script loads. Google's iframe document
-   is light: inheriting the dark color-scheme would make the browser paint it as an opaque white box. Its own
-   dark theme ('filled_black') still applies. */
+/* Reserves the button's height, so the form doesn't jump when Google's script loads. */
 .google-button {
   min-height: 44px;
-  color-scheme: light;
 }
 
 .divider {
@@ -643,6 +643,13 @@ textarea {
   padding: 20px calc(var(--gutter) + var(--safe-right)) var(--dock-clear) calc(var(--gutter) + var(--safe-left));
 }
 
+/* The content fades in when it arrives, after the skeleton or on a tab switch. Skeletons stay out of it, so a quick
+   load doesn't swap a half-faded skeleton for content that starts at zero. ease-out, not --ease: that one reaches half
+   the opacity in about a sixth of the time and reads as a pop. */
+.page > :not(.skeleton) {
+  animation: fade-in var(--dur-slow) ease-out both;
+}
+
 /* Chat */
 
 .chat {
@@ -802,47 +809,154 @@ textarea {
   padding: 13px 16px;
 }
 
-/* The menu the chat saved, shown under its reply as a card in the conversation. */
-.menu-preview {
-  display: grid;
-  gap: 12px;
-  white-space: normal;
+/* The menu and the list the chat shows under a reply: cards, not bubbles (a bubble's tail belongs to a speaker). A badge
+   and a title, rows under hairlines, and the way to the tab. */
+:is(.menu-card, .list-card) {
+  align-self: flex-start;
+  width: min(100%, 28rem);
+  padding: 0 16px 16px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-card);
+  background: var(--surface);
+  animation: rise-in 160ms var(--ease) both;
 }
 
-.menu-preview ul {
+.bubble.user + :is(.menu-card, .list-card),
+:is(.menu-card, .list-card) + .bubble.user {
+  margin-top: 10px;
+}
+
+:is(.menu-card, .list-card) header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 0 12px;
+}
+
+:is(.menu-card, .list-card) .badge {
   display: grid;
-  gap: 6px;
+  place-items: center;
+  flex: none;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--surface-sunk);
+}
+
+:is(.menu-card, .list-card) .badge .icon {
+  width: 18px;
+  height: 18px;
+}
+
+:is(.menu-card, .list-card) header strong {
+  flex: 1;
+  font-weight: 650;
+}
+
+:is(.menu-card, .list-card) ul {
   margin: 0;
   padding: 0;
   list-style: none;
-  font-size: 0.9375rem;
 }
 
-.menu-preview strong {
-  display: block;
+:is(.menu-card, .list-card) .button {
+  margin-top: 4px;
+  min-height: 44px;
+}
+
+:is(.menu-card, .list-card) .button .icon {
+  width: 18px;
+  height: 18px;
+  transform: rotate(-90deg);
+}
+
+.menu-card li {
+  display: grid;
+  grid-template-columns: 2.5rem minmax(0, 1fr);
+  gap: 12px;
+  padding: 10px 0;
+  border-top: 1px solid var(--line);
+  font-size: 0.9375rem;
+  line-height: 1.4;
+}
+
+.menu-card .day {
+  color: var(--ink-muted);
+  font-size: 0.8125rem;
   font-weight: 650;
   text-transform: capitalize;
 }
 
-.menu-preview .button,
-.list-preview .button {
-  justify-self: start;
-  min-height: 44px;
+/* The tab has the whole menu; here two lines are enough to tell the days apart. */
+.menu-card .meals {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  overflow: hidden;
 }
 
-/* The list as it stands, under the reply that showed or changed it: what to buy by section (pre-wrapped
-   text, as shared), then the total, the budget line and the prices' date. */
-.list-preview {
+/* The list card puts the price first, then how many products are left in each section. The items are in the tab. */
+.list-card .price,
+.list-card .wait,
+.list-card .empty {
+  padding: 14px 0;
+  border-top: 1px solid var(--line);
+  font-size: 0.9375rem;
+}
+
+.list-card .price {
   display: grid;
+  gap: 10px;
+}
+
+.list-card .total {
+  display: flex;
+  align-items: flex-start;
   gap: 12px;
 }
 
-.list-preview strong {
-  font-weight: 650;
+.list-card .stores {
+  display: flex;
+  flex: none;
+  gap: 6px;
 }
 
-.list-preview small {
+.list-card .total > div {
+  display: grid;
+  gap: 2px;
+}
+
+.list-card .total strong {
+  font-size: 1.5rem;
+  font-weight: 650;
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+  font-variant-numeric: tabular-nums;
+}
+
+.list-card small {
   font-size: 0.8125rem;
+}
+
+.list-card li {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 0;
+  border-top: 1px solid var(--line);
+  font-size: 0.9375rem;
+}
+
+.list-card li span:last-child {
+  color: var(--ink-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.list-card .note {
+  display: grid;
+  gap: 2px;
+  margin: 10px 0 4px;
 }
 
 .messages .alert {
@@ -877,6 +991,8 @@ textarea {
 
 /* The status line under the last bubble while a reply is on its way. */
 .chat-status {
+  /* One line reserved, so the status coming and going moves nothing under the scroll position. */
+  min-height: 1.5em;
   margin-top: 4px;
   padding-left: 4px;
   color: var(--ink-muted);
@@ -1104,46 +1220,69 @@ textarea {
 
 /* Profile */
 
+/* Who's signed in, then cards like the Menu's day card, the numbers switch, and sign-out last. */
 .profile {
   display: grid;
-  gap: 28px;
+  gap: 16px;
 }
 
-.facts {
-  margin: 0;
+.identity {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+/* The email's initial on a sunk circle, like the badge on the chat's cards. */
+.avatar {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: var(--surface-sunk);
+  color: var(--brand-ink);
+  font-size: 1.375rem;
+  font-weight: 650;
+}
+
+.identity p {
+  min-width: 0;
+  font-weight: 650;
+  overflow-wrap: anywhere;
+}
+
+.profile-card {
   padding: 0 16px;
 }
 
-.facts > div {
-  padding: 12px 0;
+.profile-card dl {
+  margin: 0;
 }
 
-.facts > div + div {
+.profile-card dl > div {
+  padding: 12px 0;
   border-top: 1px solid var(--line);
 }
 
-.facts dt {
+/* The label over each value, like a meal's slot in the Menu. */
+.profile-card dt {
   color: var(--ink-muted);
-  font-size: 0.875rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
 }
 
-.facts dd {
+.profile-card dd {
   margin: 2px 0 0;
   overflow-wrap: anywhere;
   font-variant-numeric: tabular-nums;
-}
-
-.group h2,
-.account h2 {
-  margin-bottom: 10px;
-  font-size: 1rem;
 }
 
 .chips {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
-  margin: 0;
+  margin: 6px 0 0;
   padding: 0;
   list-style: none;
 }
@@ -1157,13 +1296,8 @@ textarea {
   overflow-wrap: anywhere;
 }
 
-.settings h2 {
-  margin-bottom: 10px;
-  font-size: 1rem;
-}
-
-.settings .alert {
-  margin-top: 10px;
+.profile > .button {
+  justify-self: start;
 }
 
 /* The numbers switch: the label, then a track with a knob. A real checkbox with role="switch", drawn here. */
@@ -1173,8 +1307,16 @@ textarea {
   justify-content: space-between;
   gap: 16px;
   min-height: 52px;
-  padding: 8px 12px 8px 16px;
+  padding: 12px 12px 12px 16px;
+  font-weight: 550;
   cursor: pointer;
+}
+
+.switch small {
+  display: block;
+  color: var(--ink-muted);
+  font-size: 0.8125rem;
+  font-weight: 400;
 }
 
 .switch input {
@@ -1229,21 +1371,6 @@ textarea {
   }
 }
 
-.account-card {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px 16px;
-  padding: 12px 12px 12px 16px;
-}
-
-.account-email {
-  min-width: 0;
-  color: var(--ink-muted);
-  overflow-wrap: anywhere;
-}
-
 /* Empty screens (Profile, Menu, List): the mark, one line, and the way to the chat. */
 .empty-state {
   display: grid;
@@ -1256,122 +1383,187 @@ textarea {
   max-width: 34ch;
 }
 
-/* A page loading: a heading-sized bar, then rows. */
-.page-skeleton {
+/* Skeletons keep the shape of the page that's loading. They reuse its classes (cards, hairlines, gaps), so the content
+   arrives where its placeholder was. Flat sunk shapes with the slow pulse: a shimmer would need a gradient fill. */
+
+.menu-skeleton {
   display: grid;
-  gap: 18px;
+  gap: 8px;
 }
 
-.page-skeleton .skeleton-line {
-  width: 85%;
+.menu-skeleton {
+  display: grid;
+  gap: 12px;
+}
+
+.menu-skeleton .strip {
+  height: 52px;
+}
+
+.menu-skeleton .title {
+  width: 96px;
+  height: 20px;
+  margin: 16px 0 14px;
+}
+
+.menu-skeleton .meal {
+  display: grid;
+  align-content: center;
+  gap: 10px;
+  min-height: 64px;
+  padding: 12px 0;
+  border-top: 1px solid var(--line);
+}
+
+.menu-skeleton .slot {
+  width: 64px;
+  height: 10px;
+}
+
+.menu-skeleton .recipe {
+  width: 52%;
+  max-width: 220px;
   height: 14px;
 }
 
-.page-skeleton .skeleton-line:nth-child(2) {
+.menu-skeleton .meal:nth-child(3n) .recipe {
+  width: 38%;
+}
+
+.menu-skeleton .pill {
+  width: 168px;
+  height: 44px;
+}
+
+.list-skeleton {
+  display: grid;
+  align-content: start;
+  gap: 8px;
+}
+
+.list-skeleton .prices .skeleton-line {
+  height: 14px;
+}
+
+.list-skeleton .prices .skeleton-line:first-child {
+  width: 42%;
+  height: 16px;
+  margin-bottom: 4px;
+}
+
+.list-skeleton .prices .skeleton-line:nth-child(2) {
+  width: 72%;
+}
+
+.list-skeleton .prices .skeleton-line:nth-child(3) {
+  width: 58%;
+}
+
+.list-skeleton .prices .skeleton-line:nth-child(4) {
+  width: 64%;
+}
+
+.list-skeleton .prices .skeleton-line:nth-child(5) {
+  width: 50%;
+}
+
+.list-skeleton .pill {
+  width: 112px;
+  height: 48px;
+}
+
+.list-skeleton .pill:nth-child(2) {
+  width: 96px;
+}
+
+.list-skeleton .section-heading {
   width: 40%;
+  height: 16px;
+  margin: 24px 0 14px;
+}
+
+.list .list-skeleton li {
+  display: grid;
+  grid-template-columns: 20px minmax(0, 1fr) auto;
+  align-items: start;
+  gap: 10px;
+  padding: 14px 0 12px;
+}
+
+.list-skeleton .box {
+  width: 20px;
   height: 20px;
+  border-radius: 6px;
+}
+
+.list-skeleton .name {
+  width: 48%;
+  height: 14px;
+}
+
+.list .list-skeleton li:nth-child(even) .name {
+  width: 36%;
+}
+
+.list-skeleton .stepper-bar {
+  grid-column: 2;
+  grid-row: 2;
+  width: 140px;
+  height: 32px;
+}
+
+.list-skeleton .price-bar {
+  grid-column: 3;
+  grid-row: 1;
+  width: 48px;
+  height: 14px;
 }
 
 .profile-skeleton {
   display: grid;
-  gap: 18px;
-  padding: 16px;
+  gap: 16px;
 }
 
-.profile-skeleton .skeleton-line {
-  height: 14px;
+.profile-skeleton .title {
+  width: 96px;
+  height: 20px;
+  margin: 16px 0 14px;
 }
 
-/* Child 1 is the screen-reader label, so the lines are children 2 to 5: label (even), then value (odd). */
-.profile-skeleton .skeleton-line:nth-child(even) {
+.profile-skeleton dl > div {
+  display: grid;
+  gap: 12px;
+}
+
+.profile-skeleton .label {
   width: 30%;
-  height: 10px;
+  height: 12px;
 }
 
-.profile-skeleton .skeleton-line:nth-child(odd) {
+.profile-skeleton .value {
   width: 70%;
+  height: 16px;
+}
+
+.profile-skeleton .chip-row {
+  width: 60%;
+  height: 32px;
 }
 
 /* Menu */
 
+/* One day at a time: a strip of days over the day's card. */
 .menu {
   display: grid;
   align-content: start;
-  gap: 8px;
-}
-
-.menu section {
-  margin-top: 16px;
-}
-
-/* With the numbers switch on: the day's total under its heading, and each meal's under its name. */
-.menu .macros {
-  display: block;
-  margin: 0 0 4px;
-  color: var(--ink-muted);
-  font-size: 0.8125rem;
-  font-variant-numeric: tabular-nums;
-}
-
-.menu-day {
-  display: flex;
-  justify-content: space-between;
-  align-items: baseline;
   gap: 12px;
 }
 
-.menu h2 {
-  margin-bottom: 4px;
-  font-size: 1rem;
-  text-transform: capitalize;
-}
-
-.menu .link {
-  color: var(--brand-ink);
-}
-
-.menu details {
-  border-bottom: 1px solid var(--line);
-}
-
-.menu summary {
-  min-height: 44px;
-  padding: 10px 0;
-  cursor: pointer;
-}
-
-.menu details ul {
-  margin: 0 0 8px;
-  padding-left: 20px;
-}
-
-.menu details p {
-  max-width: 60ch;
-  margin-bottom: 4px;
-}
-
-.menu details .link {
-  margin-bottom: 8px;
-}
-
-/* List */
-
-.list {
-  display: grid;
-  align-content: start;
-  gap: 8px;
-}
-
-.list > .button {
-  justify-self: start;
-}
-
-/* The recurring order: one flat card on top of the menu (ADR 0030). */
+/* The recurring order: one flat card on top of the menu (ADR 0039). */
 .repeat {
   display: grid;
   justify-items: start;
   gap: 4px;
-  margin-bottom: 8px;
   padding: 16px;
   border: 1px solid var(--line);
   border-radius: var(--radius-card);
@@ -1395,6 +1587,211 @@ textarea {
 
 .repeat .button.quiet {
   margin-left: -12px;
+}
+
+/* A segmented control of native radios (one tab stop, arrow keys between days): the selected day is filled with the
+   primary color. The input stretches over its label, invisible, so the whole segment is the target. */
+.days {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(44px, 1fr);
+  min-width: 0;
+  margin: 0;
+  padding: 3px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--surface-sunk);
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.days label {
+  position: relative;
+  display: grid;
+  place-items: center;
+  min-height: 46px;
+  border-radius: 999px;
+  font-size: 0.9375rem;
+  font-weight: 550;
+  text-transform: capitalize;
+  cursor: pointer;
+  transition: background-color var(--dur-fast) var(--ease);
+}
+
+.days input {
+  position: absolute;
+  inset: 0;
+  margin: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.days label:has(:checked) {
+  background: var(--primary);
+  color: var(--on-primary);
+  font-weight: 650;
+}
+
+.days label:has(:focus-visible) {
+  outline: 2px solid var(--focus);
+  outline-offset: -2px;
+}
+
+@media (hover: hover) {
+  .days label:not(:has(:checked)):hover {
+    background: color-mix(in srgb, var(--surface) 60%, transparent);
+  }
+}
+
+.day-card {
+  padding: 0 16px;
+}
+
+/* The Profile's card titles too. */
+:is(.day-card, .profile-card) h2 {
+  padding: 16px 0 8px;
+  font-size: 1.25rem;
+  line-height: 1.3;
+}
+
+.day-card h2 {
+  text-transform: capitalize;
+}
+
+/* With the numbers switch on: the day's total under its name, and each meal's under its recipe. */
+.menu .macros {
+  display: block;
+  color: var(--ink-muted);
+  font-size: 0.8125rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.day-card > .macros {
+  margin: -4px 0 8px;
+}
+
+.menu details {
+  border-top: 1px solid var(--line);
+}
+
+.menu summary {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 20px;
+  align-items: center;
+  gap: 0 12px;
+  min-height: 64px;
+  padding: 12px 0;
+  cursor: pointer;
+  list-style: none;
+}
+
+.menu summary::-webkit-details-marker {
+  display: none;
+}
+
+.menu summary .slot {
+  color: var(--ink-muted);
+  font-size: 0.8125rem;
+  font-weight: 600;
+}
+
+.menu summary .recipe {
+  font-weight: 550;
+}
+
+.menu summary .icon {
+  grid-column: 2;
+  grid-row: 1 / span 3;
+  width: 20px;
+  height: 20px;
+  color: var(--ink-muted);
+  transition: transform var(--dur) var(--ease);
+}
+
+.menu details[open] summary .icon {
+  transform: rotate(180deg);
+}
+
+/* An opened meal: what goes in it, how it's made, and the way to change it. */
+.meal-body {
+  display: grid;
+  gap: 16px;
+  padding-bottom: 16px;
+  animation: fade-in var(--dur) var(--ease);
+}
+
+.meal-body h3 {
+  margin: 0 0 6px;
+  color: var(--ink-muted);
+  font-size: 0.8125rem;
+  font-weight: 600;
+}
+
+.meal-body ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.meal-body li {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 4px 0;
+  font-size: 0.9375rem;
+}
+
+.meal-body li span:last-child {
+  color: var(--ink-muted);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.meal-body p {
+  max-width: 60ch;
+  font-size: 0.9375rem;
+}
+
+.menu .button {
+  justify-self: start;
+  min-height: 44px;
+}
+
+.menu .button .icon {
+  width: 20px;
+  height: 20px;
+}
+
+@media (min-width: 640px) {
+  .meal-body {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.5fr);
+    gap: 16px 32px;
+  }
+
+  .meal-body .button {
+    grid-column: 1 / -1;
+  }
+}
+
+/* Without this the selected day would disappear: forced colors drop the fill. */
+@media (forced-colors: active) {
+  .days label:has(:checked) {
+    forced-color-adjust: none;
+    background: Highlight;
+    color: HighlightText;
+  }
+}
+
+/* List */
+
+.list {
+  display: grid;
+  align-content: start;
+  gap: 8px;
+}
+
+.list > .button {
+  justify-self: start;
 }
 
 /* Where to buy: one flat card at the top, priced from the chat's products (ADR 0024). */
@@ -1423,17 +1820,136 @@ textarea {
   border-bottom: 0;
 }
 
-.list-actions {
+/* A supermarket's icon on its white tile (StoreIcon in src/ui.tsx). The size comes from where it sits. */
+.store-icon {
+  display: inline-grid;
+  flex: none;
+  place-items: center;
+  width: var(--store-icon-size, 32px);
+  height: var(--store-icon-size, 32px);
+  padding: 3px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--store-icon-bg);
+}
+
+.store-icon img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+/* The supermarket tabs, then the selected store's per-day, budget, saving and date lines. Not a card: each tab is. */
+.stores {
+  display: grid;
+  gap: 8px;
+}
+
+/* One tab per supermarket on top of the list (ADR 0034). The selected one gets a 2px primary edge instead of its line. */
+.store-tabs {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.store-tab {
+  --store-icon-size: 40px;
+  display: grid;
+  justify-items: center;
+  align-content: start;
+  gap: 4px;
+  padding: 12px 6px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-card);
+  background: var(--surface);
+  text-align: center;
+  overflow-wrap: anywhere;
+}
+
+.store-tab[aria-pressed='true'] {
+  border-color: transparent;
+  box-shadow: inset 0 0 0 2px var(--primary);
+}
+
+.store-tab-total {
+  font-weight: 650;
+  font-variant-numeric: tabular-nums;
+}
+
+.store-tab small {
+  font-size: 0.8125rem;
+}
+
+/* The cheapest split between two stores (ADR 0037): a full-width row under the three, icons, names and total. */
+.store-tab.split {
+  grid-column: 1 / -1;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  justify-items: start;
+  gap: 12px;
+  padding: 12px;
+  text-align: start;
+}
+
+.store-tab-icons {
+  display: flex;
+  gap: 6px;
+}
+
+/* The order button under the list, with what goes in under it. */
+.order {
+  display: grid;
+  justify-items: start;
+  gap: 4px;
+  margin-top: 24px;
+}
+
+.order .button {
+  --store-icon-size: 28px;
+  text-align: start;
+}
+
+/* Under the list the button, and the "Muy pronto" that goes with it, sit at the right; the notes stay on the left. */
+.order:not(.compact) > .button,
+.order:not(.compact) > .order-soon {
+  justify-self: end;
+}
+
+.order p {
+  font-size: 0.875rem;
+}
+
+/* The button alone, on top of the tab. */
+.order.compact {
+  margin-top: 0;
+}
+
+/* In the actions row: the same height as its neighbors, at the right edge. */
+.list-actions .order.compact {
+  margin-left: auto;
+}
+
+/* The split's second store, next to the first. */
+.list-actions .order.compact + .order.compact {
+  margin-left: 0;
+}
+
+.order.compact .button {
+  --store-icon-size: 24px;
+}
+
+.order-soon {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   gap: 8px;
 }
 
-.list-actions .link {
-  min-height: 44px;
-  padding: 0 8px;
-  color: var(--brand-ink);
+.list-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
 }
 
 .list h2 {
@@ -1494,38 +2010,117 @@ textarea {
   font-size: 0.8125rem;
 }
 
-.list .qty {
-  text-align: right;
-  font-variant-numeric: tabular-nums;
-}
-
-.list .qty small {
-  display: block;
-  font-size: 0.8125rem;
-}
-
 .list li.have label span,
-.list li.have .qty {
+.list li.have .amount {
   color: var(--ink-muted);
   text-decoration: line-through;
 }
 
+/* Crossed out: $ 0, plain and muted. */
+.list li.have .cost {
+  color: var(--ink-muted);
+  font-weight: 400;
+}
+
+/* What the selected store doesn't have: grayed out, with its note still readable. */
+.list li.unavailable .item > span:first-child {
+  color: var(--ink-muted);
+}
+
+.list li.unavailable input[type='checkbox'],
+.list li.unavailable .stepper {
+  opacity: 0.55;
+}
+
 .list .step {
+  position: relative;
   flex: none;
   display: grid;
   place-items: center;
-  width: 44px;
-  height: 44px;
+  width: 32px;
+  height: 32px;
   border-radius: 50%;
   box-shadow: inset 0 0 0 1px var(--line-strong);
   color: var(--ink);
-  font-size: 1.125rem;
+  font-size: 1rem;
+}
+
+/* The circle is small, the target isn't: it stays 44px. */
+.list .step::after {
+  content: '';
+  position: absolute;
+  inset: -6px;
 }
 
 .list .step:disabled {
   box-shadow: inset 0 0 0 1px var(--line);
   color: var(--ink-muted);
   opacity: 0.55;
+}
+
+/* Each item: its name over the − amount + control, and its price in the right column. */
+.list .rows > li {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: start;
+  gap: 0 12px;
+  padding-bottom: 8px;
+}
+
+.list .rows .main {
+  min-width: 0;
+}
+
+/* Under the name, past the checkbox (20px and its gap). */
+.list .rows .stepper {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  margin-left: 30px;
+}
+
+.list .rows .amount {
+  min-width: 4.75rem;
+  font-size: 0.9375rem;
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+}
+
+.list .rows .cost {
+  padding-top: 14px;
+  font-weight: 650;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+/* The saving, on the recommended store's tab: small, with the month it adds up to. */
+.saving-card {
+  display: grid;
+  gap: 2px;
+  width: min(100%, 22rem);
+  padding: 12px 16px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-card);
+  background: var(--surface);
+}
+
+.saving-card strong {
+  font-size: 1.25rem;
+  font-weight: 650;
+  line-height: 1.3;
+  font-variant-numeric: tabular-nums;
+}
+
+.saving-card p {
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid var(--line);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.saving-card small {
+  font-size: 0.8125rem;
 }
 
 /* Dock tabs are disabled while the chat saves a turn, since leaving would hide it. The current tab keeps
@@ -1540,14 +2135,45 @@ textarea {
 
 /* Motion */
 
-@keyframes converge {
-  0%,
-  100% {
-    opacity: 0.25;
+/* 1.6s cycles: arrive in the first 30%, hold, fade out between 72% and 84%. With the point's 240ms delay
+   it is gone by 1.58s, so a cycle never overlaps the next. */
+@keyframes assemble {
+  0% {
+    opacity: 0;
+    transform: var(--assemble-from);
+    animation-timing-function: var(--ease);
   }
 
-  40% {
+  30%,
+  72% {
     opacity: 1;
+    transform: none;
+  }
+
+  84%,
+  100% {
+    opacity: 0;
+    transform: none;
+  }
+}
+
+@keyframes assemble-point {
+  0% {
+    opacity: 0;
+    transform: scale(0.85);
+    animation-timing-function: var(--ease);
+  }
+
+  30%,
+  72% {
+    opacity: 1;
+    transform: none;
+  }
+
+  84%,
+  100% {
+    opacity: 0;
+    transform: none;
   }
 }
 

@@ -63,7 +63,7 @@ function SignIn() {
 
   return (
     <main className="signin">
-      <img className="signin-logo" src={logo} alt="VIVERI" width={159} height={44} />
+      <img className="signin-logo" src={logo} alt="VIVERI" width={139} height={44} />
       <div className="signin-body">
         <h1>{t.signIn.title}</h1>
         {/* Google first when it's configured; it renders nothing otherwise. */}
@@ -155,7 +155,7 @@ function Shell({ session }: { session: Session }) {
     <div className="shell" data-keyboard={keyboardOpen ? 'open' : undefined}>
       {/* The app's name on every screen; the dock shows the section, so its name is for screen readers. */}
       <header>
-        <img className="brand" src={logo} alt="VIVERI" width={101} height={28} />
+        <img className="brand" src={logo} alt="VIVERI" width={89} height={28} />
         <h1 className="sr-only">{t.tabs[tab]}</h1>
       </header>
       <main>

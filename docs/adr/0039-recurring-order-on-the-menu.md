@@ -1,4 +1,4 @@
-# 0030. A recurring order is stored on the menu, every as many days as the menu lasts
+# 0039. A recurring order is stored on the menu, every as many days as the menu lasts
 
 - Status: Accepted
 - Date: 2026-10-18

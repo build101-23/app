@@ -1,8 +1,9 @@
-import { useEffect, useRef, useState, type FormEvent, type RefObject } from 'react'
+import { useEffect, useLayoutEffect, useRef, useState, type FormEvent, type RefObject } from 'react'
 import type { Session } from '@supabase/supabase-js'
 import type { MenuData } from '../supabase/functions/_shared/menu.ts'
 import { supabase } from './supabase'
 import { t } from './strings'
+import { paceText } from './pace'
 import { MenuPreview } from './Menu'
 import { ListPreview, type MenuRow } from './List'
 import { Alert, AlertIcon, ChatsIcon, Mark, PlusIcon, SendIcon } from './ui'
@@ -240,9 +241,15 @@ export default function Chat({
     start()
   }, [])
 
+  // Follow the end while a reply grows, unless you've scrolled up to read: then nothing pulls you back. A layout
+  // effect runs before paint, so the text and the scroll move in the same frame. Another chat starts at its end.
+  const pinned = useRef(true)
+  useLayoutEffect(() => {
+    pinned.current = true
+  }, [conversationId])
   // Braces matter: newer browsers return a Promise from scrollIntoView, and an effect may only return a cleanup.
-  useEffect(() => {
-    end.current?.scrollIntoView({ block: 'end' })
+  useLayoutEffect(() => {
+    if (pinned.current) end.current?.scrollIntoView({ block: 'end' })
   }, [bubbles])
 
   // The composer floats over the list (the dock's accessory), so the list reserves its height. When the
@@ -279,6 +286,7 @@ export default function Chat({
     setBusy(true)
     setStreaming(true)
     setStep('')
+    pinned.current = true
     onBusy(true)
     setError('')
     setLoadFailed(false)
@@ -287,6 +295,8 @@ export default function Chat({
     setBubbles((b) => [...b, { role: 'user', text, turn: 0 }, { role: 'assistant', text: '', turn: 0 }])
     const setReply = (reply: string) =>
       setBubbles((b) => [...b.slice(0, -1), { role: 'assistant', text: reply, turn: 0 }])
+    // The text is shown at a steady pace, not as each chunk lands (src/pace.ts).
+    const pace = paceText(setReply)
 
     let failure = t.chat.error
     try {
@@ -329,9 +339,11 @@ export default function Chat({
           if (event.step) setStep(event.step)
           if (!event.text) continue
           reply += event.text
-          setReply(reply)
+          pace.push(event.text)
         }
       }
+      // The stored turn replaces these bubbles below, so let the text finish showing first.
+      await pace.drained()
       setStreaming(false)
       if (!reply) setReply(t.chat.noReply)
       // The stream is text only: the stored turn also has the save_menu and list calls, for the cards. A clean end
@@ -341,6 +353,7 @@ export default function Chat({
       if (!(await loadMessages(id))) setError(t.chat.loadError)
       loadConversations()
     } catch {
+      pace.stop()
       // The server stores nothing from a failed turn, so drop both bubbles and give the text back.
       setBubbles((b) => b.slice(0, -2))
       setDraft(text)
@@ -407,7 +420,15 @@ export default function Chat({
           ))}
         </ul>
       ) : (
-        <div className="messages" ref={log} role="log">
+        <div
+          className="messages"
+          ref={log}
+          role="log"
+          onScroll={(e) => {
+            const list = e.currentTarget
+            pinned.current = list.scrollHeight - list.scrollTop - list.clientHeight < 80
+          }}
+        >
           {loading && (
             <div className="chat-skeleton" role="status">
               <span className="sr-only">{t.chat.loading}</span>

@@ -5,8 +5,17 @@ export const stores = ['disco', 'geant', 'tata'] as const // = stores.key in the
 export type StoreKey = (typeof stores)[number]
 
 // base_qty: pack content in the food's catalog unit. by_weight: sold loose, price is per base_qty.
-// sku, name, url: the product behind the offer, for the screen; the rule ignores them.
-export type Offer = { price: number; base_qty: number; by_weight?: boolean; sku?: string; name?: string; url?: string }
+// sku, name, url: the product behind the offer, for the screen; the rule ignores them. weighed: a piece, tray or bag
+// of food sold by weight (ADR 0023), whose final weight and price the store sets; the cart needs to know (cart.ts).
+export type Offer = {
+  price: number
+  base_qty: number
+  by_weight?: boolean
+  sku?: string
+  name?: string
+  url?: string
+  weighed?: boolean
+}
 // List item id -> store -> offer. A missing store means it doesn't sell that item.
 export type Prices = Partial<Record<string, Partial<Record<StoreKey, Offer>>>>
 // A list item id and what's left to buy of it (list.ts left()).
@@ -17,7 +26,8 @@ export type StorePlan = {
   perStore: { store: StoreKey; total: number; missing: number }[] // in store order
   notFound: string[] // ids no store sells, every 'other' included, in list order
   single: Option | null // the default
-  split: Option | null // two stores, when offered
+  pair: Option | null // the cheapest two stores, when they cost less than one: the List's fourth tab
+  split: Option | null // the pair, when the chat offers it
 }
 
 // Whole pesos. Packs are bought whole, so the leftover is paid for; loose food is priced on the exact weight.
@@ -62,8 +72,8 @@ export function planStores(needs: Need[], prices: Prices): StorePlan {
 
   const single = cheapest(stores.map((store) => option([store])))
   // Pairs in order: (disco, geant), (disco, tata), (geant, tata). Never three stores.
-  const pair = cheapest(stores.flatMap((a, i) => stores.slice(i + 1).map((b) => option([a, b]))))
-  const saves = single && pair ? single.total - pair.total : 0
+  const cheapestPair = cheapest(stores.flatMap((a, i) => stores.slice(i + 1).map((b) => option([a, b]))))
+  const pair = cheapestPair && (!single || cheapestPair.total < single.total) ? cheapestPair : null
   return {
     perStore: stores.map((store) => {
       const sold = priced.filter((need) => at(store, need) < Infinity)
@@ -71,7 +81,8 @@ export function planStores(needs: Need[], prices: Prices): StorePlan {
     }),
     notFound,
     single,
+    pair,
     // Offered when no single store has everything, or when it saves at least 10% of the one-store total.
-    split: pair && (!single || (saves > 0 && 10 * saves >= single.total)) ? pair : null,
+    split: pair && (!single || 10 * (single.total - pair.total) >= single.total) ? pair : null,
   }
 }

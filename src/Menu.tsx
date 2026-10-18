@@ -4,9 +4,9 @@ import { addMacros } from '../supabase/functions/_shared/nutrition.ts'
 import { nextOrder, todayInMontevideo } from '../supabase/functions/_shared/repeat.ts'
 import { supabase } from './supabase'
 import { t } from './strings'
-import { Alert, EmptyState, PageSkeleton, RepeatIcon } from './ui'
+import { Alert, ChatIcon, ChevronIcon, EmptyState, MenuIcon, PageSkeleton, RepeatIcon } from './ui'
 
-// repeat_every and repeat_from: the recurring order, both null when it doesn't repeat (ADR 0030).
+// repeat_every and repeat_from: the recurring order, both null when it doesn't repeat (ADR 0039).
 type MenuRow = { user_id: string; data: MenuData; repeat_every: number | null; repeat_from: string | null }
 
 // "520 kcal · 35 g prote · 60 g carbos · 15 g grasa (sin contar espinaca)", for the numbers switch.
@@ -16,24 +16,36 @@ function macrosLine({ kcal, protein, carbs, fat, missing }: ReturnType<typeof ad
   return missing.length ? `${line} (${t.menu.without([...new Set(missing)].join(', '))})` : line
 }
 
-// The menu as a save_menu call saved it, shown in the chat under that reply. Here and in the tab, days keep their
-// saved order: a menu can start on any day (ADR 0028).
+// The menu as a save_menu call saved it, shown in the chat under that reply: a card with one row per day. Here and in
+// the tab, days keep their saved order: a menu can start on any day (ADR 0028).
 export function MenuPreview({ menu, busy, onOpen }: { menu: MenuData; busy: boolean; onOpen: () => void }) {
   const names = new Map(menu.recipes.map((recipe) => [recipe.id, recipe.name]))
   return (
-    <div className="bubble assistant menu-preview">
+    <section className="menu-card" aria-label={t.chat.menuCard.title}>
+      <header>
+        <span className="badge">
+          <MenuIcon />
+        </span>
+        <strong>{t.chat.menuCard.title}</strong>
+        <span className="pill">{t.chat.menuCard.length(menu.days.length)}</span>
+      </header>
       <ul>
         {menu.days.map(({ day, meals }) => (
           <li key={day}>
-            <strong>{t.menu.days[day]}</strong>
-            {meals.map((meal) => names.get(meal.recipe_id)).join(' · ')}
+            {/* Three letters on screen; the whole day for screen readers. */}
+            <span className="day" aria-hidden="true">
+              {t.menu.days[day].slice(0, 3)}
+            </span>
+            <span className="sr-only">{t.menu.days[day]}: </span>
+            <span className="meals">{meals.map((meal) => names.get(meal.recipe_id)).join(' · ')}</span>
           </li>
         ))}
       </ul>
       <button type="button" className="button secondary" disabled={busy} onClick={onOpen}>
         {t.chat.openMenu}
+        <ChevronIcon />
       </button>
-    </div>
+    </section>
   )
 }
 
@@ -97,6 +109,8 @@ export default function Menu({ onChange }: { onChange: (draft: string) => void }
   const [menu, setMenu] = useState<MenuRow | null | undefined>(undefined)
   const [error, setError] = useState('')
   const [showNumbers, setShowNumbers] = useState(false)
+  // Which day of the menu is open. The menu starts tomorrow, so there's no "today" to default to.
+  const [selected, setSelected] = useState(0)
 
   useEffect(() => {
     supabase
@@ -115,7 +129,7 @@ export default function Menu({ onChange }: { onChange: (draft: string) => void }
   }, [])
 
   if (menu === undefined) {
-    return <div className="page menu">{error ? <Alert text={error} /> : <PageSkeleton label={t.menu.loading} />}</div>
+    return <div className="page menu">{error ? <Alert text={error} /> : <PageSkeleton label={t.menu.loading} shape="menu" />}</div>
   }
   if (!menu) {
     return (
@@ -126,60 +140,83 @@ export default function Menu({ onChange }: { onChange: (draft: string) => void }
   }
 
   const recipes = new Map(menu.data.recipes.map((recipe) => [recipe.id, recipe]))
+  const { days } = menu.data
+  const { day, meals } = days[Math.min(selected, days.length - 1)]
+  const dayName = t.menu.days[day]
 
   return (
     <div className="page menu">
       <RepeatCard menu={menu} onSaved={setMenu} />
-      {menu.data.days.map(({ day, meals }) => (
-        <section key={day}>
-          <div className="menu-day">
-            <h2>{t.menu.days[day]}</h2>
-            <button
-              type="button"
-              className="link"
-              aria-label={t.menu.changeDay(t.menu.days[day]).trim()}
-              onClick={() => onChange(t.menu.changeDay(t.menu.days[day]))}
-            >
-              {t.menu.change}
-            </button>
-          </div>
-          {showNumbers && (
-            <p className="macros">
-              {t.menu.dayTotal}:{' '}
-              {macrosLine(addMacros(meals.flatMap((meal) => recipes.get(meal.recipe_id)?.ingredients ?? [])))}
-            </p>
-          )}
-          {meals.map((meal, i) => {
-            const recipe = recipes.get(meal.recipe_id)
-            if (!recipe) return null
-            return (
-              <details key={i}>
-                <summary>
-                  <span className="muted">{meal.slot}</span> {recipe.name}
-                  {showNumbers && <small className="macros">{macrosLine(addMacros(recipe.ingredients))}</small>}
-                </summary>
-                <ul>
-                  {recipe.ingredients.map((item, j) => (
-                    <li key={j}>
-                      {item.food === 'other' ? item.other_name : (t.foods[item.food] ?? item.food)}:{' '}
-                      {item.amount.toLocaleString('es-UY')} {t.menu.units[item.unit]}
-                    </li>
-                  ))}
-                </ul>
-                <p>{recipe.how}</p>
-                <button
-                  type="button"
-                  className="link"
-                  aria-label={t.menu.changeMeal(meal.slot, t.menu.days[day]).trim()}
-                  onClick={() => onChange(t.menu.changeMeal(meal.slot, t.menu.days[day]))}
-                >
-                  {t.menu.change}
+      {/* Native radios: one tab stop, arrow keys move between days. The visible text is the first three letters;
+          the accessible name is the whole day. */}
+      {days.length > 1 && (
+        <fieldset className="days">
+          <legend className="sr-only">{t.menu.dayPicker}</legend>
+          {days.map((entry, i) => (
+            <label key={entry.day}>
+              <input
+                type="radio"
+                name="day"
+                aria-label={t.menu.days[entry.day]}
+                checked={i === selected}
+                onChange={() => setSelected(i)}
+              />
+              <span>{t.menu.days[entry.day].slice(0, 3)}</span>
+            </label>
+          ))}
+        </fieldset>
+      )}
+      {/* Keyed by day, so the page's fade-in plays again on each switch. */}
+      <section className="card day-card" key={day}>
+        <h2>{dayName}</h2>
+        {showNumbers && (
+          <p className="macros">
+            {t.menu.dayTotal}: {macrosLine(addMacros(meals.flatMap((meal) => recipes.get(meal.recipe_id)?.ingredients ?? [])))}
+          </p>
+        )}
+        {meals.map((meal, i) => {
+          const recipe = recipes.get(meal.recipe_id)
+          if (!recipe) return null
+          return (
+            // One meal open at a time, natively, where `name` is supported.
+            <details key={i} name="meal">
+              <summary>
+                <span className="slot">{meal.slot}</span>
+                <span className="recipe">{recipe.name}</span>
+                {showNumbers && <small className="macros">{macrosLine(addMacros(recipe.ingredients))}</small>}
+                <ChevronIcon />
+              </summary>
+              <div className="meal-body">
+                <div>
+                  <h3>{t.menu.ingredients}</h3>
+                  <ul>
+                    {recipe.ingredients.map((item, j) => (
+                      <li key={j}>
+                        <span>{item.food === 'other' ? item.other_name : (t.foods[item.food] ?? item.food)}</span>
+                        <span>
+                          {item.amount.toLocaleString('es-UY')} {t.menu.units[item.unit]}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+                <div>
+                  <h3>{t.menu.how}</h3>
+                  <p>{recipe.how}</p>
+                </div>
+                <button type="button" className="button secondary" onClick={() => onChange(t.menu.changeMeal(meal.slot, dayName))}>
+                  <ChatIcon />
+                  {t.menu.changeThisMeal}
                 </button>
-              </details>
-            )
-          })}
-        </section>
-      ))}
+              </div>
+            </details>
+          )
+        })}
+      </section>
+      <button type="button" className="button secondary" onClick={() => onChange(t.menu.changeDay(dayName))}>
+        <ChatIcon />
+        {t.menu.changeThisDay(dayName)}
+      </button>
     </div>
   )
 }

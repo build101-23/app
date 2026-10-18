@@ -104,17 +104,30 @@ const week: MenuData = {
   })),
 }
 
-// prices: ok (default), over (the total doesn't fit the budget), old (a menu saved before real products), error.
+// prices: ok (default), over (the total doesn't fit the budget), old (a menu saved before real products), error,
+// stale (Ta-Ta's tomato was last read 20 days before Ta-Ta's newest read, so it no longer counts as sold there).
 const pricesMode = scenario('prices', 'ok')
+// cart: where the list is cheapest. Géant by default (Ta-Ta lacks three items); tata (Ta-Ta has everything and is
+// cheapest); split (Ta-Ta is much cheaper on what it has, so Géant and Ta-Ta are offered as a split).
+const cartMode = scenario('cart', '')
 
 // The product the chat agent picked for each list item, with its pack size and price per store (null: not sold there).
 // Synthetic names and prices.
-type Picked = { food: Ingredient['food']; other_name?: string; unit: Unit; name: string; size: number; price: Record<StoreKey, number | null> }
+// weighed: sold by weight, one tray of size per unit of sale (ADR 0023).
+type Picked = {
+  food: Ingredient['food']
+  other_name?: string
+  unit: Unit
+  name: string
+  size: number
+  price: Record<StoreKey, number | null>
+  weighed?: boolean
+}
 const picked: Picked[] = [
   { food: 'oats', unit: 'g', name: 'Avena arrollada 400 g', size: 400, price: { disco: 79, geant: 75, tata: 82 } },
   { food: 'milk', unit: 'ml', name: 'Leche entera 1 L', size: 1000, price: { disco: 52, geant: 50, tata: 49 } },
   { food: 'banana', unit: 'g', name: 'Banana 1 kg', size: 1000, price: { disco: 79, geant: 75, tata: 82 } },
-  { food: 'chicken_breast', unit: 'g', name: 'Pechuga de pollo 1 kg', size: 1000, price: { disco: 329, geant: 315, tata: 339 } },
+  { food: 'chicken_breast', unit: 'g', name: 'Pechuga de pollo bandeja 1 kg', size: 1000, price: { disco: 329, geant: 315, tata: 339 }, weighed: true },
   { food: 'sweet_potato', unit: 'g', name: 'Boniato 1 kg', size: 1000, price: { disco: 69, geant: 72, tata: 65 } },
   { food: 'olive_oil', unit: 'ml', name: 'Aceite de oliva 500 ml', size: 500, price: { disco: 389, geant: 399, tata: 375 } },
   { food: 'garlic', unit: 'g', name: 'Ajo 250 g', size: 250, price: { disco: 59, geant: 55, tata: null } },
@@ -129,7 +142,14 @@ const picked: Picked[] = [
   { food: 'crushed_tomato', unit: 'g', name: 'Tomate triturado 1 kg', size: 1000, price: { disco: 79, geant: 75, tata: 72 } },
   { food: 'cheese', unit: 'g', name: 'Queso dambo 500 g', size: 500, price: { disco: 259, geant: 249, tata: 269 } },
 ]
-const sku = (i: number) => String(1000 + i)
+// Not numeric, so a cart link opened from the fixture finds nothing at the real Ta-Ta.
+const sku = (i: number) => `fx${1000 + i}`
+
+for (const p of picked) {
+  const others = [p.price.disco, p.price.geant].filter((price) => price != null)
+  if (cartMode === 'tata') p.price.tata = Math.round(Math.min(...others) * 0.9)
+  if (cartMode === 'split' && p.price.tata != null) p.price.tata = Math.round(p.price.tata * 0.7)
+}
 
 // As store_products returns them for the List tab. Disco and Géant share sku ids, as on the real sites.
 const productRows: ProductRow[] = picked.flatMap((p, i) =>
@@ -144,13 +164,14 @@ const productRows: ProductRow[] = picked.flatMap((p, i) =>
             url_path: `/${sku(i)}`,
             base_qty: p.size,
             base_unit: p.unit,
-            size_qty: null,
-            size_unit: null,
-            size_source: null,
+            size_qty: p.weighed ? p.size : null,
+            size_unit: p.weighed ? p.unit : null,
+            size_source: p.weighed ? 'unit' : null,
             price: p.price[store],
             currency: 'UYU',
             availability: 'InStock',
-            checked_at: '2026-10-16T09:00:00Z',
+            checked_at:
+              pricesMode === 'stale' && store === 'tata' && p.food === 'tomato' ? '2026-09-26T09:00:00Z' : '2026-10-16T09:00:00Z',
             stores: { base_url: `https://ejemplo.com/${store}` },
           },
         ],
@@ -263,7 +284,7 @@ const fullProfile = {
 
 // menu: saved (default), short (above), none, error. One item starts crossed out on the list.
 const menuMode = scenario('menu', 'saved')
-// repeat: off (default), on (a weekly order set three days ago, ADR 0030).
+// repeat: off (default), on (a weekly order set three days ago, ADR 0039).
 const threeDaysAgo = new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toLocaleDateString('en-CA')
 const repeatOn = scenario('repeat', 'off') === 'on'
 const menuRow = {
@@ -392,14 +413,30 @@ export const supabase = {
     },
   },
   from: (table: string) => new Query(table),
-  // set_show_numbers: the only function the browser calls (ADR 0021).
-  async rpc(name: string, args: { show_numbers?: boolean }) {
+  // set_show_numbers (ADR 0021), and store_newest for the 14-day rule.
+  async rpc(name: string, args?: { show_numbers?: boolean }) {
     await wait(300)
+    if (name === 'store_newest') {
+      const newest = (store: string) =>
+        productRows.filter((row) => row.store_key === store).map((row) => row.checked_at).sort().at(-1) ?? null
+      return { data: stores.map((store) => ({ store_key: store, newest: newest(store) })), error: null }
+    }
     // A failed save changes nothing.
     if (scenario('numbers', 'off') === 'error') return { data: null, error: { message: 'fixture error' } }
-    if (name === 'set_show_numbers') fullProfile.show_numbers = args.show_numbers === true
+    if (name === 'set_show_numbers') fullProfile.show_numbers = args?.show_numbers === true
     return { data: null, error: null }
   },
+}
+
+// Uneven chunks, like a real stream once the network batches the model's deltas: 5 to 80 characters each.
+function burst(text: string) {
+  const chunks: string[] = []
+  for (let i = 0; i < text.length; ) {
+    const n = 5 + Math.floor(Math.random() * 76)
+    chunks.push(text.slice(i, i + n))
+    i += n
+  }
+  return chunks
 }
 
 const reply =
@@ -416,7 +453,7 @@ window.fetch = async (input, init) => {
   if (mode === 'error') return new Response('fixture error', { status: 500 })
   if (mode === 'limit') return new Response('fixture limit', { status: 429 })
   const { text: sent, conversation_id } = JSON.parse(String(init?.body ?? '{}'))
-  const chunks = reply.match(/[\s\S]{1,14}/g) ?? []
+  const chunks = mode === 'burst' ? burst(reply) : (reply.match(/[\s\S]{1,14}/g) ?? [])
   const encoder = new TextEncoder()
   const body = new ReadableStream<Uint8Array>({
     async start(controller) {
@@ -429,7 +466,7 @@ window.fetch = async (input, init) => {
       send({ step: 'typing' })
       for (const chunk of chunks) {
         send({ text: chunk })
-        await wait(mode === 'trickle' ? 600 : 45)
+        await wait(mode === 'trickle' ? 600 : mode === 'burst' ? 80 + Math.random() * 270 : 45)
       }
       messages.get(conversation_id)?.push(text('user', sent), text('assistant', reply))
       controller.close()
