@@ -56,6 +56,13 @@ export const ChatIcon = () => (
   </Icon>
 )
 
+// Opens and closes a meal in the Menu; it turns when open.
+export const ChevronIcon = () => (
+  <Icon>
+    <path d="m6 9 6 6 6-6" />
+  </Icon>
+)
+
 // A bubble in front of another: more than one chat.
 export const ChatsIcon = () => (
   <Icon>
@@ -127,19 +134,17 @@ export function Alert({ text }: { text: string }) {
 
 const count = (n: number) => Array.from({ length: n }, (_, i) => i)
 
-// A page loading, in the shape of what's coming (Menu's days and meals, List's card and rows) plus the label for screen
+// A page loading, in the shape of what's coming (Menu's day strip and card, List's card and rows) plus the label for screen
 // readers. It reuses the real page's classes, so the gaps and hairlines match and the content arrives where it was.
 export function PageSkeleton({ label, shape }: { label: string; shape: 'menu' | 'list' }) {
   return (
     <div className={`skeleton ${shape}-skeleton`} role="status">
       <span className="sr-only">{label}</span>
       {shape === 'menu' ? (
-        count(3).map((day) => (
-          <section key={day} aria-hidden="true">
-            <div className="menu-day">
-              <span className="skeleton-line day" />
-              <span className="skeleton-line change" />
-            </div>
+        <>
+          <span className="skeleton-line strip" aria-hidden="true" />
+          <section className="card day-card" aria-hidden="true">
+            <span className="skeleton-line title" />
             {count(4).map((meal) => (
               <div key={meal} className="meal">
                 <span className="skeleton-line slot" />
@@ -147,7 +152,8 @@ export function PageSkeleton({ label, shape }: { label: string; shape: 'menu' | 
               </div>
             ))}
           </section>
-        ))
+          <span className="skeleton-line pill" aria-hidden="true" />
+        </>
       ) : (
         <>
           <section className="prices" aria-hidden="true">

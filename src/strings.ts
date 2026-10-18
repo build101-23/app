@@ -65,7 +65,12 @@ export const t = {
     empty: 'Todavía no hay menú. Pedíselo al chat, para la semana o para los días que quieras.',
     loading: 'Cargando el menú…',
     loadError: 'No se pudo cargar el menú.',
-    change: 'Cambiar',
+    // The day strip's name for screen readers, and the headings inside an opened meal.
+    dayPicker: 'Día del menú',
+    ingredients: 'Ingredientes',
+    how: 'Cómo se hace',
+    changeThisDay: (day: string) => `Cambiar el ${day}`,
+    changeThisMeal: 'Cambiar este plato',
     // Lowercase to fit inside a sentence; headings capitalize them with CSS.
     days: {
       monday: 'lunes',

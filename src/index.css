@@ -1284,34 +1284,33 @@ a.button {
   gap: 8px;
 }
 
-.menu-skeleton .menu-day {
-  align-items: center;
-  height: 31px;
+.menu-skeleton {
+  display: grid;
+  gap: 12px;
 }
 
-.menu-skeleton .day {
-  width: 88px;
-  height: 14px;
+.menu-skeleton .strip {
+  height: 52px;
 }
 
-.menu-skeleton .change {
-  width: 56px;
-  height: 12px;
+.menu-skeleton .title {
+  width: 96px;
+  height: 20px;
+  margin: 16px 0 14px;
 }
 
 .menu-skeleton .meal {
-  display: flex;
-  align-items: center;
+  display: grid;
+  align-content: center;
   gap: 10px;
-  min-height: 45px;
-  padding: 10px 0;
-  border-bottom: 1px solid var(--line);
+  min-height: 64px;
+  padding: 12px 0;
+  border-top: 1px solid var(--line);
 }
 
 .menu-skeleton .slot {
-  flex: none;
   width: 64px;
-  height: 12px;
+  height: 10px;
 }
 
 .menu-skeleton .recipe {
@@ -1322,6 +1321,11 @@ a.button {
 
 .menu-skeleton .meal:nth-child(3n) .recipe {
   width: 38%;
+}
+
+.menu-skeleton .pill {
+  width: 168px;
+  height: 44px;
 }
 
 .list-skeleton {
@@ -1433,64 +1437,200 @@ a.button {
 
 /* Menu */
 
+/* One day at a time: a strip of days over the day's card. */
 .menu {
   display: grid;
   align-content: start;
-  gap: 8px;
+  gap: 12px;
 }
 
-.menu section {
-  margin-top: 16px;
+/* A segmented control of native radios (one tab stop, arrow keys between days): the selected day is filled with the
+   primary color. The input stretches over its label, invisible, so the whole segment is the target. */
+.days {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(44px, 1fr);
+  min-width: 0;
+  margin: 0;
+  padding: 3px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--surface-sunk);
+  overflow-x: auto;
+  scrollbar-width: none;
 }
 
-/* With the numbers switch on: the day's total under its heading, and each meal's under its name. */
+.days label {
+  position: relative;
+  display: grid;
+  place-items: center;
+  min-height: 46px;
+  border-radius: 999px;
+  font-size: 0.9375rem;
+  font-weight: 550;
+  text-transform: capitalize;
+  cursor: pointer;
+  transition: background-color var(--dur-fast) var(--ease);
+}
+
+.days input {
+  position: absolute;
+  inset: 0;
+  margin: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.days label:has(:checked) {
+  background: var(--primary);
+  color: var(--on-primary);
+  font-weight: 650;
+}
+
+.days label:has(:focus-visible) {
+  outline: 2px solid var(--focus);
+  outline-offset: -2px;
+}
+
+@media (hover: hover) {
+  .days label:not(:has(:checked)):hover {
+    background: color-mix(in srgb, var(--surface) 60%, transparent);
+  }
+}
+
+.day-card {
+  padding: 0 16px;
+}
+
+.day-card h2 {
+  padding: 16px 0 8px;
+  font-size: 1.25rem;
+  line-height: 1.3;
+  text-transform: capitalize;
+}
+
+/* With the numbers switch on: the day's total under its name, and each meal's under its recipe. */
 .menu .macros {
   display: block;
-  margin: 0 0 4px;
   color: var(--ink-muted);
   font-size: 0.8125rem;
   font-variant-numeric: tabular-nums;
 }
 
-.menu-day {
-  display: flex;
-  justify-content: space-between;
-  align-items: baseline;
-  gap: 12px;
-}
-
-.menu h2 {
-  margin-bottom: 4px;
-  font-size: 1rem;
-  text-transform: capitalize;
-}
-
-.menu .link {
-  color: var(--brand-ink);
+.day-card > .macros {
+  margin: -4px 0 8px;
 }
 
 .menu details {
-  border-bottom: 1px solid var(--line);
+  border-top: 1px solid var(--line);
 }
 
 .menu summary {
-  min-height: 44px;
-  padding: 10px 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 20px;
+  align-items: center;
+  gap: 0 12px;
+  min-height: 64px;
+  padding: 12px 0;
   cursor: pointer;
+  list-style: none;
 }
 
-.menu details ul {
-  margin: 0 0 8px;
-  padding-left: 20px;
+.menu summary::-webkit-details-marker {
+  display: none;
 }
 
-.menu details p {
+.menu summary .slot {
+  color: var(--ink-muted);
+  font-size: 0.8125rem;
+  font-weight: 600;
+}
+
+.menu summary .recipe {
+  font-weight: 550;
+}
+
+.menu summary .icon {
+  grid-column: 2;
+  grid-row: 1 / span 3;
+  width: 20px;
+  height: 20px;
+  color: var(--ink-muted);
+  transition: transform var(--dur) var(--ease);
+}
+
+.menu details[open] summary .icon {
+  transform: rotate(180deg);
+}
+
+/* An opened meal: what goes in it, how it's made, and the way to change it. */
+.meal-body {
+  display: grid;
+  gap: 16px;
+  padding-bottom: 16px;
+  animation: fade-in var(--dur) var(--ease);
+}
+
+.meal-body h3 {
+  margin: 0 0 6px;
+  color: var(--ink-muted);
+  font-size: 0.8125rem;
+  font-weight: 600;
+}
+
+.meal-body ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.meal-body li {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 4px 0;
+  font-size: 0.9375rem;
+}
+
+.meal-body li span:last-child {
+  color: var(--ink-muted);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.meal-body p {
   max-width: 60ch;
-  margin-bottom: 4px;
+  font-size: 0.9375rem;
 }
 
-.menu details .link {
-  margin-bottom: 8px;
+.menu .button {
+  justify-self: start;
+  min-height: 44px;
+}
+
+.menu .button .icon {
+  width: 20px;
+  height: 20px;
+}
+
+@media (min-width: 640px) {
+  .meal-body {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.5fr);
+    gap: 16px 32px;
+  }
+
+  .meal-body .button {
+    grid-column: 1 / -1;
+  }
+}
+
+/* Without this the selected day would disappear: forced colors drop the fill. */
+@media (forced-colors: active) {
+  .days label:has(:checked) {
+    forced-color-adjust: none;
+    background: Highlight;
+    color: HighlightText;
+  }
 }
 
 /* List */

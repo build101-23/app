@@ -34,6 +34,7 @@ One file per decision: `NNNN-short-title.md`. ADRs are append-only: never rewrit
 | 0028 | [Menus in calendar order from tomorrow, named by weekday](0028-menus-of-1-to-7-days.md) | Accepted | 2026-10-17 |
 | 0029 | [The chat streams the step it's on](0029-chat-streams-its-steps.md) | Accepted | 2026-10-18 |
 | 0030 | [Cart filling: Ta-Ta by link, Disco and Géant by a team extension](0030-cart-filling-tata-link-gdu-team-extension.md) | Accepted | 2026-10-18 |
+| 0032 | [The Menu tab shows one day at a time](0032-menu-shows-one-day-at-a-time.md) | Accepted | 2026-10-18 |
 
 ## Template
 
