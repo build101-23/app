@@ -99,7 +99,7 @@ The first version goes from a chat to a priced shopping list and the supermarket
 
 #### 6. Save money
 
-- Prices the list at Disco, Géant and Ta-Ta with their real prices, read from their websites, for the products the AI picked ([ADR 0024](adr/0024-agent-builds-the-menu-from-real-products.md)). The prices are the default branch's or sales channel's, not your delivery zone's.
+- Prices the list at Disco, Géant and Ta-Ta with their real prices, read from their websites, for the products the AI picked ([ADR 0024](adr/0024-agent-builds-the-menu-from-real-products.md)). The prices are the default branch's or sales channel's, not your delivery zone's. Totals don't include delivery, and the price note says so.
 - Prices only what's left to buy: crossed-out items aren't priced, and partly-had ones are priced on what's left.
 - Each store is costed on the whole units you'd add to the cart: packs, or pieces, trays and bags for food sold by weight ([ADR 0023](adr/0023-scraper-prices-for-the-unit-of-sale.md)). What's left over is paid for. The List's total and the cart's estimate count the same units, and − and + move by them ([ADR 0036](adr/0036-list-steps-by-unit-of-sale.md)).
 - Shows what the whole list costs at each supermarket.
