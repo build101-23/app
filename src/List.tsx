@@ -10,7 +10,7 @@ import { money, nameOf } from './format'
 import { usePrices } from './prices'
 import { supabase } from './supabase'
 import { t } from './strings'
-import { Alert, EmptyState, PageSkeleton, StoreIcon } from './ui'
+import { Alert, ChevronIcon, EmptyState, ListIcon, PageSkeleton, StoreIcon } from './ui'
 
 // updated_at is the menu's version: writing have doesn't touch it.
 export type MenuRow = { data: MenuData; have: Have; updated_at: string }
@@ -51,10 +51,6 @@ const listText = (items: Item[], have: Have) =>
   ].join('\n')
 
 const day = (iso: string) => new Date(iso).toLocaleDateString('es-UY', { day: 'numeric', month: 'long' })
-const optionText = ({ stores, total }: Option) =>
-  stores.length === 1
-    ? t.prices.oneStore(t.stores[stores[0]], money(total))
-    : t.prices.split(t.stores[stores[0]], t.stores[stores[1]], money(total))
 // The chosen total over the menu's days, on what's left to buy like the total. A one-day menu's total already is that.
 const perDay = (total: number, days: number) => (days > 1 ? t.prices.perDay(money(total / days), days) : '')
 
@@ -90,42 +86,92 @@ function noPrices(rows: unknown, p: Pricing | undefined) {
   return p.status === 'old' ? t.prices.oldMenu : p.status === 'none' ? t.prices.none : ''
 }
 
-// The list as it stands, with its total: the chat's card under a list tool call. Live, like the List tab.
+// The list as it stands, with its total: the chat's card under a list tool call. Live, like the List tab. The price
+// comes first; the items are in the tab, so the card only says how many are left in each section.
 export function ListPreview({ row, busy, onOpen }: { row: MenuRow; busy: boolean; onOpen: () => void }) {
   const rows = usePrices(row.data)
   const p = rows ? pricing(row.data, row.have, rows) : undefined
-  const items = buildList(row.data)
-  const nothingToBuy = items.every((item) => toBuy(item, row.have) === 0)
+  const left = buildList(row.data).filter((item) => toBuy(item, row.have) > 0)
+  const counts = sections
+    .map((section) => [section, left.filter((item) => item.section === section).length] as const)
+    .filter(([, n]) => n > 0)
   const waiting = noPrices(rows, p)
-  let summary = null
+  let price = null
+  let note = null
   if (p && !waiting) {
     const { single, split, notFound } = p.plan
     const chosen = single || split
-    const total = chosen
-      ? `${optionText(chosen)}${single ? '' : ` ${t.prices.noOneStore}`}`
-      : `${t.prices.noOneStore} ${p.plan.perStore.map(({ store, total }) => `${t.stores[store]} ${money(total)}`).join(' · ')}`
     const budget = budgetText(p, chosen?.total ?? null, p.splitFits && chosen === single ? split : null)
     const daily = chosen ? perDay(chosen.total, row.data.days.length) : ''
-    summary = (
-      <p>
-        <strong>{total}</strong>
-        {daily && `\n${daily}`}
-        {budget && `\n${budget.text}`}
-        <small className="muted">
-          {notFound.length > 0 && `\n${t.prices.missing(notFound.length)}`}
-          {p.checkedAt && `\n${t.prices.checked(day(p.checkedAt))}`}
-        </small>
-      </p>
+    price = (
+      <div className="price">
+        {chosen ? (
+          <div className="total">
+            <span className="stores">
+              {chosen.stores.map((store) => (
+                <StoreIcon key={store} store={store} />
+              ))}
+            </span>
+            <div>
+              <strong>{money(chosen.total)}</strong>
+              <span>
+                {single
+                  ? t.chat.listCard.allAt(t.stores[chosen.stores[0]])
+                  : t.chat.listCard.splitAt(t.stores[chosen.stores[0]], t.stores[chosen.stores[1]])}
+              </span>
+              {!single && <small className="muted">{t.prices.noOneStore}</small>}
+              {daily && <small className="muted">{daily}</small>}
+            </div>
+          </div>
+        ) : (
+          <div>
+            <p>{t.prices.noOneStore}</p>
+            <small className="muted">
+              {p.plan.perStore.map(({ store, total }) => `${t.stores[store]} ${money(total)}`).join(' · ')}
+            </small>
+          </div>
+        )}
+        {budget && <p>{budget.text}</p>}
+      </div>
     )
+    if (notFound.length > 0 || p.checkedAt)
+      note = (
+        <p className="note muted">
+          {notFound.length > 0 && <small>{t.prices.missing(notFound.length)}</small>}
+          {p.checkedAt && <small>{t.prices.checked(day(p.checkedAt))}</small>}
+        </p>
+      )
   }
   return (
-    <div className="bubble assistant list-preview">
-      <p>{nothingToBuy ? t.list.nothingLeft : listText(items, row.have)}</p>
-      {summary ?? (!nothingToBuy && <p className="muted">{waiting}</p>)}
+    <section className="list-card" aria-label={t.chat.listCard.title}>
+      <header>
+        <span className="badge">
+          <ListIcon />
+        </span>
+        <strong>{t.chat.listCard.title}</strong>
+        {left.length > 0 && <span className="pill">{t.chat.listCard.count(left.length)}</span>}
+      </header>
+      {left.length === 0 ? (
+        <p className="empty">{t.list.nothingLeft}</p>
+      ) : (
+        <>
+          {price ?? <p className="muted wait">{waiting}</p>}
+          <ul>
+            {counts.map(([section, n]) => (
+              <li key={section}>
+                <span>{t.list.sections[section]}</span>
+                <span>{n}</span>
+              </li>
+            ))}
+          </ul>
+          {note}
+        </>
+      )}
       <button type="button" className="button secondary" disabled={busy} onClick={onOpen}>
         {t.chat.openList}
+        <ChevronIcon />
       </button>
-    </div>
+    </section>
   )
 }
 
@@ -260,23 +306,37 @@ export default function List({ session, onOpenChat }: { session: Session; onOpen
           </div>
           {daily && <p>{daily}</p>}
           {budget && <p role={budget.alert ? 'alert' : undefined}>{budget.text}</p>}
-          {tab === recommended && plan.single!.saving > 0 && <p>{t.prices.saving(money(plan.single!.saving))}</p>}
+          {tab === recommended && plan.single!.saving > 0 && (
+            <section className="saving-card">
+              <strong>{t.prices.saving.title(money(plan.single!.saving))}</strong>
+              <span>{t.prices.saving.vsAverage}</span>
+              {/* This menu repeated for 30 days, at today's prices: an estimate, and the note says so. */}
+              <p>{t.prices.saving.perMonth(money(Math.round((plan.single!.saving * 30) / menu.data.days.length)))}</p>
+              <small className="muted">{t.prices.saving.perMonthNote}</small>
+            </section>
+          )}
           {p?.checkedAt && <p className="muted">{t.prices.checked(day(p.checkedAt))}</p>}
         </section>
       )}
       <p className="muted">{t.list.hint}</p>
       <div className="list-actions">
-        <button type="button" className="button secondary" disabled={nothingToBuy} onClick={share}>
+        <button type="button" className="button secondary small" disabled={nothingToBuy} onClick={share}>
           {t.list.share}
         </button>
-        <button type="button" className="button secondary" disabled={nothingToBuy} onClick={copy}>
+        <button type="button" className="button secondary small" disabled={nothingToBuy} onClick={copy}>
           {t.list.copy}
         </button>
         {Object.keys(have).length > 0 && (
-          <button type="button" className="link" onClick={() => window.confirm(t.list.resetConfirm) && save({})}>
+          <button
+            type="button"
+            className="button secondary small"
+            onClick={() => window.confirm(t.list.resetConfirm) && save({})}
+          >
             {t.list.reset}
           </button>
         )}
+        {/* The same size as its neighbors, at the right edge; the full one, with its notes, is under the list. */}
+        {priced && p && tab && !nothingToBuy && <Order p={p} store={tab} compact />}
       </div>
       {/* Always mounted, so "Lista copiada." is announced when its text appears. */}
       <p className="muted" role="status">
@@ -289,7 +349,7 @@ export default function List({ session, onOpenChat }: { session: Session; onOpen
         return (
           <section key={section}>
             <h2>{t.list.sections[section]}</h2>
-            <ul>
+            <ul className="rows">
               {inSection.map((item) => {
                 const name = nameOf(item)
                 const buy = toBuy(item, have)
@@ -308,53 +368,67 @@ export default function List({ session, onOpenChat }: { session: Session; onOpen
                         ? t.prices.notAt(t.stores[store])
                         : ''
                 const line = need && offer ? lineOf(need, offer) : null
+                // A pack steps by the store's own, so each tap changes what's paid; weight and unpriced lines by the food's.
+                const step = offer && !offer.by_weight ? offer.base_qty : undefined
+                // By weight: the grams the price is worked out on. A pack: the packs of the selected store. Else the catalog's.
+                const bought = need && offer && line ? (line.byWeight ? need.amount : line.packs * offer.base_qty) : buy
+                const amount = crossed
+                  ? needs
+                  : need && offer && line
+                    ? line.byWeight
+                      ? qty(need.amount, item.unit)
+                      : `${line.packs} × ${qty(offer.base_qty, item.unit)}`
+                    : buyText(item, buy)
                 return (
-                  <li key={item.id} className={crossed ? 'have' : undefined}>
-                    <label>
-                      <input
-                        type="checkbox"
-                        checked={crossed}
-                        aria-label={t.list.have(name)}
-                        onChange={() => toggle(item, crossed)}
-                      />
-                      <span className="item">
-                        <span>{name}</span>
-                        {tag && <small className="muted">{tag}</small>}
-                        {line && offer && store && (
-                          <small className="muted">
-                            <a href={offer.url} target="_blank" rel="noreferrer">
-                              {t.prices.product(line.packs, offer.name ?? '', t.stores[store], money(line.cost))}
-                            </a>
-                          </small>
-                        )}
-                      </span>
-                    </label>
-                    <span className="qty">
-                      {crossed ? needs : buyText(item, buy)}
-                      {!crossed && qty(buy, item.unit) !== needs && (
-                        <small className="muted">
-                          ({t.list.menuNeeds} {needs})
-                        </small>
-                      )}
-                    </span>
-                    <button
-                      type="button"
-                      className="step"
-                      aria-label={t.list.less(name)}
-                      disabled={crossed}
-                      onClick={() => save(stepHave(item, have, -1))}
-                    >
-                      −
-                    </button>
-                    <button
-                      type="button"
-                      className="step"
-                      aria-label={t.list.more(name)}
-                      disabled={buy >= toBuy(item, {})}
-                      onClick={() => save(stepHave(item, have, 1))}
-                    >
-                      +
-                    </button>
+                  <li key={item.id} className={[crossed && 'have', tag && 'unavailable'].filter(Boolean).join(' ') || undefined}>
+                    <div className="main">
+                      <label>
+                        <input
+                          type="checkbox"
+                          checked={crossed}
+                          aria-label={t.list.have(name)}
+                          onChange={() => toggle(item, crossed)}
+                        />
+                        <span className="item">
+                          <span>{name}</span>
+                          {tag && <small className="muted">{tag}</small>}
+                          {line && offer && store && (
+                            <small className="muted">
+                              <a href={offer.url} target="_blank" rel="noreferrer">
+                                {t.prices.product(offer.name ?? '', t.stores[store])}
+                              </a>
+                            </small>
+                          )}
+                          {!crossed && Math.abs(bought - item.amount) > 1e-9 && (
+                            <small className="muted">
+                              ({t.list.menuNeeds} {needs})
+                            </small>
+                          )}
+                        </span>
+                      </label>
+                      <div className="stepper">
+                        <button
+                          type="button"
+                          className="step"
+                          aria-label={t.list.less(name)}
+                          disabled={crossed}
+                          onClick={() => save(stepHave(item, have, -1, step))}
+                        >
+                          −
+                        </button>
+                        <span className="amount">{amount}</span>
+                        <button
+                          type="button"
+                          className="step"
+                          aria-label={t.list.more(name)}
+                          disabled={buy >= toBuy(item, {})}
+                          onClick={() => save(stepHave(item, have, 1, step))}
+                        >
+                          +
+                        </button>
+                      </div>
+                    </div>
+                    <span className="cost">{crossed ? (priced ? money(0) : '') : line ? money(line.cost) : ''}</span>
                   </li>
                 )
               })}

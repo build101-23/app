@@ -172,7 +172,8 @@ export function PageSkeleton({ label, shape }: { label: string; shape: 'menu' | 
                 <li key={row}>
                   <span className="skeleton-line box" />
                   <span className="skeleton-line name" />
-                  <span className="skeleton-line qty" />
+                  <span className="skeleton-line price-bar" />
+                  <span className="skeleton-line stepper-bar" />
                 </li>
               ))}
             </ul>

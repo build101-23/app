@@ -282,7 +282,7 @@ Flat content, glass navigation ([ADR 0026](adr/0026-glass-navigation-layer.md)).
 
 ## Shapes
 
-Round, from the dots. Pills (999px) for buttons, chips, the status pill and the single-line composer; a 44px circle for send; 18px bubbles with a 6px "tail" corner on the speaker's side; 16px cards; 14px fields; a 64px pill for the dock, with pill-shaped items and active capsule; 44px circles for the microphone and the List's − and + steps.
+Round, from the dots. Pills (999px) for buttons, chips, the status pill and the single-line composer; a 44px circle for send; 18px bubbles with a 6px "tail" corner on the speaker's side; 16px cards; 14px fields; a 64px pill for the dock, with pill-shaped items and active capsule; a 44px circle for the microphone; 32px circles for the List's − and + steps, with a 44px target.
 
 ## Components
 
@@ -290,6 +290,7 @@ Round, from the dots. Pills (999px) for buttons, chips, the status pill and the 
 - **Shape:** pill (999px), 48px tall (52px on sign-in), 600 weight.
 - **Primary:** deep green with white text. Hover darkens one step; press scales to 0.98.
 - **Secondary:** transparent, with a 1px strong-line inset outline. Used for sign-out, so leaving is never the loudest action.
+- **Small:** a secondary pill 40px tall with 0.875rem text, for an action beside bigger buttons (the List's "Restablecer lista").
 - **Quiet:** underlined green-ink text, 44px tall ("Usar otro email").
 - **Disabled:** 55% opacity.
 - **Busy:** full color, a progress cursor, a changed label ("Enviando…") and `aria-busy`. Busy means working, not unavailable.
@@ -336,7 +337,11 @@ A 44px tangerine circle with a white up arrow. Disabled: sunk surface with a mut
   - **Rows:** one per day in saved order, under hairlines like the Menu tab's: the day's first three letters in a muted 2.5rem column, and its meals in ink, joined with " · " and clamped to two lines. The tab has the whole menu; screen readers get the whole day name.
   - **Footer:** a secondary "Ver menú" pill with a trailing arrow (the chevron, turned).
   - Nothing is colored: the look comes from the hierarchy, the spacing and the icon circle. Each successful save adds one card; a turn that only shows the menu adds at most one, and none after a save in that turn (rules in [architecture.md](architecture.md#data-flow)).
-- **List card:** when the chat shows or changes the list, an assistant bubble under the reply with what's left to buy by section (as shared), the total where to buy it in 650 weight, what it comes to per day under it in plain ink, the budget line when there's a budget, a muted note with how many products weren't found and the prices' date, and a secondary "Ver lista" button. Until the prices are read, or when they can't be, one muted line says so. It's drawn live from the saved menu, so only the latest one shows ([ADR 0022](adr/0022-list-follows-the-menu.md)).
+- **List card:** when the chat shows or changes the list, it appears under the reply as a card like the menu card (same width, line, radius, header and button), with the price first. It's drawn live from the saved menu, so only the latest one shows ([ADR 0022](adr/0022-list-follows-the-menu.md)).
+  - **Header:** the sunk circle with the Lista icon, "Tu lista", and a pill with how many products are left to buy.
+  - **Price block:** the chosen store's icon (two when the buy is split), the total at 1.5rem/650 in tabular figures, "Todo en Géant" or "Géant y Disco" under it, and what it comes to per day in muted caption type. Under that, the budget line in plain ink (over budget is announced, but it isn't an error, so no alert). When no one store has the whole list: that sentence, and each store's total in muted type. Until the prices are read, or when they can't be or the menu is old, one muted line takes its place.
+  - **Sections:** one row per section with products left, under hairlines: the name on the left, the count on the right in muted tabular figures. The items themselves are in the List tab.
+  - **Note and button:** a muted note with how many products weren't found and the prices' date, then the secondary "Ver lista" pill with the arrow. With nothing left to buy it says so instead of the price and the sections.
 - **Voice:** where the browser has speech recognition, a 44px microphone circle sits between the field and send, in ink. While listening it fills with the primary color and pulses slowly; tangerine stays on send.
 
 ### Menu
@@ -354,11 +359,19 @@ A 44px tangerine circle with a white up arrow. Disabled: sunk surface with a mut
 - A page. On top, when the list is priced from the products the chat picked ([ADR 0024](adr/0024-agent-builds-the-menu-from-real-products.md)), three supermarket tabs ([ADR 0034](adr/0034-list-shows-one-store-at-a-time.md)):
   - three equal cards in a row, each a button with `aria-pressed`: the store's icon at 40px ([Store icons](#store-icons)), its name, its total in 650 weight, and either the "Recomendado" pill or "N productos no encontrados" in caption type;
   - the selected one trades its line for a 2px primary edge;
-  - under them, for the selected store: what its total comes to per day (menus of 2 days or more), the budget line in plain ink (over budget is announced, but it isn't an error, so it doesn't use the alert), the saving when it's the recommended store, and the muted note with the date the prices were read.
+  - under them, for the selected store: what its total comes to per day (menus of 2 days or more), the budget line in plain ink (over budget is announced, but it isn't an error, so it doesn't use the alert), the savings card when it's the recommended store, and the muted note with the date the prices were read.
+  - **Savings card:** a small card (up to 22rem, the usual line and radius, no color): "Ahorrás $ 11" at 1.25rem/650 with "frente al promedio de los súper", then under a hairline "Unos $ 47 al mes" and a caption saying it's this menu repeated for a month at today's prices. The month is the saving × 30 ÷ the menu's days, rounded: an estimate, and it says so.
 - While the prices load, or for a menu saved before real products, a card holds one muted line instead. If they can't be read, the inline alert takes its place.
-- Then the hint, and secondary "Compartir" and "Copiar" buttons with a "Lista nueva" link.
-- Sections (Frutas y verduras, Almacén…) list items in rows with hairlines: a checkbox (brand green), the name (it wraps beside the checkbox), the amount to buy on the right with what the menu uses under it, and 44px − and + circles. Under the name, in caption type, "No encontrado online", "No está en {store}", or the product to buy at the selected store ("2 × Boniato 1 kg · Géant · $ 144"), linked to its page: muted ink, underlined.
-- Under the list, "Pedir ahora en {store}": a primary button with the store's icon at 28px ([ADR 0030](adr/0030-cart-filling-tata-link-gdu-team-extension.md)).
+- Then the hint, and one row of four small pills (40px, the same size), wrapping when the width asks for it:
+  - secondary "Compartir" and "Copiar", and "Restablecer lista" when something is marked (it asks before clearing every "ya tengo");
+  - at the right edge, the primary "Pedir" with the store's icon at 24px, so nobody has to scroll to reach it. It's the same button as under the list (a link for Ta-Ta; disabled with "Muy pronto" for Disco and Géant), and its accessible name is the whole "Pedir ahora en {store}". On a phone the first three share a line and "Pedir" goes to the right of the next; from about 480px all four share one.
+- Sections (Frutas y verduras, Almacén…) list items in rows with hairlines, in two columns:
+  - **Left:** a checkbox (brand green) and the name (it wraps beside the checkbox); under it, in caption type, "No encontrado online", "No está en {store}", or the product to buy at the selected store ("Boniato 1 kg · Géant"), linked to its page: muted ink, underlined; then "(menú: 1,75 kg)" when what's bought differs from what the menu uses; and under that the control, small − and + circles (32px, with an invisible 44px target) with the amount between them, aligned with the name.
+  - **The amount** is the weight for food sold by weight ("1,6 kg"), the packs of the selected store for packed food ("2 × 1 kg"), and the catalog's pack where there is no price.
+  - **Right:** the line's price in 650 weight and tabular figures; "$ 0", muted and not struck through, when the item is crossed out or lowered to zero (once the prices are read); empty when there is no price.
+  - **Unavailable lines** (the selected store doesn't sell it, or none does: the ones with "No está en {store}" or "No encontrado online") are grayed out: the name goes muted and the checkbox and the − amount + control fade; the note stays readable.
+  - **What the taps do:** food sold by weight moves by 100 g (10 g under 100) and its price follows the grams; packed food moves by one pack of the selected store, so every tap changes what's paid ([ADR 0036](adr/0036-food-sold-by-weight-is-priced-by-weight.md)).
+- Under the list, "Pedir ahora en {store}": a primary button with the store's icon at 28px, at the right edge ([ADR 0030](adr/0030-cart-filling-tata-link-gdu-team-extension.md)). Its notes stay on the left, under it.
   - For Ta-Ta it's a link that opens the cart in another tab. Muted lines under it give how many products and the estimated total, then what stays out, one line per reason. After a tap, one muted line appears in an always-mounted `role="status"`.
   - For Disco and Géant it's disabled, with the "Muy pronto" pill beside it and one muted line.
 - Crossed-out items (you have them at home) turn muted and struck through.
@@ -402,7 +415,7 @@ Sunk-surface pills (6px 14px) listing what the chat saved: can't eat, dislikes, 
 
 ### Alerts and states
 - **Inline alert:** danger text on the danger surface, a 20px alert icon, 14px radius (`Alert` in `src/ui.tsx` when there's nothing to do but read it). Below the message goes either a muted detail line (the provider's raw message on sign-in) or a quiet "Reintentar" button when the failed load can be retried (chats, profile).
-- **Skeletons:** flat sunk-surface shapes with a slow opacity pulse, in the layout of what's loading, inside a `role="status"` region with a screen-reader label (the rest `aria-hidden`). Chat has bubbles; Menu has the day strip, a card with a title bar and four meal rows with hairlines, and a pill; List has the "Dónde comprar" card, the two button pills and a section of rows (checkbox, name, amount); Profile has the facts card and two groups of chips. They reuse the real page's classes (`.day-card`, `.prices`, `.list li`, `.facts`, `.chips`), so gaps and hairlines match and the content arrives where its placeholder was; `PageSkeleton` in `src/ui.tsx` takes the shape (`menu` or `list`), and Profile's is in `src/Profile.tsx`. No shimmer: a sweeping band needs a gradient fill, which the Flat Fill Rule rules out. Every skeleton has the `skeleton` class, which the page fade-in skips.
+- **Skeletons:** flat sunk-surface shapes with a slow opacity pulse, in the layout of what's loading, inside a `role="status"` region with a screen-reader label (the rest `aria-hidden`). Chat has bubbles; Menu has the day strip, a card with a title bar and four meal rows with hairlines, and a pill; List has the "Dónde comprar" card, the two button pills and a section of rows (checkbox, name, price, and the control under the name); Profile has the facts card and two groups of chips. They reuse the real page's classes (`.day-card`, `.prices`, `.list li`, `.facts`, `.chips`), so gaps and hairlines match and the content arrives where its placeholder was; `PageSkeleton` in `src/ui.tsx` takes the shape (`menu` or `list`), and Profile's is in `src/Profile.tsx`. No shimmer: a sweeping band needs a gradient fill, which the Flat Fill Rule rules out. Every skeleton has the `skeleton` class, which the page fade-in skips.
 - **Content arriving:** on Menu, List and Profile, what replaces a skeleton (and each page on a tab switch) fades in over `--dur-slow`: every direct child of `.page` except `.skeleton`, so a quick load never shows a half-faded skeleton. Chat's bubbles already have `rise-in`.
 - **Not available yet:** something in the product plan but not in the app yet shows a "Muy pronto" pill and says only what's true today. Today that's the health-data consent dialog.
 - **Empty screens** (Profile, Menu, List; `EmptyState` in `src/ui.tsx`): the mark, one line of copy, and an "Ir al chat" primary button.

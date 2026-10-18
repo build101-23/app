@@ -87,7 +87,7 @@ The first version goes from a chat to a priced shopping list and the supermarket
 - Adds up the whole menu and groups it by section, in the order you walk the store: fruit and vegetables, pantry, meat and fish, dairy, cold cuts and eggs, and "Otros" for foods outside the catalog.
 - Converts to how things are sold: "1,1 kg of rice" becomes "2 × 1 kg", with what the menu uses next to it. Meat, fish, ham, cheese, fruit and vegetables show a weight (or a count), since they're sold loose or by weight. It always rounds up, never down.
 - Accounts for raw vs. cooked: the menu's amounts are raw as bought, and the chat converts cooked amounts you give it (plans often say cooked rice; you buy it dry).
-- Cross out what you already have at home, or buy less of it with −; or tell the chat. Your marks stay when the menu changes, until you tap "Lista nueva" or tell the chat you're starting a new week.
+- Cross out what you already have at home, or buy less of it with −; or tell the chat. With food sold by weight, − takes off 100 g and the price drops with it; with packed food it takes off a pack. Your marks stay when the menu changes, until you tap "Restablecer lista" or tell the chat you're starting a new week.
 - On top, one tab per supermarket, with its icon and its total for what's left to buy ([ADR 0034](adr/0034-list-shows-one-store-at-a-time.md)). It opens on the recommended store (§6), marked "Recomendado". Tap another to see the list there.
 - Under each item, what to buy at the selected store: "2 × Arroz Blanco SAMAN 1 kg · Ta-Ta · $ 118", with a link to the product's page. If that store doesn't sell it: "No está en Ta-Ta".
 - Share (the phone's share sheet, with WhatsApp) or copy as text, with only what's left to buy.
@@ -100,7 +100,7 @@ The first version goes from a chat to a priced shopping list and the supermarket
 
 - Prices the list at Disco, Géant and Ta-Ta with their real prices, read from their websites, for the products the AI picked ([ADR 0024](adr/0024-agent-builds-the-menu-from-real-products.md)). The prices are the default branch's or sales channel's, not your delivery zone's.
 - Prices only what's left to buy: crossed-out items aren't priced, and partly-had ones are priced on what's left.
-- Each store is costed on the whole units you'd add to the cart: packs, or pieces, trays and bags for food sold by weight ([ADR 0023](adr/0023-scraper-prices-for-the-unit-of-sale.md)). What's left over is paid for.
+- Packed food is costed on the whole packs you'd add to the cart, and what's left over is paid for. Food the store sells by weight (loose fruit and vegetables, meat) is costed on its grams, at the store's price per kilo ([ADR 0023](adr/0023-scraper-prices-for-the-unit-of-sale.md), [ADR 0036](adr/0036-food-sold-by-weight-is-priced-by-weight.md)). The cart still adds whole units, and its estimate is for those.
 - Shows what the whole list costs at each supermarket.
 - Under the tabs, the selected store's total over the menu's days: "$ 277 por día · menú de 7 días". It's what's left to buy divided by the menu's days, so it drops as you cross things out. Not shown for a 1-day menu.
 - With a budget, it says whether the selected store's total fits and how much is left, or how much is missing. The chat's list card also says when a split between two stores would fit.
@@ -114,7 +114,7 @@ The first version goes from a chat to a priced shopping list and the supermarket
 3. It never suggests more than two stores. If neither one store nor two have the whole list, it shows each store's total and recommends nothing.
 4. A store that is missing items shows "N items not found". Items no store has are marked "not found online" and left out of every total.
 
-**How much you saved.** Each week the app shows the saving compared with the average price of the same list across the supermarkets it checks: each item's average over the stores that sell it, added up. It's rounded down and shown only when it's above zero.
+**How much you saved.** Each week the app shows the saving compared with the average price of the same list across the supermarkets it checks: each item's average over the stores that sell it, added up. It's rounded down and shown only when it's above zero. Next to it the app says what that would add up to over a month if you repeated the same menu: the saving × 30 ÷ the menu's days, as an estimate at today's prices.
 
 #### 7. Basics
 
