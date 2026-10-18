@@ -69,13 +69,27 @@ export default function Profile({ session, onOpenChat }: { session: Session; onO
       ) : data ? (
         <Saved data={data} onOpenChat={onOpenChat} />
       ) : (
-        <div className="card profile-skeleton" role="status">
-          <span className="sr-only">{t.profile.loading}</span>
-          <span className="skeleton-line" />
-          <span className="skeleton-line" />
-          <span className="skeleton-line" />
-          <span className="skeleton-line" />
-        </div>
+        <>
+          <div className="card facts skeleton" role="status">
+            <span className="sr-only">{t.profile.loading}</span>
+            {[0, 1, 2].map((row) => (
+              <div key={row} aria-hidden="true">
+                <span className="skeleton-line label" />
+                <span className="skeleton-line value" />
+              </div>
+            ))}
+          </div>
+          {[3, 2].map((chips) => (
+            <section key={chips} className="group skeleton" aria-hidden="true">
+              <span className="skeleton-line heading" />
+              <ul className="chips">
+                {Array.from({ length: chips }, (_, i) => (
+                  <li key={i} className="skeleton-line" />
+                ))}
+              </ul>
+            </section>
+          ))}
+        </>
       )}
       {/* Even with nothing saved yet: numbers are optional and can be turned on any time. */}
       {data && (

@@ -154,7 +154,7 @@ export default function List({ session, onOpenChat }: { session: Session; onOpen
   }, [])
 
   if (menu === undefined) {
-    return <div className="page list">{error ? <Alert text={error} /> : <PageSkeleton label={t.list.loading} />}</div>
+    return <div className="page list">{error ? <Alert text={error} /> : <PageSkeleton label={t.list.loading} shape="list" />}</div>
   }
   if (!menu) {
     return (

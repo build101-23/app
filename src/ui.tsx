@@ -125,16 +125,54 @@ export function Alert({ text }: { text: string }) {
   )
 }
 
-// A page loading: headings and rows in sunk shapes, and the label for screen readers.
-export function PageSkeleton({ label }: { label: string }) {
+const count = (n: number) => Array.from({ length: n }, (_, i) => i)
+
+// A page loading, in the shape of what's coming (Menu's days and meals, List's card and rows) plus the label for screen
+// readers. It reuses the real page's classes, so the gaps and hairlines match and the content arrives where it was.
+export function PageSkeleton({ label, shape }: { label: string; shape: 'menu' | 'list' }) {
   return (
-    <div className="page-skeleton" role="status">
+    <div className={`skeleton ${shape}-skeleton`} role="status">
       <span className="sr-only">{label}</span>
-      <span className="skeleton-line" />
-      <span className="skeleton-line" />
-      <span className="skeleton-line" />
-      <span className="skeleton-line" />
-      <span className="skeleton-line" />
+      {shape === 'menu' ? (
+        count(3).map((day) => (
+          <section key={day} aria-hidden="true">
+            <div className="menu-day">
+              <span className="skeleton-line day" />
+              <span className="skeleton-line change" />
+            </div>
+            {count(4).map((meal) => (
+              <div key={meal} className="meal">
+                <span className="skeleton-line slot" />
+                <span className="skeleton-line recipe" />
+              </div>
+            ))}
+          </section>
+        ))
+      ) : (
+        <>
+          <section className="prices" aria-hidden="true">
+            {count(5).map((line) => (
+              <span key={line} className="skeleton-line" />
+            ))}
+          </section>
+          <div className="list-actions" aria-hidden="true">
+            <span className="skeleton-line pill" />
+            <span className="skeleton-line pill" />
+          </div>
+          <section aria-hidden="true">
+            <span className="skeleton-line section-heading" />
+            <ul>
+              {count(5).map((row) => (
+                <li key={row}>
+                  <span className="skeleton-line box" />
+                  <span className="skeleton-line name" />
+                  <span className="skeleton-line qty" />
+                </li>
+              ))}
+            </ul>
+          </section>
+        </>
+      )}
     </div>
   )
 }

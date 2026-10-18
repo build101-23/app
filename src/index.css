@@ -657,7 +657,7 @@ a.button {
 /* The content fades in when it arrives, after the skeleton or on a tab switch. Skeletons stay out of it, so a quick
    load doesn't swap a half-faded skeleton for content that starts at zero. ease-out, not --ease: that one reaches half
    the opacity in about a sixth of the time and reads as a pop. */
-.page > :not(.page-skeleton, .profile-skeleton) {
+.page > :not(.skeleton) {
   animation: fade-in var(--dur-slow) ease-out both;
 }
 
@@ -1274,40 +1274,159 @@ a.button {
   max-width: 34ch;
 }
 
-/* A page loading: a heading-sized bar, then rows. */
-.page-skeleton {
+/* Skeletons keep the shape of the page that's loading. They reuse its classes (cards, hairlines, gaps), so the content
+   arrives where its placeholder was. Flat sunk shapes with the slow pulse: a shimmer would need a gradient fill. */
+
+.menu-skeleton {
   display: grid;
-  gap: 18px;
+  gap: 8px;
 }
 
-.page-skeleton .skeleton-line {
-  width: 85%;
+.menu-skeleton .menu-day {
+  align-items: center;
+  height: 31px;
+}
+
+.menu-skeleton .day {
+  width: 88px;
   height: 14px;
 }
 
-.page-skeleton .skeleton-line:nth-child(2) {
+.menu-skeleton .change {
+  width: 56px;
+  height: 12px;
+}
+
+.menu-skeleton .meal {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 45px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.menu-skeleton .slot {
+  flex: none;
+  width: 64px;
+  height: 12px;
+}
+
+.menu-skeleton .recipe {
+  width: 52%;
+  max-width: 220px;
+  height: 14px;
+}
+
+.menu-skeleton .meal:nth-child(3n) .recipe {
+  width: 38%;
+}
+
+.list-skeleton {
+  display: grid;
+  align-content: start;
+  gap: 8px;
+}
+
+.list-skeleton .prices .skeleton-line {
+  height: 14px;
+}
+
+.list-skeleton .prices .skeleton-line:first-child {
+  width: 42%;
+  height: 16px;
+  margin-bottom: 4px;
+}
+
+.list-skeleton .prices .skeleton-line:nth-child(2) {
+  width: 72%;
+}
+
+.list-skeleton .prices .skeleton-line:nth-child(3) {
+  width: 58%;
+}
+
+.list-skeleton .prices .skeleton-line:nth-child(4) {
+  width: 64%;
+}
+
+.list-skeleton .prices .skeleton-line:nth-child(5) {
+  width: 50%;
+}
+
+.list-skeleton .pill {
+  width: 112px;
+  height: 48px;
+}
+
+.list-skeleton .pill:nth-child(2) {
+  width: 96px;
+}
+
+.list-skeleton .section-heading {
   width: 40%;
+  height: 16px;
+  margin: 24px 0 14px;
+}
+
+.list-skeleton li {
+  min-height: 49px;
+}
+
+.list-skeleton .box {
+  flex: none;
+  width: 20px;
   height: 20px;
+  border-radius: 6px;
 }
 
-.profile-skeleton {
-  display: grid;
-  gap: 18px;
-  padding: 16px;
-}
-
-.profile-skeleton .skeleton-line {
+.list-skeleton .name {
+  width: 48%;
   height: 14px;
 }
 
-/* Child 1 is the screen-reader label, so the lines are children 2 to 5: label (even), then value (odd). */
-.profile-skeleton .skeleton-line:nth-child(even) {
-  width: 30%;
-  height: 10px;
+.list-skeleton li:nth-child(even) .name {
+  width: 36%;
 }
 
-.profile-skeleton .skeleton-line:nth-child(odd) {
+.list-skeleton .qty {
+  width: 48px;
+  height: 14px;
+  margin-left: auto;
+}
+
+.facts.skeleton > div {
+  display: grid;
+  gap: 14px;
+}
+
+.facts.skeleton .label {
+  width: 30%;
+  height: 12px;
+}
+
+.facts.skeleton .value {
   width: 70%;
+  height: 16px;
+}
+
+.group.skeleton .heading {
+  width: 38%;
+  height: 16px;
+  margin: 4px 0 14px;
+}
+
+.group.skeleton li {
+  width: 72px;
+  height: 34px;
+}
+
+.group.skeleton li:nth-child(2) {
+  width: 96px;
+}
+
+.group.skeleton li:nth-child(3) {
+  width: 60px;
 }
 
 /* Menu */

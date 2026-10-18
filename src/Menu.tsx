@@ -58,7 +58,7 @@ export default function Menu({ onChange }: { onChange: (draft: string) => void }
   }, [])
 
   if (menu === undefined) {
-    return <div className="page menu">{error ? <Alert text={error} /> : <PageSkeleton label={t.menu.loading} />}</div>
+    return <div className="page menu">{error ? <Alert text={error} /> : <PageSkeleton label={t.menu.loading} shape="menu" />}</div>
   }
   if (!menu) {
     return (
