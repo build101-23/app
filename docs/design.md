@@ -416,6 +416,7 @@ Sunk-surface pills (6px 14px) listing what the chat saved: can't eat, dislikes, 
 ### Alerts and states
 - **Inline alert:** danger text on the danger surface, a 20px alert icon, 14px radius (`Alert` in `src/ui.tsx` when there's nothing to do but read it). Below the message goes either a muted detail line (the provider's raw message on sign-in) or a quiet "Reintentar" button when the failed load can be retried (chats, profile).
 - **Skeletons:** sunk-surface shapes in the layout of what's loading (bubbles, definition rows; `PageSkeleton` in `src/ui.tsx` for Menu and List), with a slow opacity pulse, inside a `role="status"` region with a screen-reader label.
+- **Content arriving:** on Menu, List and Profile, what replaces a skeleton (and each page on a tab switch) fades in over `--dur-slow`: every direct child of `.page` except the skeletons, so a quick load never shows a half-faded skeleton. Chat's bubbles already have `rise-in`.
 - **Not available yet:** something in the product plan but not in the app yet shows a "Muy pronto" pill and says only what's true today. Today that's the health-data consent dialog.
 - **Empty screens** (Profile, Menu, List; `EmptyState` in `src/ui.tsx`): the mark, one line of copy, and an "Ir al chat" primary button.
 - **Results that appear in place** (the chat's status line, "Lista copiada.") live in a `role="status"` element that is always mounted, so screen readers announce each change of its text.
@@ -444,6 +445,7 @@ Drawn for this app on a 24px grid: 1.75px round strokes, `currentColor` (the sen
 | --- | --- | --- |
 | `--dur-fast` | 120ms | press feedback, color changes |
 | `--dur` | 200ms | fades |
+| `--dur-slow` | 300ms, `ease-out` | a page's content fading in (`--ease` is too sharp for an opacity fade) |
 | `--ease` | cubic-bezier(0.2, 0.7, 0.2, 1) | everything that isn't a loop |
 | `rise-in` | 160ms, 6px | a new bubble arriving |
 | `dot-in` | 180ms scale | the active-tab dot |

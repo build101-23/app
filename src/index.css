@@ -68,6 +68,7 @@
   /* Motion */
   --dur-fast: 120ms;
   --dur: 200ms;
+  --dur-slow: 300ms;
   --ease: cubic-bezier(0.2, 0.7, 0.2, 1);
 
   --font: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
@@ -651,6 +652,13 @@ a.button {
   max-width: calc(var(--column) + 2 * var(--gutter));
   margin: 0 auto;
   padding: 20px calc(var(--gutter) + var(--safe-right)) var(--dock-clear) calc(var(--gutter) + var(--safe-left));
+}
+
+/* The content fades in when it arrives, after the skeleton or on a tab switch. Skeletons stay out of it, so a quick
+   load doesn't swap a half-faded skeleton for content that starts at zero. ease-out, not --ease: that one reaches half
+   the opacity in about a sixth of the time and reads as a pop. */
+.page > :not(.page-skeleton, .profile-skeleton) {
+  animation: fade-in var(--dur-slow) ease-out both;
 }
 
 /* Chat */
