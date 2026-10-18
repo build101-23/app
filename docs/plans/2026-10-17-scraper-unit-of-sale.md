@@ -1,6 +1,6 @@
 # Scraper prices for the unit of sale
 
-Status: **in progress**.
+Status: **done** ([ADR 0023](../adr/0023-scraper-prices-for-the-unit-of-sale.md)).
 
 ## Context
 The chat agent will price menus in whole units of sale from `store_products`. It relies on one contract for rows with `size_source = 'unit'`: `base_qty`/`base_unit` is the amount the price is for, and `size_qty`/`size_unit` is one unit of sale (what goes in the cart). Today some rows break it, so their `unit_price` is 0.5x to 10x off:
@@ -12,9 +12,9 @@ The chat agent will price menus in whole units of sale from `store_products`. It
 Also, the GDU food phase takes the newest ids per food, which are mostly packaged goods (all newest "tomate-" ids are canned), and some Ta-Ta names are mis-encoded ("VacÃ­o").
 
 ## Design
-- **GDU weighable** (card `desc-prices`, product page `det-precios`): the `product-price-weighable` class and a "/ kg" price. Then `price` is per kg, `base_qty` 1000 g, `size_source` 'unit', and the unit of sale is the name's weight (product pages: else the spec's), or 1 kg. A note when only one of the two signs is there, or when the piece price doesn't match per kg × weight.
+- **GDU weighable** (card `desc-prices`, product page `det-precios`): the `product-price-weighable` class and a "/ kg" price. Then `price` is per kg, `base_qty` 1000 g, `size_source` 'unit', and the unit of sale is the name's weight (product pages: else the spec's). After review: only when the piece price agrees with it, else piece ÷ price per kg, else 1 kg. A note when only one of the two signs is there.
 - **GDU product pages:** when the visible price differs from JSON-LD by more than $1, store the visible one (the piece, priced with the name's weight). Keep the note.
-- **GDU food phase:** slugs that look like fresh produce (`aprox`, `x-kg`, `malla`, `bandeja`) come first, then newest first.
+- **GDU food phase:** slugs that look like fresh produce (`aprox`, `x-kg`, `malla`, `bandeja`) come first, then newest first. It skips only what the listings read, so its own earlier pages (some saved wrong) are read again, never-read and oldest first.
 - **Ta-Ta:** kg with `unitMultiplier` > 1 is priced per kg: `base_qty` 1000 g, unit of sale `unitMultiplier` kg, no "priced for" note. Names with "Ã" get a latin-1 → utf-8 round trip.
 - **Merge rule** (new migration, same function body): a `spec` size is kept only against a `name` or empty one; a `unit` size always replaces and can always be replaced.
 
