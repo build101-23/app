@@ -12,25 +12,31 @@ import { StoreIcon } from './ui'
 // Ta-Ta fills by link in any browser.
 const canFill = (store: StoreKey) => store === 'tata'
 
-export default function Order({ p, store }: { p: Pricing; store: StoreKey }) {
+// compact: only the button, for the top of the List tab; the notes and the status stay with the full one below the list.
+export default function Order({ p, store, compact = false }: { p: Pricing; store: StoreKey; compact?: boolean }) {
   const [opened, setOpened] = useState<StoreKey | null>(null)
   const label = (
     <>
       <StoreIcon store={store} />
-      {t.cart.order(t.stores[store])}
+      {compact ? t.cart.orderShort : t.cart.order(t.stores[store])}
     </>
   )
 
   if (!canFill(store)) {
     return (
-      <section className="order">
+      <section className={compact ? 'order compact' : 'order'}>
         <div className="order-soon">
-          <button type="button" className="button primary" disabled>
+          <button
+            type="button"
+            className={compact ? 'button primary small' : 'button primary'}
+            aria-label={compact ? t.cart.order(t.stores[store]) : undefined}
+            disabled
+          >
             {label}
           </button>
           <span className="pill">{t.soon}</span>
         </div>
-        <p className="muted">{t.cart.byHand(t.stores[store])}</p>
+        {!compact && <p className="muted">{t.cart.byHand(t.stores[store])}</p>}
       </section>
     )
   }
@@ -55,9 +61,10 @@ export default function Order({ p, store }: { p: Pricing; store: StoreKey }) {
   })
 
   return (
-    <section className="order">
+    <section className={compact ? 'order compact' : 'order'}>
       <a
-        className="button primary"
+        className={compact ? 'button primary small' : 'button primary'}
+        aria-label={compact ? t.cart.order(t.stores[store]) : undefined}
         href={tataCartUrl(cart.lines)}
         target="_blank"
         rel="noreferrer"
@@ -65,12 +72,16 @@ export default function Order({ p, store }: { p: Pricing; store: StoreKey }) {
       >
         {label}
       </a>
-      <p className="muted">{t.cart.adds(cart.lines.length, money(cart.total))}</p>
-      {left}
-      {/* Always mounted, so the line is announced when it appears. */}
-      <p className="muted" role="status">
-        {opened && t.cart.opened(t.stores[opened])}
-      </p>
+      {!compact && (
+        <>
+          <p className="muted">{t.cart.adds(cart.lines.length, money(cart.total))}</p>
+          {left}
+          {/* Always mounted, so the line is announced when it appears. */}
+          <p className="muted" role="status">
+            {opened && t.cart.opened(t.stores[opened])}
+          </p>
+        </>
+      )}
     </section>
   )
 }

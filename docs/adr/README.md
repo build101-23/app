@@ -39,6 +39,7 @@ One file per decision: `NNNN-short-title.md`. ADRs are append-only: never rewrit
 | 0033 | [Light theme only](0033-light-theme-only.md) | Accepted | 2026-10-18 |
 | 0034 | [The List shows one supermarket at a time](0034-list-shows-one-store-at-a-time.md) | Accepted | 2026-10-18 |
 | 0035 | [The mark is the first V of VIVERI](0035-mark-is-the-first-v.md) | Accepted | 2026-10-18 |
+| 0036 | [The List steps by unit of sale](0036-list-steps-by-unit-of-sale.md) | Accepted | 2026-10-18 |
 
 ## Template
 

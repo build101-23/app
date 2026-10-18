@@ -232,6 +232,13 @@ a.button {
   color: var(--ink);
 }
 
+/* Smaller, for a secondary action beside bigger buttons. */
+.button.small {
+  min-height: 40px;
+  padding: 0 16px;
+  font-size: 0.875rem;
+}
+
 .button.quiet {
   min-height: 44px;
   padding: 0 12px;
@@ -784,47 +791,154 @@ a.button {
   padding: 13px 16px;
 }
 
-/* The menu the chat saved, shown under its reply as a card in the conversation. */
-.menu-preview {
-  display: grid;
-  gap: 12px;
-  white-space: normal;
+/* The menu and the list the chat shows under a reply: cards, not bubbles (a bubble's tail belongs to a speaker). A badge
+   and a title, rows under hairlines, and the way to the tab. */
+:is(.menu-card, .list-card) {
+  align-self: flex-start;
+  width: min(100%, 28rem);
+  padding: 0 16px 16px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-card);
+  background: var(--surface);
+  animation: rise-in 160ms var(--ease) both;
 }
 
-.menu-preview ul {
+.bubble.user + :is(.menu-card, .list-card),
+:is(.menu-card, .list-card) + .bubble.user {
+  margin-top: 10px;
+}
+
+:is(.menu-card, .list-card) header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 0 12px;
+}
+
+:is(.menu-card, .list-card) .badge {
   display: grid;
-  gap: 6px;
+  place-items: center;
+  flex: none;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--surface-sunk);
+}
+
+:is(.menu-card, .list-card) .badge .icon {
+  width: 18px;
+  height: 18px;
+}
+
+:is(.menu-card, .list-card) header strong {
+  flex: 1;
+  font-weight: 650;
+}
+
+:is(.menu-card, .list-card) ul {
   margin: 0;
   padding: 0;
   list-style: none;
-  font-size: 0.9375rem;
 }
 
-.menu-preview strong {
-  display: block;
+:is(.menu-card, .list-card) .button {
+  margin-top: 4px;
+  min-height: 44px;
+}
+
+:is(.menu-card, .list-card) .button .icon {
+  width: 18px;
+  height: 18px;
+  transform: rotate(-90deg);
+}
+
+.menu-card li {
+  display: grid;
+  grid-template-columns: 2.5rem minmax(0, 1fr);
+  gap: 12px;
+  padding: 10px 0;
+  border-top: 1px solid var(--line);
+  font-size: 0.9375rem;
+  line-height: 1.4;
+}
+
+.menu-card .day {
+  color: var(--ink-muted);
+  font-size: 0.8125rem;
   font-weight: 650;
   text-transform: capitalize;
 }
 
-.menu-preview .button,
-.list-preview .button {
-  justify-self: start;
-  min-height: 44px;
+/* The tab has the whole menu; here two lines are enough to tell the days apart. */
+.menu-card .meals {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  overflow: hidden;
 }
 
-/* The list as it stands, under the reply that showed or changed it: what to buy by section (pre-wrapped
-   text, as shared), then the total, the budget line and the prices' date. */
-.list-preview {
+/* The list card puts the price first, then how many products are left in each section. The items are in the tab. */
+.list-card .price,
+.list-card .wait,
+.list-card .empty {
+  padding: 14px 0;
+  border-top: 1px solid var(--line);
+  font-size: 0.9375rem;
+}
+
+.list-card .price {
   display: grid;
+  gap: 10px;
+}
+
+.list-card .total {
+  display: flex;
+  align-items: flex-start;
   gap: 12px;
 }
 
-.list-preview strong {
-  font-weight: 650;
+.list-card .stores {
+  display: flex;
+  flex: none;
+  gap: 6px;
 }
 
-.list-preview small {
+.list-card .total > div {
+  display: grid;
+  gap: 2px;
+}
+
+.list-card .total strong {
+  font-size: 1.5rem;
+  font-weight: 650;
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+  font-variant-numeric: tabular-nums;
+}
+
+.list-card small {
   font-size: 0.8125rem;
+}
+
+.list-card li {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 0;
+  border-top: 1px solid var(--line);
+  font-size: 0.9375rem;
+}
+
+.list-card li span:last-child {
+  color: var(--ink-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.list-card .note {
+  display: grid;
+  gap: 2px;
+  margin: 10px 0 4px;
 }
 
 .messages .alert {
@@ -1339,12 +1453,15 @@ a.button {
   margin: 24px 0 14px;
 }
 
-.list-skeleton li {
-  min-height: 49px;
+.list .list-skeleton li {
+  display: grid;
+  grid-template-columns: 20px minmax(0, 1fr) auto;
+  align-items: start;
+  gap: 10px;
+  padding: 14px 0 12px;
 }
 
 .list-skeleton .box {
-  flex: none;
   width: 20px;
   height: 20px;
   border-radius: 6px;
@@ -1355,14 +1472,22 @@ a.button {
   height: 14px;
 }
 
-.list-skeleton li:nth-child(even) .name {
+.list .list-skeleton li:nth-child(even) .name {
   width: 36%;
 }
 
-.list-skeleton .qty {
+.list-skeleton .stepper-bar {
+  grid-column: 2;
+  grid-row: 2;
+  width: 140px;
+  height: 32px;
+}
+
+.list-skeleton .price-bar {
+  grid-column: 3;
+  grid-row: 1;
   width: 48px;
   height: 14px;
-  margin-left: auto;
 }
 
 .facts.skeleton > div {
@@ -1708,8 +1833,28 @@ a.button {
   text-align: start;
 }
 
+/* Under the list the button, and the "Muy pronto" that goes with it, sit at the right; the notes stay on the left. */
+.order:not(.compact) > .button,
+.order:not(.compact) > .order-soon {
+  justify-self: end;
+}
+
 .order p {
   font-size: 0.875rem;
+}
+
+/* The button alone, on top of the tab. */
+.order.compact {
+  margin-top: 0;
+}
+
+/* In the actions row: the same height as its neighbors, at the right edge. */
+.list-actions .order.compact {
+  margin-left: auto;
+}
+
+.order.compact .button {
+  --store-icon-size: 24px;
 }
 
 .order-soon {
@@ -1724,12 +1869,6 @@ a.button {
   flex-wrap: wrap;
   align-items: center;
   gap: 8px;
-}
-
-.list-actions .link {
-  min-height: 44px;
-  padding: 0 8px;
-  color: var(--brand-ink);
 }
 
 .list h2 {
@@ -1790,38 +1929,117 @@ a.button {
   font-size: 0.8125rem;
 }
 
-.list .qty {
-  text-align: right;
-  font-variant-numeric: tabular-nums;
-}
-
-.list .qty small {
-  display: block;
-  font-size: 0.8125rem;
-}
-
 .list li.have label span,
-.list li.have .qty {
+.list li.have .amount {
   color: var(--ink-muted);
   text-decoration: line-through;
 }
 
+/* Crossed out: $ 0, plain and muted. */
+.list li.have .cost {
+  color: var(--ink-muted);
+  font-weight: 400;
+}
+
+/* What the selected store doesn't have: grayed out, with its note still readable. */
+.list li.unavailable .item > span:first-child {
+  color: var(--ink-muted);
+}
+
+.list li.unavailable input[type='checkbox'],
+.list li.unavailable .stepper {
+  opacity: 0.55;
+}
+
 .list .step {
+  position: relative;
   flex: none;
   display: grid;
   place-items: center;
-  width: 44px;
-  height: 44px;
+  width: 32px;
+  height: 32px;
   border-radius: 50%;
   box-shadow: inset 0 0 0 1px var(--line-strong);
   color: var(--ink);
-  font-size: 1.125rem;
+  font-size: 1rem;
+}
+
+/* The circle is small, the target isn't: it stays 44px. */
+.list .step::after {
+  content: '';
+  position: absolute;
+  inset: -6px;
 }
 
 .list .step:disabled {
   box-shadow: inset 0 0 0 1px var(--line);
   color: var(--ink-muted);
   opacity: 0.55;
+}
+
+/* Each item: its name over the − amount + control, and its price in the right column. */
+.list .rows > li {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: start;
+  gap: 0 12px;
+  padding-bottom: 8px;
+}
+
+.list .rows .main {
+  min-width: 0;
+}
+
+/* Under the name, past the checkbox (20px and its gap). */
+.list .rows .stepper {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  margin-left: 30px;
+}
+
+.list .rows .amount {
+  min-width: 4.75rem;
+  font-size: 0.9375rem;
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+}
+
+.list .rows .cost {
+  padding-top: 14px;
+  font-weight: 650;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+/* The saving, on the recommended store's tab: small, with the month it adds up to. */
+.saving-card {
+  display: grid;
+  gap: 2px;
+  width: min(100%, 22rem);
+  padding: 12px 16px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-card);
+  background: var(--surface);
+}
+
+.saving-card strong {
+  font-size: 1.25rem;
+  font-weight: 650;
+  line-height: 1.3;
+  font-variant-numeric: tabular-nums;
+}
+
+.saving-card p {
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid var(--line);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.saving-card small {
+  font-size: 0.8125rem;
 }
 
 /* Dock tabs are disabled while the chat saves a turn, since leaving would hide it. The current tab keeps
