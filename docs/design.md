@@ -182,7 +182,7 @@ components:
 
 # Design System: VIVERI
 
-Living doc: how the interface looks *now*. Tokens live as CSS custom properties at the top of [`src/index.css`](../src/index.css); this file explains them. The decision to adopt this system is [ADR 0023](adr/0023-viveri-identity-and-ui-system.md).
+Living doc: how the interface looks *now*. Tokens live as CSS custom properties at the top of [`src/index.css`](../src/index.css); this file explains them. The decision to adopt this system is [ADR 0025](adr/0025-viveri-identity-and-ui-system.md).
 
 ## Overview
 
@@ -197,7 +197,7 @@ It is a working tool for people planning meals on a phone, at home or in a super
 - the mark as the state glyph;
 - a green-tinted ground instead of grey or cream.
 
-The navigation is a neutral glass dock floating over that content ([ADR 0024](adr/0024-glass-navigation-layer.md)): it takes no color of its own, so it never repeats the content's green. The app deliberately avoids the category's wellness look (sage, cream, leaf illustrations) and the AI look (gradients, sparkles).
+The navigation is a neutral glass dock floating over that content ([ADR 0026](adr/0026-glass-navigation-layer.md)): it takes no color of its own, so it never repeats the content's green. The app deliberately avoids the category's wellness look (sage, cream, leaf illustrations) and the AI look (gradients, sparkles).
 
 **Key Characteristics:**
 - The app's name on every screen: the approved logo in a light top bar. The dock, not a title, says which section you're in.
@@ -282,7 +282,7 @@ A green-tinted neutral ground, the icon's deep green for the user's words and ac
 
 ## Elevation & Depth
 
-Flat content, glass navigation ([ADR 0024](adr/0024-glass-navigation-layer.md)).
+Flat content, glass navigation ([ADR 0026](adr/0026-glass-navigation-layer.md)).
 
 - **Content** (cards, bubbles, fields, chips, the top bar) is flat. Depth comes from tone (ground vs. white surface vs. sunk surface) and 1px lines, never from shadows. Each element declares one edge: a border or a fill change, never both plus a shadow.
 - **The navigation layer is the one exception.** The phone dock and the chat's composer accessory are glass:
@@ -320,7 +320,7 @@ Round, from the dots. Pills (999px) for buttons, chips, the status pill and the 
 
 ### Sign-in
 - At the window's left edge at every width: the logo (44px) in the corner, then a column of at most 400px with the title "Ingresar", Google's button, an "o con tu email" divider (a hairline on each side), the email hint and the form.
-- **Google's button** is Google's own (Google Identity Services, [ADR 0025](adr/0025-google-sign-in-button.md)): we choose only its theme (outline, or dark when the system is dark), large size, the pill shape that matches our buttons, "Continuar con Google" and the `es-419` locale. Its 44px slot is reserved so the form doesn't jump while Google's script loads. Without a client ID it isn't shown, and neither is the divider.
+- **Google's button** is Google's own (Google Identity Services, [ADR 0027](adr/0027-google-sign-in-button.md)): we choose only its theme (outline, or dark when the system is dark), large size, the pill shape that matches our buttons, "Continuar con Google" and the `es-419` locale. Its 44px slot is reserved so the form doesn't jump while Google's script loads. Without a client ID it isn't shown, and neither is the divider.
 - A failed Google sign-in shows the inline alert under the button, and the email form stays available.
 
 ### Send button

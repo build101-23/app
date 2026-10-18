@@ -13,7 +13,7 @@ The user had already built Google sign-in on their own checkout, uncommitted: `s
 ## Decisions (the user's, 2026-10-17)
 - **Header:** the approved horizontal logo on a light bar (`ground`), on the left, at every width. The bar is no longer the green color field: the logo may never sit on a color field (The Mark Keeps Its Colors Rule), and no white wordmark exists. The section's name stays as a screen-reader-only `h1`; the dock already shows which section is active.
 - **Sign-in on wide screens:** logo, title and form aligned to the left edge of the window, with the app's gutter, instead of a centered column. Phones look as before.
-- **Google:** the user's ADR, renumbered from 0008 to **0025**, because 0008 is taken on `main` (and 0021 to 0024 once `main` and this branch were merged).
+- **Google:** the user's ADR, renumbered from 0008 to **0027**, because 0008 is taken on `main`, and so are 0021 to 0026 once `main` and this branch are merged.
 
 ## Steps
 1. Save this plan.
@@ -31,14 +31,14 @@ The user had already built Google sign-in on their own checkout, uncommitted: `s
 5. **Verify:** `npm run lint`, `tsc -b`, `npm test` and `npm run build`. Check the sign-in screen and the header at 360, 390 and 1280 px, light and dark.
 6. **Docs:**
    - `docs/design.md`: Overview, Colors, Layout, Components and Do's and Don'ts.
-   - ADRs: 0023 and 0024 (the redesign's), where they say the title bar is a color field. Add ADR 0025 (the user's) and update the index.
+   - ADRs: 0025 and 0026 (the redesign's), where they say the title bar is a color field. Add ADR 0027 (the user's) and update the index.
    - `docs/architecture.md` (Auth and the sign-in data flow) and `docs/development.md` (Google setup, `VITE_GOOGLE_CLIENT_ID`).
    - `docs/notes/milestones.md`: the Google line.
    - The user's Google plan, with its ADR number updated.
    - Append the results here.
 
 ## Results
-- **Header:** the logo on `ground` with a hairline, at `--edge` from the window's left (16px; 32px from 960px). The section's name is an `sr-only` `h1`. The `--field` tokens are gone from the CSS, `design.md` and ADR 0024.
+- **Header:** the logo on `ground` with a hairline, at `--edge` from the window's left (16px; 32px from 960px). The section's name is an `sr-only` `h1`. The `--field` tokens are gone from the CSS, `design.md` and ADR 0026.
 - **Sign-in:** left-aligned at every width, in a column of at most 400px.
 - **Google:** the user's component, with two changes: its error uses `Alert`, and the button's shape is `pill` instead of `rectangular`, to match the app's buttons. On a phone, in Spanish, it renders as "Continuar con Google", light and dark. In headless Edge at 1280px it read "Continue with Google", from that browser's English setting.
 - **Fixture:** stubs `signInWithIdToken`. In the fixture Google's script does load, but Google rejects sign-in from fixture ports that aren't authorized origins.

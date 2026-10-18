@@ -3,7 +3,7 @@
 Status: **built, in review** (isolated preview, not merged). Results are at the end.
 
 ## Context
-The UX research pass of 2026-10-17 (`C:\prompt-lab\results\referencias-ux-viveri\v1\research.md`, sections 6, 6.1 and 7) recommended direction A, "Dock de vidrio, mundo vivo": content gains color, and the navigation floats over it in glass. The user then chose a **neutral** glass dock (translucent white in light mode, near-black in dark mode) with tangerine as the only accent, using the **"Más vidrio"** setting. This plan builds priorities P0 to P2 of that brief on top of the v1 redesign ([plan](2026-10-17-viveri-visual-redesign.md), [ADR 0023](../adr/0023-viveri-identity-and-ui-system.md)).
+The UX research pass of 2026-10-17 (`C:\prompt-lab\results\referencias-ux-viveri\v1\research.md`, sections 6, 6.1 and 7) recommended direction A, "Dock de vidrio, mundo vivo": content gains color, and the navigation floats over it in glass. The user then chose a **neutral** glass dock (translucent white in light mode, near-black in dark mode) with tangerine as the only accent, using the **"Más vidrio"** setting. This plan builds priorities P0 to P2 of that brief on top of the v1 redesign ([plan](2026-10-17-viveri-visual-redesign.md), [ADR 0025](../adr/0025-viveri-identity-and-ui-system.md)).
 
 Where: `C:\prompt-lab\previews\viveri-web-redesign\v3`, a copy of v1's files (tracked and untracked, without ignored files, `.env` or v1's review captures). Its first git commit is v1 unchanged, so `git diff` shows v1 → v3. `v2` was not used: it already holds another session's uncommitted "coral" exploration. `C:\build 101`, v1 and v2 are not modified.
 
@@ -35,12 +35,12 @@ My defaults for the brief's minor open points, to revisit in review:
 ## Steps
 1. Save this plan.
 2. **P0 docs.**
-   - Write ADR 0024, "Glass navigation layer". It limits the "Flat" rule to content and allows blur, a light edge and a soft shadow only on the navigation layer (the dock and the chat's accessory). It also records:
+   - Write ADR 0026, "Glass navigation layer". It limits the "Flat" rule to content and allows blur, a light edge and a soft shadow only on the navigation layer (the dock and the chat's accessory). It also records:
      - the neutral glass and the "Más vidrio" values;
      - the opaque fallbacks;
      - the open questions answered above;
      - that no gradient is allowed.
-   - Add 0024 to the ADR index.
+   - Add 0026 to the ADR index.
    - Update `docs/design.md` (§6.1):
      - the Overview and its Key Characteristics;
      - the `tab-bar` frontmatter, now as glass tokens, plus new `field` and `rail` tokens;
@@ -81,7 +81,7 @@ My defaults for the brief's minor open points, to revisit in review:
    - Measure real pixels of the dock with its text hidden: labels against worst-case backdrops injected under the dock (deep green, ink, brand green, tangerine, the field; in dark: white, ink, the dark primary, tangerine) and against real scrolled content. Compute ink, the focus ring and the dot against the measured worst pixel.
    - Lower the tint toward 50% or 65% only if the measurements allow.
    - Check by geometry that nothing is hidden under the dock and that focus is never covered.
-9. **Docs:** finish `design.md`, ADR 0024, the ADR index, `development.md` (fixture), and append results here.
+9. **Docs:** finish `design.md`, ADR 0026, the ADR index, `development.md` (fixture), and append results here.
 
 ## Revision 1: the dock at every width
 The user's decision after the first review, in their words: "Use the floating pill dock at every width in both previews (as in v2), and drop the desktop rail." It replaces the rail answer in the table above. Each step was saved here before coding:
@@ -96,7 +96,7 @@ The user's decision after the first review, in their words: "Use the floating pi
 5. **Docs:**
    - `design.md`: Layout, Navigation, Typography, Shapes, Chat, Elevation & Depth, and Do's and Don'ts.
    - The frontmatter: drop `rail`.
-   - ADR 0024 (still Proposed): the decision and the options.
+   - ADR 0026 (still Proposed): the decision and the options.
 6. **Re-verify:**
    - build, lint, and no fixture code in `dist/`;
    - geometry at 360, 390 and 1280 px;

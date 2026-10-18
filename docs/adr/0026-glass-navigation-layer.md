@@ -1,10 +1,10 @@
-# 0024. Glass navigation layer
+# 0026. Glass navigation layer
 
 - Status: Proposed
 - Date: 2026-10-17
 
 ## Context
-[ADR 0023](0023-viveri-identity-and-ui-system.md) made the interface flat. Depth came from tone and 1 px lines, never from shadows, and a deep-green tab bar anchored the identity. A UX research pass on 2026-10-17 recommended direction A, "Dock de vidrio, mundo vivo": content gets color, and the navigation floats over it as glass. Its references were Apple's Liquid Glass tab bar and its accessory, Bring!, MyFitnessPal and Material 3 Expressive. A glass dock breaks the flat rule, so this ADR draws the line.
+[ADR 0025](0025-viveri-identity-and-ui-system.md) made the interface flat. Depth came from tone and 1 px lines, never from shadows, and a deep-green tab bar anchored the identity. A UX research pass on 2026-10-17 recommended direction A, "Dock de vidrio, mundo vivo": content gets color, and the navigation floats over it as glass. Its references were Apple's Liquid Glass tab bar and its accessory, Bring!, MyFitnessPal and Material 3 Expressive. A glass dock breaks the flat rule, so this ADR draws the line.
 
 Options considered:
 - **Deep-green glass** over a light ground. Rejected: green navigation over the green content (then including green color fields) repeats the content's color, which Apple's tab bar guidance advises against.
@@ -14,7 +14,7 @@ Options considered:
 - **A desktop rail** from 960 px, deep green or neutral. The neutral rail was chosen first, then dropped for one floating dock at every width. That matches the parallel v2 preview, whose dock the user liked.
 
 ## Decision
-- **Where glass goes.** Glass, a light edge and a soft shadow belong to the **navigation layer** only: the dock and, in the chat, the composer that sits above it as the dock's accessory. Everything else stays flat as in ADR 0023: cards, bubbles, fields and the top bar.
+- **Where glass goes.** Glass, a light edge and a soft shadow belong to the **navigation layer** only: the dock and, in the chat, the composer that sits above it as the dock's accessory. Everything else stays flat as in ADR 0025: cards, bubbles, fields and the top bar.
 - **The material.** The glass is neutral and uses the "Más vidrio" setting:
   - a white tint in light mode and a `#0D1613` tint in dark mode, starting at 55% and 70%, and lowered toward 50% and 65% only where real-pixel measurements still pass;
   - every label in ink, with the active one at weight 650;

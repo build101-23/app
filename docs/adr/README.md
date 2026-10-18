@@ -26,9 +26,9 @@ One file per decision: `NNNN-short-title.md`. ADRs are append-only: never rewrit
 | 0020 | [CI on Tenki runners](0020-ci-on-tenki-runners.md) | Accepted | 2026-10-17 |
 | 0021 | [The numbers switch lives in the profile; macros come from a fixed table](0021-numbers-switch-in-the-profile.md) | Accepted | 2026-10-17 |
 | 0022 | [The shopping list follows the menu, and shows in the chat](0022-list-follows-the-menu.md) | Accepted | 2026-10-17 |
-| 0023 | [VIVERI identity and a token-based UI system](0023-viveri-identity-and-ui-system.md) | Proposed (navigation and depth amended by 0024) | 2026-10-17 |
-| 0024 | [Glass navigation layer](0024-glass-navigation-layer.md) | Proposed | 2026-10-17 |
-| 0025 | [Sign in with Google's own button](0025-google-sign-in-button.md) | Accepted | 2026-10-17 |
+| 0025 | [VIVERI identity and a token-based UI system](0025-viveri-identity-and-ui-system.md) | Proposed (navigation and depth amended by 0026) | 2026-10-17 |
+| 0026 | [Glass navigation layer](0026-glass-navigation-layer.md) | Proposed | 2026-10-17 |
+| 0027 | [Sign in with Google's own button](0027-google-sign-in-button.md) | Accepted | 2026-10-17 |
 
 ## Template
 

@@ -29,7 +29,7 @@ Since then `main` added several things the redesign never saw:
 ## Steps
 1. Save this plan.
 2. Merge `redesign/v3-source` with `--no-commit`. Take each non-overlapping change as is.
-3. **ADRs.** The redesign's 0008 and 0009 collide with `main`'s 0008 and 0009, so they became 0021 and 0022, and then, once `main` added its own 0021 and 0022, **0023** ("VIVERI identity and UI system") and **0024** ("Glass navigation layer"). Update their cross-links, `docs/adr/README.md`, and every reference in `docs/design.md` and the plans.
+3. **ADRs.** The redesign's 0008 and 0009 collide with `main`'s 0008 and 0009, so they took the next free numbers, which moved each time `main` added ADRs. They are now **0025** ("VIVERI identity and UI system") and **0026** ("Glass navigation layer"), after `main`'s 0021 to 0024. Update their cross-links, `docs/adr/README.md`, and every reference in `docs/design.md` and the plans.
 4. **Code conflicts.** Keep all of `main`'s behavior and apply the redesign's look and structure on top.
    - `src/App.tsx`: `main`'s tabs, routing and data, inside the redesign's shell (title field, glass dock, splash, sign-in).
    - `src/Chat.tsx`:
@@ -55,7 +55,7 @@ Since then `main` added several things the redesign never saw:
    - a contrast re-check of the dock with v3's measuring scripts.
 10. **Docs step:**
     - `docs/design.md` (step 7);
-    - ADRs 0023 and 0024 and the ADR index;
+    - ADRs 0025 and 0026 and the ADR index;
     - `docs/development.md` (fixture);
     - `docs/architecture.md` (stack line).
 
@@ -70,7 +70,7 @@ Since then `main` added several things the redesign never saw:
 **Merge.**
 - `redesign/v3-source` (`8b20de0`, base `6bf25ae`) merged into this branch, which starts from `main` at `8f3f071`.
 - Conflicts in seven files were resolved by hand: `docs/adr/README.md`, `docs/development.md`, `docs/notes/open-decisions.md`, `src/App.tsx`, `src/Chat.tsx`, `src/index.css` and `src/strings.ts`. Everything else merged on its own.
-- The redesign's ADRs are now 0023 and 0024, with every reference updated.
+- The redesign's ADRs are now 0025 and 0026, with every reference updated.
 
 **Code adapted on top of the merge.**
 - `Menu.tsx`, `List.tsx` and the menu card: page layout, button classes, `Alert`, `PageSkeleton` and `EmptyState`.
@@ -110,7 +110,7 @@ After the port and the brand-header commit (`8a6fcc6`), `main` moved on. The new
 
 **Steps**
 1. Merge `origin/main` at `0ba9cea` and resolve the conflicts in `App`, `Chat`, `Menu`, `List`, `Profile`, `strings`, `index.css` and the docs. Keep every behavior from `main`, and keep the port's look and fixes.
-2. **ADRs.** `main` now owns 0021 and 0022. The redesign's ADRs become **0023** (identity) and **0024** (glass), and Google's becomes **0025**. Update every reference.
+2. **ADRs.** `main` now owns 0021 and 0022, so the redesign's and Google's ADRs move after them, and every reference with them. Their numbers moved once more in the [next revision](#revision-merging-main-with-real-products).
 3. **The new pieces in the system.**
    - **The confirm step is gone** from Menu and List, along with its focus and announcement code.
    - **The chat's list card** becomes an assistant bubble with a secondary "Ver lista".
@@ -138,3 +138,18 @@ After the port and the brand-header commit (`8a6fcc6`), `main` moved on. The new
   - Focus is never under the glass.
   - Dock contrast over the new content is at least the uniform worst case: labels ≥ 5.87:1 light, ≥ 11.26:1 dark.
   - The switch is at least 3.1:1 against the card in every state.
+
+## Revision: merging `main` with real products
+Before the pull request, `main` moved again (to `3adc3b2`), mainly with real supermarket prices (pull request 13):
+- the agent builds the menu from real products, with a budget and a product search (ADR 0024);
+- the scraper reads prices for the unit of sale (ADR 0023);
+- the List tab and the chat's list card read those products (`src/prices.ts`), show a budget line and link each line to the product to buy.
+
+**Steps**
+1. **ADRs.** `main` now owns 0023 and 0024. In a commit before the merge, the redesign's ADRs become **0025** (identity) and **0026** (glass), and Google's becomes **0027**, with every reference.
+2. Merge `origin/main` and resolve the conflicts:
+   - `src/List.tsx`: `main`'s pricing, budget and product links, inside the port's layout, skeleton, empty state and alerts;
+   - the docs: keep both sides.
+3. **Fixture.** Serve `store_products` rows for the saved week, so List and the list card show real-style prices, the budget line and product links.
+4. **Design.** The budget line and the product links follow the system: ink text, the alert pattern when over budget, and no tangerine. Update `design.md` where it still says "example prices".
+5. **Verify.** Lint, types, tests, the build, and the List and chat cards in the fixture.

@@ -44,7 +44,7 @@ Workflow: the `impeccable` skill, Operate mode, code-led (no image generation av
 8. `src/strings.ts`: the new Spanish strings. No price, savings or medical claims.
 9. Dev fixture: `npm run dev:fixture` swaps `./supabase` for `src/dev/fixture.ts` (synthetic data, query-string scenarios, simulated safe areas). Never part of the production build.
 10. Verify: `npm run build`, `npm run lint`, no fixture code in `dist/`; screenshots at 360, 390 and 1280 px in light and dark across every state; keyboard focus; computed contrast; reduced-motion rules; the impeccable detector; one fresh finish review and one fix batch.
-11. Docs: new [design.md](../design.md); ADR 0023 and the ADR index; the stack line in [architecture.md](../architecture.md); the fixture in [development.md](../development.md); the name in [product.md](../product.md) and [open-decisions.md](../notes/open-decisions.md); the README heading.
+11. Docs: new [design.md](../design.md); ADR 0025 and the ADR index; the stack line in [architecture.md](../architecture.md); the fixture in [development.md](../development.md); the name in [product.md](../product.md) and [open-decisions.md](../notes/open-decisions.md); the README heading.
 
 ## Results
 - `npm run build` passes; `npm run lint` (oxlint) finds 0 warnings and 0 errors on 11 files; no fixture code ends up in `dist/`; `impeccable detect` reports no findings.
