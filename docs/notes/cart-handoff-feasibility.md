@@ -18,7 +18,7 @@ Results of the cart handoff spike ([plan](../plans/2026-10-17-cart-handoff-spike
 - The `sku` returned by the price spike's GraphQL search is the VTEX item id, and seller `1` worked for all 4 items.
 - The response already holds the cart: names, quantities, prices (in cents) and availability. All 4 items went in (UYU 462, one item with a list-price discount applied).
 - Handoff link: `https://secure.tata.com.uy/checkout/?orderFormId=<id>#/cart`. Opened in a separate browser with no shared cookies, it showed Ta-Ta's own "Mi carrito" page with the 4 items and the "Finalizar compra" button.
-- Second handoff, for a user who is already logged in: the VTEX add-to-cart link `https://secure.tata.com.uy/checkout/cart/add?sku=<sku>&qty=<n>&seller=1&...&sc=4`. The browser that opens it gets a 302, a cart cookie and the items in its own cart; tested from a clean session, all 3 items went in. No agent, no API call from our side: the link alone fills the cart in the user's browser, in their account if they're logged in.
+- Second handoff, for a user who is already logged in: the VTEX add-to-cart link `https://secure.tata.com.uy/checkout/cart/add?sku=<sku>&qty=<n>&seller=1&...&sc=4`. The browser that opens it gets a 302, a cart cookie and the items in its own cart; tested from a clean session, all 3 items went in. No agent, no API call from our side: the link alone fills the cart in the user's browser. That it lands in their account when they're logged in is an inference: only logged-out browsers were tested.
 - **Not tested yet:** logging in from the anonymous cart page. VTEX may keep the cart, merge it with the account's saved cart, or replace it. Changing the delivery address may also change prices or availability.
 
 ### The add-to-cart link with catalog products
@@ -63,7 +63,7 @@ Run on 2026-10-18 for the [fill-cart plan](../plans/2026-10-18-fill-cart.md), st
 - **Availability, details.** With home delivery to the test account's address, 2 of the first picks showed "No Disponible" and had to be swapped. The script skips unavailable products. Our scraped prices come from the default branch for anonymous visitors, so the app's list can include products the user's zone doesn't have.
 - **Result (2026-10-17, Disco, logged-in test account, home delivery):** the script added 2 × milk, rice and oats with no human action. The cart showed them with correct quantities: subtotal UYU 402, delivery UYU 250, total UYU 652, on the "Proceder al pago" step. Nobody paid.
 - **Devoto and Géant (same day, same code):** each chain needs its own login; the account isn't shared across the three sites. After login, the script answered the three questions from `preferences.json` (normal mode, home delivery, first saved address) and added the same 3 products. Devoto: total UYU 652, the same as Disco. Géant: UYU 662, because the oats cost UYU 69 there instead of 59. A second Devoto run went straight to adding, which confirms the answers are remembered.
-- On Devoto and Géant an empty `<label>` covers each saved address, so the script force-clicks it.
+- On Devoto and Géant an empty `<label>` covers each saved address, so the script force-clicks the address, on every chain.
 - **Not tested yet:** whether the sessions survive restarting Chrome, and the pickup path end to end (mapped, but every run used home delivery).
 
 ## Rules followed

@@ -6,7 +6,7 @@ Living doc: how the product is *now*. Future ideas live in [notes/roadmap.md](no
 
 Following a diet means turning a plan into meals, a shopping list and a trip to the store, every week. It's tedious, and it's easy to overspend.
 
-**VIVERI** is a phone app that turns your diet into food at home, with two promises: **it's convenient, and it saves you money.** You build the diet by chatting with an AI nutritionist, and if you already have a nutritionist's plan, you tell it about it in the chat. The app turns it into a weekly menu and a shopping list, finds those products in the supermarkets and tells you where the whole list is cheapest. Later, it will order the food for you every week.
+**VIVERI** is a phone app that turns your diet into food at home, with two promises: **it's convenient, and it saves you money.** You build the diet by chatting with an AI nutritionist, and if you already have a nutritionist's plan, you tell it about it in the chat. The app turns it into a weekly menu and a shopping list, finds those products in the supermarkets, tells you where the whole list is cheapest and puts it in the supermarket's cart (Ta-Ta for now). Later, it will order the food for you every week.
 
 ### What makes it different
 
@@ -25,11 +25,11 @@ This app starts from your diet. It knows what you need, how much, and which swap
 2. The app combines that with your likes and restrictions, looks for the products the supermarkets sell, and proposes a menu with them: for the week, or for the days you ask ("para el finde", "los 3 días que vienen"), from tomorrow unless you say otherwise. You change it as you like. Your plan is your profile plus that menu.
 3. The menu comes with its shopping list, priced at each supermarket, with the cheapest way to buy it on top. Change the menu and the list follows.
 4. You share the list on WhatsApp or copy it.
-5. *(Later)* The app places the order for you.
+5. The app puts the list in the supermarket's cart (Ta-Ta for now), and you log in and pay there. *(Later)* It places the order for you.
 
 ## Scope
 
-The first version goes from a chat to a priced shopping list, in Montevideo only. Ordering comes next.
+The first version goes from a chat to a priced shopping list and the supermarket's cart, in Montevideo only. Placing the order and paying stay with you.
 
 ### In
 
@@ -47,6 +47,7 @@ The first version goes from a chat to a priced shopping list, in Montevideo only
 - Ask from the list for something you'd eat differently ("cambiame la carne por pollo", "sacame el brócoli del menú") and it changes the menu in the background, says in one line what changed, and shows the updated list.
 - It builds the menu only with products it found at Disco, Géant and Ta-Ta ([ADR 0024](adr/0024-agent-builds-the-menu-from-real-products.md)), and can tell you the total, what it comes to per day, where it's cheapest and whether it fits your budget: the same numbers as the List tab. Whenever it says the total, it says the per-day amount too. It never writes the list or makes up a price.
 - Tell it a budget for the shopping ("tengo $ 1.500") and it builds to fit: the split between two stores if that does it, otherwise cheaper foods your plan allows, never smaller amounts. If it still doesn't fit, it says how much is missing. With room, it picks known brands.
+- Ask it to order or fill your cart ("pedímelo", "armame el carrito") and it sends you to the cart buttons in the List tab ([§5](#5-shopping-list)). It never says it placed an order or filled a cart.
 - If you ask for something the stores don't sell, or something it can't do, it says so in one line.
 - Normal, everyday food you can buy at any supermarket in Montevideo.
 
@@ -89,6 +90,11 @@ The first version goes from a chat to a priced shopping list, in Montevideo only
 - Cross out what you already have at home, or buy less of it with −; or tell the chat. Your marks stay when the menu changes, until you tap "Lista nueva" or tell the chat you're starting a new week.
 - Under each item, what to buy at the store the list is bought in: "2 × Arroz Blanco SAMAN 1 kg · Ta-Ta · $ 118", with a link to the product's page.
 - Share (the phone's share sheet, with WhatsApp) or copy as text, with only what's left to buy.
+- Fill the supermarket's cart from the list ([ADR 0030](adr/0030-cart-filling-tata-link-gdu-team-extension.md)):
+  - "Armar carrito en Ta-Ta", when the store or split you're buying in includes Ta-Ta. It opens Ta-Ta's cart in another tab with what's left to buy at Ta-Ta, in the units the list shows, and you log in and pay there. Under it: how many products, the estimated total without delivery, and what doesn't go in and why.
+  - What that browser's Ta-Ta cart already had stays. A second tap doesn't add anything twice.
+  - "Armar todo en Ta-Ta · $X" (with "faltan N" when something stays out), when that puts more of the list in a cart than the option you're buying in: you're buying at Disco or Géant, Ta-Ta sells more than its part of a split, or no store or split has the whole list.
+  - Disco and Géant can't be filled for you yet: their part says to add those products from each one's link.
 
 #### 6. Save money
 
@@ -99,6 +105,7 @@ The first version goes from a chat to a priced shopping list, in Montevideo only
 - Under the chosen total (the recommended one, or the split if you picked it), what it comes to per day of the menu: "$ 277 por día · menú de 7 días". It's what's left to buy divided by the menu's days, so it drops as you cross things out. Not shown for a 1-day menu, or when neither one store nor two have the whole list.
 - With a budget, it says whether the list fits and how much is left, or how much is missing, and when a split between two stores would fit.
 - Prices are estimates and show the date they were checked. A menu saved before real prices asks you to rebuild it in the chat.
+- A product the store stopped listing (not read in the 14 days before that store's latest read) counts as not sold there, in the price and in the cart ([ADR 0030](adr/0030-cart-filling-tata-link-gdu-team-extension.md)).
 
 **Which store to buy at.** The app picks the cheapest way to buy the whole *list*, not the cheapest store for each item, so you never end up with an order at every store:
 
@@ -114,14 +121,14 @@ The first version goes from a chat to a priced shopping list, in Montevideo only
 - User account; your plan, preferences and chats are saved.
 - Clear consent for health data, which Uruguay's personal data law (Law 18.331) treats as sensitive.
 - Foods and package sizes that exist in Uruguay.
-- An "Order it for me" button that, for now, only records interest.
+- The cart buttons in the List tab (§5) take the place of an "Order it for me" button.
 
 ### Out
 
 Left out so we can first check that people use the plan and the list every week, and actually save. See the [roadmap](notes/roadmap.md) for what comes after.
 
 - Uploading a nutritionist's plan (PDF, photo or pasted text).
-- Ordering from stores, payments and scheduled orders.
+- Placing the order, payments and scheduled orders. Filling Disco and Géant carts: a team-only extension is planned ([ADR 0030](adr/0030-cart-filling-tata-link-gdu-team-extension.md)).
 - Small local shops (butchers, produce shops) and finding stores near you. At first, only big supermarkets.
 - Cities other than Montevideo.
 - Weekly promotions and bank-card discount days.
@@ -155,5 +162,5 @@ The key questions: do people come back every week to make their list, and do the
 | Do they accept a split? | How many accept a two-store split when it's offered | 30% |
 | Does the AI build plans people accept? | How many shop from their first plan with 2 menu changes or fewer (the event is [open](notes/open-decisions.md): there's no confirm step any more) | 70% |
 | Is the list useful at the store? | A short survey after shopping, and how many items people edit | Average 4 out of 5; under 20% of items edited |
-| Do they want ordering? | How many tap "Order it for me" | 30% |
+| Do they want ordering? | How many tap a cart button (not recorded yet) | 30% |
 | Who signs up? | Gym, nutritionist patient or other, asked at sign-up | No target: tells us who to build for next |
