@@ -1,0 +1,427 @@
+<!doctype html>
+<html lang="es-UY">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#0b3d2b">
+  <title>VIVERI — Presentación para inversores</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,700&display=swap" rel="stylesheet">
+  <style>
+    :root{--deep:#0b3d2b;--light:#f3f6f2;--ink:#14211b;--muted:#55645c;--pale:#b6c5be;--green:#1e8a5e;--mint:#5cc495;--orange:#e85d2a;--white:#fff;--display:"Bricolage Grotesque",Bahnschrift,"Arial Narrow",Arial,sans-serif;--body:"DM Sans",Arial,"Helvetica Neue",sans-serif}
+    *{box-sizing:border-box}
+    html,body{width:100%;height:100%;margin:0;overflow:hidden;background:#071d15;color:var(--white);font-family:var(--body)}
+    button{font:inherit;cursor:pointer}
+    button:focus-visible,a:focus-visible{outline:3px solid var(--orange);outline-offset:4px}
+    ::selection{background:var(--orange);color:#0d1613}
+    #stage-shell{position:fixed;inset:0;overflow:hidden}
+    #stage{position:absolute;width:1280px;height:720px;transform-origin:0 0;overflow:hidden;background:var(--deep)}
+    .slide{position:absolute;inset:0;padding:0 96px;display:none;isolation:isolate}
+    .slide.active{display:block}
+    .slide.dark{background:var(--deep);color:var(--white)}
+    .slide.light{background:var(--light);color:var(--ink)}
+    .slide-top{position:absolute;left:96px;right:96px;top:33px;display:flex;align-items:center;justify-content:space-between}
+    .wordmark{font-family:var(--display);font-weight:800;font-size:22px;line-height:1;letter-spacing:-.015em}
+    .slide-num{font-size:15px;color:var(--pale);font-variant-numeric:tabular-nums}
+    .light .slide-num{color:var(--muted)}
+    .slide-line{position:absolute;left:96px;right:96px;bottom:56px;height:2px;background:var(--mint)}
+    .light .slide-line{background:var(--green)}
+    .eyebrow{margin:0;color:var(--mint);font:700 25px/1.2 var(--display);letter-spacing:.015em}
+    .light .eyebrow{color:var(--green)}
+    h1,h2,p{margin:0}
+    h1,h2{font-family:var(--display);font-weight:800;letter-spacing:-.025em}
+    .accent{color:var(--orange)}
+    .mint{color:var(--mint)}
+    .support{font:400 35px/1.25 var(--body)}
+    .dark .support{color:var(--pale)}
+    .light .support{color:var(--muted)}
+    .footnote{position:absolute;left:96px;bottom:13px;width:1088px;color:var(--pale);font:400 13px/1.25 var(--body)}
+    .light .footnote{color:var(--muted)}
+    /* Slide compositions and motion live in deck.css. */
+    #hud{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);display:flex;align-items:center;gap:8px;padding:7px;border:1px solid #ffffff34;border-radius:999px;background:#071d15d9;box-shadow:0 12px 36px #0005;transition:opacity .3s;z-index:20}
+    #hud.idle{opacity:0}#hud:hover,#hud:focus-within{opacity:1}
+    #hud button{border:0;background:transparent;color:#fff;padding:9px 12px;border-radius:999px;font-size:13px;font-weight:700}
+    #hud button:hover{background:#ffffff1a}
+    #hud .counter{min-width:68px;text-align:center;font-variant-numeric:tabular-nums;color:var(--pale);font-size:13px}
+    #hud .counter strong{color:#fff}
+    .time-readout{font-variant-numeric:tabular-nums;min-width:58px;text-align:center;font-size:13px;color:var(--mint)}
+    #notes-panel,#help-panel{position:fixed;z-index:30;background:#f3f6f2;color:#14211b;box-shadow:0 18px 64px #0008}
+    #notes-panel{right:18px;top:18px;width:min(460px,calc(100vw - 36px));max-height:calc(100vh - 36px);overflow:auto;padding:28px;border-radius:16px;display:none}
+    #notes-panel.open{display:block}
+    #notes-panel h2{font-size:24px;margin:0 0 8px}
+    #notes-panel .mode-row{display:flex;gap:8px;margin:17px 0}
+    #notes-panel button,#help-panel button{border:1px solid #b8c9bf;background:#fff;color:#14211b;border-radius:8px;padding:8px 12px}
+    #notes-panel button.selected{background:var(--deep);color:#fff;border-color:var(--deep)}
+    #notes-copy{font-size:16px;line-height:1.55;white-space:pre-line}
+    #help-panel{left:50%;top:50%;transform:translate(-50%,-50%);width:min(500px,calc(100vw - 36px));padding:30px;border-radius:16px;display:none}
+    #help-panel.open{display:block}
+    #help-panel h2{font-size:24px;margin-bottom:16px}
+    #help-panel dl{display:grid;grid-template-columns:125px 1fr;gap:10px;margin:0 0 22px;font-size:15px}
+    #help-panel dt{font-weight:700}#help-panel dd{margin:0}
+    #presenter{display:none}
+    body.presenter{overflow:auto;background:#e8eee9;color:var(--ink)}
+    body.presenter #stage-shell,body.presenter #hud{display:none}
+    body.presenter #presenter{display:grid;grid-template-columns:minmax(0,1fr) minmax(380px,470px);gap:24px;min-height:100vh;padding:28px}
+    .presenter-main,.presenter-side{background:#fff;border-radius:18px;padding:24px}
+    .presenter-main h1{font-size:24px;margin-bottom:18px}
+    .presenter-preview{aspect-ratio:16/9;background:var(--deep);border-radius:8px;overflow:hidden;position:relative}
+    .presenter-preview img{width:100%;height:100%;object-fit:cover}
+    .presenter-bar{display:flex;align-items:center;gap:10px;margin-top:18px}
+    .presenter-bar button{border:0;border-radius:8px;background:var(--deep);color:#fff;padding:11px 16px}
+    .presenter-bar button:hover{background:#145039}
+    .presenter-bar .count{margin-left:auto;font-variant-numeric:tabular-nums}
+    .presenter-side h2{font-size:24px;margin-bottom:12px}
+    .presenter-side .timers{display:flex;gap:24px;margin-bottom:18px;font-variant-numeric:tabular-nums}
+    .presenter-side .timers strong{display:block;font:800 32px/1.2 var(--display)}
+    .presenter-side .timers button{background:none;border:0;color:var(--green);padding:3px 0;text-decoration:underline;text-underline-offset:3px}
+    .presenter-side .mode-row{display:flex;gap:8px;margin-bottom:18px}
+    .presenter-side .mode-row button{padding:8px 13px;border:1px solid #b8c9bf;border-radius:8px;background:#fff}
+    .presenter-side .mode-row button.selected{background:var(--deep);color:#fff;border-color:var(--deep)}
+    .presenter-side .script{white-space:pre-line;font-size:17px;line-height:1.55}
+    .presenter-side .next-title{margin-top:24px;padding-top:18px;border-top:1px solid #d8e1db;color:var(--muted);font-size:14px}
+    @media(max-width:900px){body.presenter #presenter{grid-template-columns:1fr;padding:14px;gap:14px}.presenter-main,.presenter-side{padding:18px}}
+    @media(hover:none){#hud.idle{opacity:1}}
+    @media(prefers-reduced-motion:reduce){:root:not(.motion-full) .fragment,:root:not(.motion-full) .slide.entering .slide-content,:root:not(.motion-full) #hud{animation:none!important;transition:none!important}:root:not(.motion-full) .fragment{filter:none}}
+    @media print{html,body{height:auto;overflow:visible;background:#fff}#stage-shell{position:static;overflow:visible}#stage{position:static;transform:none!important;width:auto;height:auto}.slide{position:relative;display:block!important;width:1280px;height:720px;page-break-after:always}.fragment{opacity:1!important;transform:none!important;filter:none!important}#hud,#notes-panel,#help-panel,#presenter{display:none!important}}
+  </style>
+  <style>
+:root{--ease-out:cubic-bezier(.23,1,.32,1);--ease-in-out:cubic-bezier(.77,0,.175,1)}
+.chapter{font:700 15px/1.2 var(--body);letter-spacing:.14em;color:var(--pale)}
+.light .chapter{color:var(--muted)}
+.slide-content{position:absolute;inset:0}
+.fragment{opacity:0;transform:translateY(12px);transition:opacity 250ms var(--ease-out),transform 250ms var(--ease-out)}
+.fragment.visible{opacity:1;transform:none}
+.slide.entering .slide-content{animation:slide-enter 250ms var(--ease-out) both}
+@keyframes slide-enter{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+.stagger>*{opacity:0;transform:translateY(12px);transition:opacity 300ms var(--ease-out),transform 300ms var(--ease-out)}
+.stagger.visible>*{opacity:1;transform:none}
+.stagger>*:nth-child(2){transition-delay:60ms}.stagger>*:nth-child(3){transition-delay:120ms}.stagger>*:nth-child(4){transition-delay:180ms}
+.opening .eyebrow{position:absolute;left:96px;top:120px}
+.opening h1{position:absolute;left:84px;top:155px;display:flex;align-items:center;gap:45px;font-size:218px;line-height:1.1;letter-spacing:-.065em}
+.opening .work-arrow{font-size:100px;color:var(--pale);font-weight:400}
+.opening-line{position:absolute;left:96px;top:420px;font:800 56px/1.1 var(--display)}
+.opening-extra{position:absolute;left:96px;top:517px;font-size:29px;line-height:1.35;color:var(--pale)}
+.chores h1{position:absolute;left:96px;top:115px;font-size:66px;line-height:1.15}
+.chores-list{position:absolute;left:96px;right:96px;top:330px;display:grid;grid-template-columns:1fr 1fr;gap:22px 50px;font:700 34px/1.3 var(--display)}
+.chores-list span{border-bottom:1px solid #b6c5be;padding-bottom:18px}
+.return-line{position:absolute;left:96px;top:552px;font-size:38px;color:var(--muted)}
+.return-line strong{color:var(--orange)}
+.problem .eyebrow{position:absolute;left:96px;top:115px;font-size:23px}
+.problem h1{position:absolute;left:96px;top:177px;font-size:75px;line-height:1.13}
+.bridge{position:absolute;left:96px;right:96px;top:525px;display:flex;align-items:center;justify-content:space-between;gap:18px;font:700 27px/1.3 var(--display)}
+.bridge-gap{font:400 23px/1.3 var(--body);color:var(--pale);padding:16px 30px;border-left:1px dashed var(--pale);border-right:1px dashed var(--pale)}
+/* Integrated wordmark: the dotted V is the first letter (design A, assets/logo-app/v2). Widths keep the official dots at their previous size. */
+.animated-logo{position:absolute;width:758px;height:auto;left:96px;top:154px;overflow:visible}
+/* Resting state is the finished logo. playBrand() in index.html reveals it from hidden on every entry. */
+.logo-dot,.logo-goal,.logo-name,.goal-ring{transform-box:fill-box;transform-origin:center}
+.logo-points{fill:var(--white)}.logo-goal{fill:var(--orange)}.logo-name{fill:var(--white)}
+.goal-ring{fill:none;stroke:var(--orange);stroke-width:.6;opacity:0}
+.slide.entering .brand-reveal,.slide.entering .closing{animation:none}
+.brand-reveal h1{position:absolute;left:96px;top:411px;font-size:65px;line-height:1.1}
+.plan-flow{position:absolute;left:96px;top:548px;width:1088px;display:flex;align-items:center;gap:40px;font:700 36px/1.2 var(--display)}
+.plan-flow strong{color:var(--orange)}
+.flow-line{position:relative;flex:1;height:2px;background:#5cc49555}
+.flow-line i{position:absolute;right:0;top:-6px;width:14px;height:14px;border-radius:50%;background:var(--orange)}
+.conversion h1{position:absolute;left:96px;top:112px;font-size:104px;line-height:1.1}
+.phrase{position:absolute;left:96px;top:252px;font-size:32px;font-weight:500;color:var(--ink)}
+.phrase b{font-weight:700;color:var(--green)}
+.outputs{position:absolute;left:96px;right:96px;top:375px;display:grid;grid-template-columns:1fr 1fr 1.3fr;gap:38px}
+.outputs>div{border-top:2px solid var(--green);padding-top:18px}
+.output-index{font-size:19px;font-variant-numeric:tabular-nums;color:var(--green)}
+.outputs h2{font-size:40px;margin:18px 0 12px;white-space:nowrap}
+.outputs p{font-size:27px;line-height:1.3;color:var(--muted)}
+.benefits h1{position:absolute;left:96px;top:139px;font-size:96px;line-height:1.33}
+.benefits h1>span:not(.fragment){color:var(--mint)}
+.benefits h1 .fragment>span{color:var(--mint)}
+.benefits h1 .fragment>.accent{color:var(--orange)}
+.benefits p{position:absolute;left:96px;top:579px;font-size:29px;color:var(--pale)}
+.demo .eyebrow{position:absolute;left:96px;top:118px;font-size:23px}
+.demo h1{position:absolute;left:96px;top:188px;font-size:99px;line-height:1.13}
+.demo-visible-clock{position:absolute;right:96px;top:225px;font:800 74px/1 var(--display);font-variant-numeric:tabular-nums;color:var(--green)}
+.demo-stages{position:absolute;left:96px;right:96px;top:538px;display:flex;align-items:center;justify-content:space-between;font:700 36px/1.2 var(--display)}
+.demo-stages b{font-weight:400;color:var(--muted)}.demo-stages strong{color:var(--orange)}
+.vision .eyebrow{position:absolute;left:96px;top:126px}
+.vision h1{position:absolute;left:96px;top:228px;font-size:68px;line-height:1.45}
+.vision-steps{position:absolute;left:96px;right:96px;top:531px;display:flex;align-items:center;justify-content:space-between;gap:20px;font:700 28px/1.3 var(--display);color:var(--pale)}
+.vision-plus{font-size:36px;color:var(--mint)}
+.opportunity .eyebrow{position:absolute;left:96px;top:115px}
+.opportunity h1{position:absolute;left:96px;top:190px;font-size:93px;line-height:1.12}
+.purchase-line{position:absolute;left:734px;top:245px;font-size:37px;line-height:1.35}
+.purchase-line strong{font:800 43px/1.35 var(--display)}
+.opportunity-close{position:absolute;left:96px;top:551px;font:800 42px/1.2 var(--display)}
+.pilot-left{position:absolute;left:96px;top:170px}
+.pilot-left h1{font-size:120px;line-height:1.2;letter-spacing:-.05em;margin-top:16px;color:var(--green)}
+.pilot-left>p:last-child{font-size:34px;color:var(--muted)}
+.pilot-right{position:absolute;left:640px;top:185px;display:grid;gap:30px}
+.pilot-right h2{font-size:46px;line-height:1.2}
+.monetization{position:absolute;left:96px;right:96px;top:520px;border-top:1px solid #b6c5be;padding-top:24px;display:flex;align-items:center;justify-content:space-between;gap:20px}
+.monetization>span{font-size:20px;font-weight:700;color:var(--muted);letter-spacing:.1em}
+.monetization>p{font-size:34px;color:var(--green);font-weight:700}
+.closing .animated-logo{width:616px;top:111px}
+.closing h1{position:absolute;left:96px;top:350px;font-size:88px;line-height:1.17}
+.notes-label{color:var(--green);font-size:14px;font-weight:700}
+#presenter-image{position:absolute;left:0;top:0;width:1280px;height:720px;transform-origin:0 0;overflow:hidden}
+#presenter-image .slide-content,#presenter-image .brand-after,#presenter-image .animated-logo *,#presenter-image .fragment,#presenter-image .stagger>*{animation:none!important;transition:none!important;opacity:1;transform:none}
+#presenter-image .goal-ring{opacity:0}
+#hud{transition:opacity 200ms var(--ease-out)}
+#hud button:hover{background:transparent}
+@media(hover:hover) and (pointer:fine){#hud button:hover{background:#ffffff1a}}
+/* .motion-full (?motion=full) opts out of the reduced-motion variant. */
+@media(prefers-reduced-motion:reduce){
+ :root:not(.motion-full) .slide.entering .slide-content{animation:gentle-fade 200ms linear both!important}
+ :root:not(.motion-full) :is(.slide.entering .brand-reveal,.slide.entering .closing){animation:none!important}
+ :root:not(.motion-full) :is(.fragment,.stagger>*){transform:none!important;filter:none!important;transition:opacity 200ms linear!important}
+ :root:not(.motion-full) .goal-ring{display:none}
+ @keyframes gentle-fade{from{opacity:0}to{opacity:1}}
+}
+@media print{
+ @page{size:1280px 720px;margin:0}
+ .slide-content,.fragment,.brand-after,.logo-dot,.logo-goal,.logo-name,.stagger>*{opacity:1!important;transform:none!important;animation:none!important;transition:none!important}
+ .goal-ring{opacity:0!important}.slide{break-after:page}
+}
+
+  </style>
+</head>
+<body>
+  <main id="stage-shell" aria-label="Presentación de VIVERI"><div id="stage"></div></main>
+  <nav id="hud" aria-label="Controles de presentación">
+    <button type="button" id="prev" aria-label="Anterior">Atrás</button>
+    <span class="counter"><strong id="current-number">01</strong> / 11</span>
+    <button type="button" id="next" aria-label="Siguiente">Avanzar</button>
+    <span class="time-readout" id="clock">00:00</span>
+    <button type="button" id="timer-btn" title="Iniciar o pausar cronómetro">Tiempo</button>
+    <button type="button" id="demo-btn" title="Iniciar o pausar cronómetro de la demo">Demo</button>
+    <button type="button" id="notes-btn" title="Notas del orador">Notas</button>
+    <button type="button" id="presenter-btn" title="Abrir vista del orador">Orador</button>
+    <button type="button" id="full-btn" title="Pantalla completa">Pantalla</button>
+  </nav>
+  <aside id="notes-panel" aria-label="Notas del orador">
+    <h2 id="notes-title"></h2>
+    <div class="mode-row"><span class="notes-label">Guion aprobado</span><button type="button" id="close-notes">Cerrar</button></div>
+    <div id="notes-copy"></div>
+  </aside>
+  <aside id="help-panel" aria-label="Ayuda de teclado">
+    <h2>Controlá la presentación</h2>
+    <dl><dt>→ / Espacio</dt><dd>Revelar o avanzar</dd><dt>←</dt><dd>Retroceder</dd><dt>F</dt><dd>Pantalla completa</dd><dt>N</dt><dd>Notas del orador</dd><dt>P</dt><dd>Abrir vista del orador</dd><dt>T</dt><dd>Iniciar o pausar el tiempo del pitch</dd><dt>D</dt><dd>Iniciar o pausar el tiempo de la demo</dd><dt>R</dt><dd>Reiniciar ambos cronómetros</dd><dt>A</dt><dd>Repetir animación de marca</dd><dt>H / ?</dt><dd>Mostrar u ocultar ayuda</dd></dl>
+    <button type="button" id="close-help">Cerrar</button>
+  </aside>
+  <div id="presenter" aria-label="Vista del orador">
+    <section class="presenter-main"><h1>VIVERI · Vista del orador</h1><div class="presenter-preview"><div id="presenter-image" aria-label="Vista previa de la slide actual"></div></div><div class="presenter-bar"><button id="presenter-prev" type="button">← Anterior</button><button id="presenter-next" type="button">Siguiente →</button><span class="count" id="presenter-count"></span></div></section>
+    <section class="presenter-side"><h2 id="presenter-title"></h2><div class="timers"><div>Pitch<strong id="presenter-clock">00:00</strong><button id="presenter-timer" type="button">Iniciar / pausar</button></div><div>Demo<strong id="demo-clock">00:00</strong><button id="demo-timer" type="button">Iniciar / pausar</button></div></div><div class="mode-row"><span class="notes-label">Guion aprobado</span></div><div class="script" id="presenter-copy"></div><div class="next-title" id="presenter-next-title"></div></section>
+  </div>
+  <script>
+/* Approved pitch, 2026-10-18. Official logo geometry. */
+window.VIVERI_SLIDES = [
+  {
+    "title": "¿Cuántos de acá?",
+    "chapter": "EL DÍA A DÍA",
+    "dark": true,
+    "html": "<div class=\"slide-content opening\"><p class=\"eyebrow\">¿CUÁNTOS DE ACÁ?</p><h1><span>9</span><span class=\"work-arrow\">→</span><span class=\"accent\">18</span></h1><p class=\"opening-line\">Laburás todo el día.</p><p class=\"opening-extra fragment\">De lunes a viernes.<br>Y a veces, también el fin de semana.</p></div>",
+    "notes": "¿Cuántos de acá laburan de nueve a seis todos los dias de Lunes a Viernes o inclusive los fines de semana?",
+    "n3": "¿Cuántos de acá laburan de nueve a seis todos los dias de Lunes a Viernes o inclusive los fines de semana?",
+    "n4": "¿Cuántos de acá laburan de nueve a seis todos los dias de Lunes a Viernes o inclusive los fines de semana?"
+  },
+  {
+    "title": "Lo que todavía te queda",
+    "chapter": "DESPUÉS DE LABURAR",
+    "dark": false,
+    "html": "<div class=\"slide-content chores\"><h1>Te quedan unas pocas<br>horas para vos.</h1><div class=\"chores-list fragment stagger\"><span>Decidir qué comer</span><span>Hacer la lista</span><span>Elegir dónde comprar</span><span>Ir al súper</span></div><p class=\"return-line fragment\">¿Te olvidaste algo? <strong>Volvés.</strong></p></div>",
+    "notes": "Salís de trabajar y te quedan unas pocas horas para vos. Pero todavía tenés que decidir qué comer, hacer la lista, elegir dónde comprar e ir al súper.\nY para peor, a veces te olvidás algo y tenés que volver.",
+    "n3": "Salís de trabajar y te quedan unas pocas horas para vos. Pero todavía tenés que decidir qué comer, hacer la lista, elegir dónde comprar e ir al súper.\nY para peor, a veces te olvidás algo y tenés que volver.",
+    "n4": "Salís de trabajar y te quedan unas pocas horas para vos. Pero todavía tenés que decidir qué comer, hacer la lista, elegir dónde comprar e ir al súper.\nY para peor, a veces te olvidás algo y tenés que volver."
+  },
+  {
+    "title": "Otro trabajo",
+    "chapter": "EL PROBLEMA",
+    "dark": true,
+    "html": "<div class=\"slide-content problem\"><p class=\"eyebrow\">COMER ES UNA NECESIDAD DIARIA</p><h1>Resolver cómo comer<br>se convirtió en<br><span class=\"accent\">otro trabajo.</span></h1><div class=\"bridge fragment\"><span>Tu plan nutricional</span><span class=\"bridge-gap\">El trabajo lo hacés vos</span><span>Tu compra semanal</span></div></div>",
+    "notes": "Comer es una necesidad diaria. Resolver cómo comer se convirtió en otro trabajo.\nPodés tener un plan nutricional. Podés tener un supermercado a dos cuadras. Pero convertir ese plan en las compras de la semana sigue siendo trabajo tuyo.",
+    "n3": "Comer es una necesidad diaria. Resolver cómo comer se convirtió en otro trabajo.\nPodés tener un plan nutricional. Podés tener un supermercado a dos cuadras. Pero convertir ese plan en las compras de la semana sigue siendo trabajo tuyo.",
+    "n4": "Comer es una necesidad diaria. Resolver cómo comer se convirtió en otro trabajo.\nPodés tener un plan nutricional. Podés tener un supermercado a dos cuadras. Pero convertir ese plan en las compras de la semana sigue siendo trabajo tuyo."
+  },
+  {
+    "title": "El end-to-end de tu comida",
+    "chapter": "",
+    "dark": true,
+    "html": "<div class=\"slide-content brand-reveal\"><svg class=\"animated-logo\" viewBox=\"0 0 246.9 72\" role=\"img\" aria-label=\"VIVERI\"><circle class=\"goal-ring\" cx=\"37.88\" cy=\"55.9\" r=\"9.4\"/><g class=\"logo-points\"><path class=\"logo-dot dot-0\" d=\"M8 12.93A4.93 4.93 0 1 1 17.87 12.93A4.93 4.93 0 1 1 8 12.93Z\"/><path class=\"logo-dot dot-1\" d=\"M57.89 12.93A4.93 4.93 0 1 1 67.76 12.93A4.93 4.93 0 1 1 57.89 12.93Z\"/><path class=\"logo-dot dot-2\" d=\"M14.73 25.73A5.64 5.64 0 1 1 26 25.73A5.64 5.64 0 1 1 14.73 25.73Z\"/><path class=\"logo-dot dot-3\" d=\"M49.76 25.73A5.64 5.64 0 1 1 61.03 25.73A5.64 5.64 0 1 1 49.76 25.73Z\"/><path class=\"logo-dot dot-4\" d=\"M22.16 39.75A6.34 6.34 0 1 1 34.84 39.75A6.34 6.34 0 1 1 22.16 39.75Z\"/><path class=\"logo-dot dot-5\" d=\"M40.91 39.75A6.34 6.34 0 1 1 53.6 39.75A6.34 6.34 0 1 1 40.91 39.75Z\"/></g><path class=\"logo-goal\" d=\"M29.78 55.9A8.1 8.1 0 1 1 45.98 55.9A8.1 8.1 0 1 1 29.78 55.9Z\"/><path class=\"logo-name\" d=\"M74.09 9.33L83.7 9.33L83.7 62.67L74.09 62.67ZM89.03 9.33L99.7 9.33L112.5 46.99L125.3 9.33L135.96 9.33L117.83 62.67L107.16 62.67ZM143.43 9.33L175.43 9.33L175.43 17.87L153.03 17.87L153.03 31.2L172.23 31.2L172.23 39.73L153.03 39.73L153.03 54.13L175.43 54.13L175.43 62.67L143.43 62.67ZM185.03 9.33L194.63 9.33L194.63 62.67L185.03 62.67ZM190.37 9.33H203.17A15.73 15.73 0 0 1 203.17 40.8H190.37ZM194.63 18.4V31.73H203.17A6.67 6.67 0 0 0 203.17 18.4ZM196.98 34.93L207.12 34.93L221.3 62.67L211.17 62.67ZM229.3 9.33L238.9 9.33L238.9 62.67L229.3 62.67Z\"/></svg><h1 class=\"brand-after\">El end-to-end de tu comida</h1><div class=\"plan-flow brand-after\"><span>Tu plan</span><span class=\"flow-line\"><i></i></span><strong>Tu compra</strong></div></div>",
+    "notes": "VIVERI une todo ese recorrido. Es el end-to-end de tu comida: de tu plan a tu compra.",
+    "n3": "VIVERI une todo ese recorrido. Es el end-to-end de tu comida: de tu plan a tu compra.",
+    "n4": "VIVERI une todo ese recorrido. Es el end-to-end de tu comida: de tu plan a tu compra."
+  },
+  {
+    "title": "Una frase lo pone en marcha",
+    "chapter": "CÓMO FUNCIONA",
+    "dark": false,
+    "html": "<div class=\"slide-content conversion\"><h1>Una frase.</h1><p class=\"phrase\"><b>Cómo querés comer</b> · <b>Qué evitás</b> · <b>Cuánto podés gastar</b></p><div class=\"outputs fragment stagger\"><div><span class=\"output-index\">01</span><h2>Tu menú</h2><p>Comida por comida</p></div><div><span class=\"output-index\">02</span><h2>Tu lista</h2><p>Las cantidades que necesitás</p></div><div><span class=\"output-index\">03</span><h2 class=\"accent\">Dónde comprar</h2><p>Precios de Montevideo</p></div></div></div>",
+    "notes": "Le contás cómo querés comer, qué alimentos evitás y cuánto podés gastar.\nVIVERI convierte eso en un menú organizado comida por comida, una lista con las cantidades que necesitás y una comparación de cuánto cuesta comprarla en los supermercados de Montevideo.\nUna frase. Tu menú. Tu lista. Y dónde comprarla más barata.",
+    "n3": "Le contás cómo querés comer, qué alimentos evitás y cuánto podés gastar.\nVIVERI convierte eso en un menú organizado comida por comida, una lista con las cantidades que necesitás y una comparación de cuánto cuesta comprarla en los supermercados de Montevideo.\nUna frase. Tu menú. Tu lista. Y dónde comprarla más barata.",
+    "n4": "Le contás cómo querés comer, qué alimentos evitás y cuánto podés gastar.\nVIVERI convierte eso en un menú organizado comida por comida, una lista con las cantidades que necesitás y una comparación de cuánto cuesta comprarla en los supermercados de Montevideo.\nUna frase. Tu menú. Tu lista. Y dónde comprarla más barata."
+  },
+  {
+    "title": "Menos tiempo, esfuerzo y plata",
+    "chapter": "LO QUE QUEREMOS RESOLVER",
+    "dark": true,
+    "html": "<div class=\"slide-content benefits\"><h1>Menos <span>tiempo.</span><br><span class=\"fragment\">Menos <span>esfuerzo.</span></span><br><span class=\"fragment\">Menos <span class=\"accent\">plata.</span></span></h1><p>Comer según tus objetivos.</p></div>",
+    "notes": "Queremos que comer según tus objetivos te lleve menos tiempo, menos esfuerzo y menos plata.\nSe los muestro con mi caso.",
+    "n3": "Queremos que comer según tus objetivos te lleve menos tiempo, menos esfuerzo y menos plata.\nSe los muestro con mi caso.",
+    "n4": "Queremos que comer según tus objetivos te lleve menos tiempo, menos esfuerzo y menos plata.\nSe los muestro con mi caso."
+  },
+  {
+    "title": "Mi caso, en vivo",
+    "chapter": "DEMO EN VIVO",
+    "dark": false,
+    "html": "<div class=\"slide-content demo\"><p class=\"eyebrow\">SE LOS MUESTRO CON MI CASO</p><h1>Del plan<br><span class=\"accent\">a la compra.</span></h1><span class=\"demo-visible-clock\">00:00</span><div class=\"demo-stages\"><span>Menú</span><b>→</b><span>Lista</span><b>→</b><strong>Precios reales</strong></div></div>",
+    "notes": "[Ingresás tu objetivo, restricciones y presupuesto. Mientras carga:]\nLa IA interpreta lo que necesito y arma el menú. El código valida los productos contra el catálogo y calcula cantidades, precios y totales.\n\n[Mostrás el menú y después la lista.]\nAcá tengo qué comer, comida por comida. Y acá, todo lo que necesito comprar, con productos y precios reales.",
+    "n3": "[Ingresás tu objetivo, restricciones y presupuesto. Mientras carga:]\nLa IA interpreta lo que necesito y arma el menú. El código valida los productos contra el catálogo y calcula cantidades, precios y totales.\n\n[Mostrás el menú y después la lista.]\nAcá tengo qué comer, comida por comida. Y acá, todo lo que necesito comprar, con productos y precios reales.",
+    "n4": "[Ingresás tu objetivo, restricciones y presupuesto. Mientras carga:]\nLa IA interpreta lo que necesito y arma el menú. El código valida los productos contra el catálogo y calcula cantidades, precios y totales.\n\n[Mostrás el menú y después la lista.]\nAcá tengo qué comer, comida por comida. Y acá, todo lo que necesito comprar, con productos y precios reales."
+  },
+  {
+    "title": "Una frase, hasta tu heladera",
+    "chapter": "NUESTRA VISIÓN",
+    "dark": true,
+    "html": "<div class=\"slide-content vision\"><p class=\"eyebrow\">COMPLETAR EL RECORRIDO</p><h1>Empieza con una frase.<br><span class=\"accent fragment\">Termina en tu heladera.</span></h1><div class=\"vision-steps fragment\"><span>Comprar desde la app</span><span class=\"vision-plus\">+</span><span>Programar el pedido semanal</span></div></div>",
+    "notes": "Nuestra visión es completar ese recorrido: comprar desde VIVERI y poder dejar programado el pedido de cada semana.\nQue resolver tu comida empiece con una frase y termine en tu heladera.",
+    "n3": "Nuestra visión es completar ese recorrido: comprar desde VIVERI y poder dejar programado el pedido de cada semana.\nQue resolver tu comida empiece con una frase y termine en tu heladera.",
+    "n4": "Nuestra visión es completar ese recorrido: comprar desde VIVERI y poder dejar programado el pedido de cada semana.\nQue resolver tu comida empiece con una frase y termine en tu heladera."
+  },
+  {
+    "title": "Detrás de la pregunta hay una compra",
+    "chapter": "LA OPORTUNIDAD",
+    "dark": false,
+    "html": "<div class=\"slide-content opportunity\"><p class=\"eyebrow\">TODAS LAS SEMANAS</p><h1>«¿Qué vamos<br>a comer?»</h1><p class=\"purchase-line fragment\">Detrás de esa pregunta<br><strong class=\"accent\">hay una compra.</strong></p><p class=\"opportunity-close fragment\">Queremos estar al principio.</p></div>",
+    "notes": "Porque todas las semanas alguien se pregunta qué va a comer. Y detrás de esa pregunta hay una compra.\nQueremos que esa compra empiece en VIVERI.",
+    "n3": "Porque todas las semanas alguien se pregunta qué va a comer. Y detrás de esa pregunta hay una compra.\nQueremos que esa compra empiece en VIVERI.",
+    "n4": "Porque todas las semanas alguien se pregunta qué va a comer. Y detrás de esa pregunta hay una compra.\nQueremos que esa compra empiece en VIVERI."
+  },
+  {
+    "title": "Construir sobre un hábito",
+    "chapter": "EL PRÓXIMO PASO",
+    "dark": false,
+    "html": "<div class=\"slide-content pilot\"><div class=\"pilot-left\"><p class=\"eyebrow\">PILOTO INICIAL</p><h1>10–15</h1><p>personas</p></div><div class=\"pilot-right\"><h2>¿Vuelven?</h2><h2 class=\"fragment\">¿Cuánto ahorran?</h2><h2 class=\"fragment\">¿Dónde compran?</h2></div><div class=\"monetization fragment\"><span>MODELO A VALIDAR</span><p>Suscripción + comisión por pedido</p></div></div>",
+    "notes": "El próximo paso es probarlo con diez a quince personas: medir si vuelven, cuánto ahorran y si compran donde recomendamos. Ese hábito es la base sobre la que queremos construir el negocio, con suscripción y comisión por pedido como opciones a validar.",
+    "n3": "El próximo paso es probarlo con diez a quince personas: medir si vuelven, cuánto ahorran y si compran donde recomendamos. Ese hábito es la base sobre la que queremos construir el negocio, con suscripción y comisión por pedido como opciones a validar.",
+    "n4": "El próximo paso es probarlo con diez a quince personas: medir si vuelven, cuánto ahorran y si compran donde recomendamos. Ese hábito es la base sobre la que queremos construir el negocio, con suscripción y comisión por pedido como opciones a validar."
+  },
+  {
+    "title": "Comer bien, sin que te cueste",
+    "chapter": "",
+    "dark": true,
+    "html": "<div class=\"slide-content closing\"><svg class=\"animated-logo\" viewBox=\"0 0 246.9 72\" role=\"img\" aria-label=\"VIVERI\"><circle class=\"goal-ring\" cx=\"37.88\" cy=\"55.9\" r=\"9.4\"/><g class=\"logo-points\"><path class=\"logo-dot dot-0\" d=\"M8 12.93A4.93 4.93 0 1 1 17.87 12.93A4.93 4.93 0 1 1 8 12.93Z\"/><path class=\"logo-dot dot-1\" d=\"M57.89 12.93A4.93 4.93 0 1 1 67.76 12.93A4.93 4.93 0 1 1 57.89 12.93Z\"/><path class=\"logo-dot dot-2\" d=\"M14.73 25.73A5.64 5.64 0 1 1 26 25.73A5.64 5.64 0 1 1 14.73 25.73Z\"/><path class=\"logo-dot dot-3\" d=\"M49.76 25.73A5.64 5.64 0 1 1 61.03 25.73A5.64 5.64 0 1 1 49.76 25.73Z\"/><path class=\"logo-dot dot-4\" d=\"M22.16 39.75A6.34 6.34 0 1 1 34.84 39.75A6.34 6.34 0 1 1 22.16 39.75Z\"/><path class=\"logo-dot dot-5\" d=\"M40.91 39.75A6.34 6.34 0 1 1 53.6 39.75A6.34 6.34 0 1 1 40.91 39.75Z\"/></g><path class=\"logo-goal\" d=\"M29.78 55.9A8.1 8.1 0 1 1 45.98 55.9A8.1 8.1 0 1 1 29.78 55.9Z\"/><path class=\"logo-name\" d=\"M74.09 9.33L83.7 9.33L83.7 62.67L74.09 62.67ZM89.03 9.33L99.7 9.33L112.5 46.99L125.3 9.33L135.96 9.33L117.83 62.67L107.16 62.67ZM143.43 9.33L175.43 9.33L175.43 17.87L153.03 17.87L153.03 31.2L172.23 31.2L172.23 39.73L153.03 39.73L153.03 54.13L175.43 54.13L175.43 62.67L143.43 62.67ZM185.03 9.33L194.63 9.33L194.63 62.67L185.03 62.67ZM190.37 9.33H203.17A15.73 15.73 0 0 1 203.17 40.8H190.37ZM194.63 18.4V31.73H203.17A6.67 6.67 0 0 0 203.17 18.4ZM196.98 34.93L207.12 34.93L221.3 62.67L211.17 62.67ZM229.3 9.33L238.9 9.33L238.9 62.67L229.3 62.67Z\"/></svg><h1 class=\"brand-after\">Comer bien,<br><span class=\"accent\">sin que te cueste.</span></h1></div>",
+    "notes": "VIVERI. Comer bien, sin que te cueste.",
+    "n3": "VIVERI. Comer bien, sin que te cueste.",
+    "n4": "VIVERI. Comer bien, sin que te cueste."
+  }
+];
+
+  </script>
+  <script>
+    const slides=window.VIVERI_SLIDES;
+    const stage=document.getElementById('stage');
+    const presenterMode=new URLSearchParams(location.search).has('presenter');
+    // ?motion=full keeps the full motion even when the OS asks for reduced motion (e.g. Windows animation effects off on the pitch laptop).
+    const forceMotion=new URLSearchParams(location.search).get('motion')==='full';
+    if(forceMotion)document.documentElement.classList.add('motion-full');
+    let index=0,fragment=0,notesMode='3',notesOpen=false,helpOpen=false,lastRenderedIndex=-1;
+    let timerStart=null,timerAccum=0,demoStart=null,demoAccum=0;
+    const storage={get(key){try{return localStorage.getItem(key)}catch{return null}},set(key,value){try{localStorage.setItem(key,value)}catch{}}};
+    const channel=(()=>{try{return new BroadcastChannel('viveri-final-deck')}catch{return null}})();
+    const number=n=>String(n).padStart(2,'0');
+    const formatTime=ms=>{const s=Math.floor(ms/1000);return `${number(Math.floor(s/60))}:${number(s%60)}`};
+    const currentTime=()=>timerAccum+(timerStart===null?0:Date.now()-timerStart);
+    const demoTime=()=>demoAccum+(demoStart===null?0:Date.now()-demoStart);
+    const template=(slide,i)=>`<section class="slide ${slide.dark?'dark':'light'} active" data-index="${i}" aria-label="Slide ${i+1}: ${slide.title}"><div class="slide-top"><span class="chapter">${slide.chapter}</span><span class="slide-num">${number(i+1)}</span></div>${slide.html}<div class="slide-line"></div></section>`;
+    stage.innerHTML=slides.map(template).join('');
+    const elements=[...stage.querySelectorAll('.slide')];
+    function scale(){const k=Math.min(innerWidth/1280,innerHeight/720);stage.style.transform=`scale(${k})`;stage.style.left=`${(innerWidth-1280*k)/2}px`;stage.style.top=`${(innerHeight-720*k)/2}px`}
+    function scalePreview(){const preview=document.getElementById('presenter-image');const width=preview.parentElement.clientWidth;preview.style.transform=`scale(${width/1280})`}
+    // Brand reveal (slides 4 and 11): the white pairs step down the V, the orange goal lands with one ring,
+    // then the wordmark and the line below it. Each step holds its first keyframe until it starts (fill: backwards).
+    const brandEase='cubic-bezier(0.23, 1, 0.32, 1)',brandRuns=new Map();
+    function stopBrand(el){(brandRuns.get(el)||[]).forEach(a=>a.cancel());brandRuns.delete(el)}
+    function playBrand(el){
+      stopBrand(el);
+      if(presenterMode||!el.querySelector('.animated-logo')||typeof el.animate!=='function')return;
+      const runs=[],q=s=>[...el.querySelectorAll(s)];
+      const step=(nodes,keyframes,delay,duration,easing=brandEase)=>nodes.forEach(n=>runs.push(n.animate(keyframes,{delay,duration,easing,fill:'backwards'})));
+      const fade=[{opacity:0},{opacity:1}];
+      if(!forceMotion&&matchMedia('(prefers-reduced-motion: reduce)').matches){
+        step(q('.logo-dot,.logo-goal,.logo-name'),fade,0,400,'ease-out');
+        step(q('.brand-after'),fade,300,400,'ease-out');
+      }else{
+        const drop=[{opacity:0,transform:'translateY(-4px)'},{opacity:1,transform:'none'}];
+        step(q('.dot-0,.dot-1'),drop,0,350);
+        step(q('.dot-2,.dot-3'),drop,250,350);
+        step(q('.dot-4,.dot-5'),drop,500,350);
+        step(q('.logo-goal'),[{opacity:0,transform:'translateY(-5px)'},{opacity:1,transform:'none'}],750,400);
+        step(q('.goal-ring'),[{transform:'scale(1)'},{transform:'scale(1.9)'}],850,700);
+        step(q('.goal-ring'),[{opacity:0,easing:'ease-out'},{opacity:.8,offset:.12,easing:brandEase},{opacity:0}],850,700,'linear');
+        step(q('.logo-name'),[{opacity:0,transform:'translateX(-6px)'},{opacity:1,transform:'none'}],1150,450);
+        q('.brand-after').forEach((n,i)=>step([n],[{opacity:0,transform:'translateY(10px)'},{opacity:1,transform:'none'}],1550+i*100,400));
+      }
+      brandRuns.set(el,runs);
+    }
+    function replayBrand(){playBrand(elements[index])}
+    function render(broadcast=true){
+      const slideChanged=index!==lastRenderedIndex;
+      elements.forEach((el,i)=>{const active=i===index;el.classList.toggle('active',active);el.setAttribute('aria-hidden',String(!active));if(active){if(slideChanged){el.classList.remove('entering');void el.offsetWidth;el.classList.add('entering');playBrand(el)}[...el.querySelectorAll('.fragment')].forEach((f,j)=>f.classList.toggle('visible',j<fragment))}else{el.classList.remove('entering');stopBrand(el)}});
+      lastRenderedIndex=index;
+      document.getElementById('current-number').textContent=number(index+1);
+      document.getElementById('notes-title').textContent=`${number(index+1)} · ${slides[index].title}`;
+      document.getElementById('notes-copy').textContent=slides[index]['n'+notesMode];
+      document.getElementById('presenter-title').textContent=`${number(index+1)} · ${slides[index].title}`;
+      document.getElementById('presenter-copy').textContent=slides[index]['n'+notesMode];
+      document.getElementById('presenter-count').textContent=`${index+1} / ${slides.length}`;
+      document.getElementById('presenter-next-title').textContent=index+1<slides.length?`Siguiente: ${slides[index+1].title}`:'Fin de la presentación';
+      const preview=document.getElementById('presenter-image');
+      preview.innerHTML=elements[index].outerHTML;
+      preview.querySelectorAll('.fragment').forEach(el=>el.classList.add('visible'));
+      scalePreview();
+      document.title=`${number(index+1)} · ${slides[index].title} — VIVERI`;
+      history.replaceState(null,'',`${location.pathname}${location.search}#${index+1}`);
+      if(broadcast){storage.set('viveri-final-deck-state',JSON.stringify({index,fragment,notesMode}));channel?.postMessage({index,fragment,notesMode})}
+    }
+    function setState(nextIndex,nextFragment=0,source='local'){
+      index=Math.max(0,Math.min(slides.length-1,nextIndex));
+      fragment=Math.max(0,Math.min(elements[index].querySelectorAll('.fragment').length,nextFragment));
+      render();
+    }
+    function next(){const max=elements[index].querySelectorAll('.fragment').length;if(fragment<max)setState(index,fragment+1);else if(index<slides.length-1)setState(index+1,0)}
+    function prev(){if(fragment>0)setState(index,fragment-1);else if(index>0)setState(index-1,elements[index-1].querySelectorAll('.fragment').length)}
+    function showNotes(open=!notesOpen){notesOpen=open;document.getElementById('notes-panel').classList.toggle('open',open);document.getElementById('notes-btn').setAttribute('aria-pressed',String(open))}
+    function showHelp(open=!helpOpen){helpOpen=open;document.getElementById('help-panel').classList.toggle('open',open)}
+    function setMode(mode){notesMode=mode;document.querySelectorAll('[data-mode],[data-presenter-mode]').forEach(b=>b.classList.toggle('selected',b.dataset.mode===mode||b.dataset.presenterMode===mode));render()}
+    function emitTimers(){const timer={timerStart,timerAccum,demoStart,demoAccum};storage.set('viveri-final-deck-timers',JSON.stringify(timer));channel?.postMessage({timer})}
+    function applyTimers(timer){timerStart=timer.timerStart??null;timerAccum=timer.timerAccum??0;demoStart=timer.demoStart??null;demoAccum=timer.demoAccum??0}
+    function toggleTimer(which='main'){if(which==='main'){if(timerStart===null)timerStart=Date.now();else{timerAccum+=Date.now()-timerStart;timerStart=null}}else{if(demoStart===null)demoStart=Date.now();else{demoAccum+=Date.now()-demoStart;demoStart=null}}emitTimers()}
+    function resetTimer(){timerStart=null;timerAccum=0;demoStart=null;demoAccum=0;emitTimers()}
+    function openPresenter(){const url=new URL(location.href);url.searchParams.set('presenter','1');window.open(url.href,'viveri-presenter','width=1250,height=820')}
+    document.getElementById('prev').onclick=prev;document.getElementById('next').onclick=next;
+    document.getElementById('presenter-prev').onclick=prev;document.getElementById('presenter-next').onclick=next;
+    document.getElementById('notes-btn').onclick=()=>showNotes();document.getElementById('close-notes').onclick=()=>showNotes(false);
+    document.getElementById('presenter-btn').onclick=openPresenter;
+    document.getElementById('full-btn').onclick=()=>document.fullscreenElement?document.exitFullscreen():document.documentElement.requestFullscreen();
+    document.getElementById('timer-btn').onclick=()=>toggleTimer();document.getElementById('demo-btn').onclick=()=>toggleTimer('demo');document.getElementById('presenter-timer').onclick=()=>toggleTimer();document.getElementById('demo-timer').onclick=()=>toggleTimer('demo');
+    document.getElementById('close-help').onclick=()=>showHelp(false);
+    document.querySelectorAll('[data-mode]').forEach(b=>b.onclick=()=>setMode(b.dataset.mode));
+    document.querySelectorAll('[data-presenter-mode]').forEach(b=>b.onclick=()=>setMode(b.dataset.presenterMode));
+    document.addEventListener('keydown',e=>{if(['INPUT','TEXTAREA'].includes(document.activeElement?.tagName))return;const k=e.key.toLowerCase();if(['arrowright','arrowdown',' ','pagedown'].includes(k)){e.preventDefault();next()}else if(['arrowleft','arrowup','pageup'].includes(k)){e.preventDefault();prev()}else if(k==='home')setState(0);else if(k==='end')setState(slides.length-1);else if(k==='f')document.fullscreenElement?document.exitFullscreen():document.documentElement.requestFullscreen();else if(k==='n')showNotes();else if(k==='p')openPresenter();else if(k==='t')toggleTimer();else if(k==='d')toggleTimer('demo');else if(k==='r')resetTimer();else if(k==='a'){replayBrand();channel?.postMessage({replay:index})}else if(k==='h'||k==='?')showHelp();else if(k==='escape'){showNotes(false);showHelp(false)}});
+    let touchX=null;document.addEventListener('touchstart',e=>{touchX=e.touches[0]?.clientX??null},{passive:true});document.addEventListener('touchend',e=>{if(touchX===null)return;const delta=e.changedTouches[0].clientX-touchX;if(Math.abs(delta)>65){delta<0?next():prev()}touchX=null},{passive:true});
+    let idleTimeout;const hud=document.getElementById('hud');function wakeHud(){hud.classList.remove('idle');clearTimeout(idleTimeout);idleTimeout=setTimeout(()=>hud.classList.add('idle'),2600)}document.addEventListener('pointermove',wakeHud);wakeHud();
+    setInterval(()=>{document.getElementById('clock').textContent=formatTime(currentTime());document.getElementById('presenter-clock').textContent=formatTime(currentTime());document.getElementById('demo-clock').textContent=formatTime(demoTime());document.querySelectorAll('.demo-visible-clock').forEach(el=>el.textContent=formatTime(demoTime()))},250);
+    channel?.addEventListener('message',e=>{const s=e.data;if(!s)return;if(typeof s.replay==='number'){if(s.replay===index)replayBrand();return}if(s.timer){applyTimers(s.timer);return}if(typeof s.index!=='number')return;if(s.index===index&&s.fragment===fragment&&s.notesMode===notesMode)return;index=s.index;fragment=s.fragment;notesMode=s.notesMode||'3';render(false)});
+    window.addEventListener('storage',e=>{if(!e.newValue)return;try{const s=JSON.parse(e.newValue);if(e.key==='viveri-final-deck-timers'){applyTimers(s);return}if(e.key==='viveri-final-deck-state'&&(s.index!==index||s.fragment!==fragment)){index=s.index;fragment=s.fragment;notesMode=s.notesMode||'3';render(false)}}catch{}});
+    window.addEventListener('resize',()=>{scale();scalePreview()});
+    window.addEventListener('hashchange',()=>{const n=Number(location.hash.slice(1));if(Number.isInteger(n)&&n>=1&&n<=slides.length&&n-1!==index)setState(n-1)});
+    if('ResizeObserver' in window)new ResizeObserver(scalePreview).observe(document.getElementById('presenter-image').parentElement);
+    const hashNumber=Number(location.hash.replace('#',''));
+    const saved=(()=>{try{return JSON.parse(storage.get('viveri-final-deck-state')||'null')}catch{return null}})();
+    try{applyTimers(JSON.parse(storage.get('viveri-final-deck-timers')||'{}'))}catch{}
+    index=Number.isInteger(hashNumber)&&hashNumber>=1&&hashNumber<=slides.length?hashNumber-1:(presenterMode?(saved?.index??0):0);
+    fragment=presenterMode?(saved?.fragment??0):0;
+    if(presenterMode)document.body.classList.add('presenter');
+    index=Math.max(0,Math.min(slides.length-1,index));
+    scale();render();
+  </script>
+</body>
+</html>
