@@ -1,7 +1,7 @@
 # Plan: publish the pitch deck at /pitch/ on the app's Worker
 
 Date: 2026-10-18
-Status: in progress
+Status: applied (checked on the branch Preview, `https://pitch-deck-v4-app.build101-23.workers.dev/pitch/`: the same deck as `pitch/` apart from line endings, `/pitch` redirects to `/pitch/`, 12 slides with brand fonts and no errors, presenter view in sync both ways, Reiniciar resets both windows)
 
 ## Context
 
