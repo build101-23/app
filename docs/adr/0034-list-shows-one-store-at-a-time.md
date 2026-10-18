@@ -1,4 +1,4 @@
-# 0031. The List shows one supermarket at a time
+# 0034. The List shows one supermarket at a time
 
 - Status: Accepted
 - Date: 2026-10-18
@@ -13,7 +13,7 @@ Each line showed its product at the store the chosen option bought it in. The us
 
 ## Decision
 - **Three tabs on top of the list,** one per supermarket, in place of the card. Each tab has:
-  - the chain's own icon (the same in both themes), its name and its total for what's left to buy;
+  - the chain's own icon, its name and its total for what's left to buy;
   - "N productos no encontrados" when it's missing items;
   - a "Recomendado" pill on the store the rule picks, the cheapest that has the whole list.
 - **Which tab is open:**

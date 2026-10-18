@@ -65,7 +65,12 @@ export const t = {
     empty: 'Todavía no hay menú. Pedíselo al chat, para la semana o para los días que quieras.',
     loading: 'Cargando el menú…',
     loadError: 'No se pudo cargar el menú.',
-    change: 'Cambiar',
+    // The day strip's name for screen readers, and the headings inside an opened meal.
+    dayPicker: 'Día del menú',
+    ingredients: 'Ingredientes',
+    how: 'Cómo se hace',
+    changeThisDay: (day: string) => `Cambiar el ${day}`,
+    changeThisMeal: 'Cambiar este plato',
     // Lowercase to fit inside a sentence; headings capitalize them with CSS.
     days: {
       monday: 'lunes',
@@ -128,7 +133,7 @@ export const t = {
     perDay: (amount: string, days: number) => `${amount} por día · menú de ${days} días`,
     missing: (n: number) => (n === 1 ? '1 producto no encontrado' : `${n} productos no encontrados`),
     notFound: 'No encontrado online',
-    // Under a line the selected store doesn't sell (ADR 0031).
+    // Under a line the selected store doesn't sell (ADR 0034).
     notAt: (store: string) => `No está en ${store}`,
     // On the tab of the store the rule recommends: the cheapest that has the whole list.
     cheapest: 'Recomendado',
@@ -145,7 +150,7 @@ export const t = {
     product: (packs: number, name: string, store: string, cost: string) => `${packs} × ${name} · ${store} · ${cost}`,
   },
   // The cart buttons at the bottom of "Dónde comprar" (docs/plans/2026-10-18-fill-cart.md).
-  // The order button under the list (ADR 0031).
+  // The order button under the list (ADR 0034).
   cart: {
     order: (store: string) => `Pedir ahora en ${store}`,
     adds: (n: number, total: string) =>

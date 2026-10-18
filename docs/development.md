@@ -71,7 +71,7 @@ Vite reads `.env`, then `.env.local` (gitignored), which overrides it.
 | `auth` | `in`, `out` | Signed in, or the sign-in screen |
 | `otp` | `ok`, `error`, `slow` | Sign-in link sent, refused (rate limit), or slow |
 | `chat` | `long`, `empty`, `error` | Three chats opening on the long one, no chats (a new chat with the intent cards), or a load error with retry |
-| `reply` | `ok`, `error`, `limit`, `slow`, `trickle` | The streamed reply to a sent message. `limit` answers 429 (the daily cap); `slow` waits 3 s for the first words; `trickle` streams one chunk every 600 ms, to see the status line |
+| `reply` | `ok`, `error`, `limit`, `slow`, `trickle`, `burst` | The streamed reply to a sent message. `limit` answers 429 (the daily cap); `slow` waits 3 s for the first words; `trickle` streams one chunk every 600 ms, to see the status line; `burst` streams uneven chunks (5 to 80 characters, 80 to 350 ms apart) like a real stream, to judge how smooth the text is |
 | `menu` | `saved`, `short`, `none`, `error` | The week saved (Menu, List with its products and prices, and the chat's menu and list cards), a 3-day menu from sábado to lunes, no menu yet, or a load error (Menu and List show it; the chat opens without its list card) |
 | `prices` | `ok`, `over`, `old`, `error`, `stale` | The saved week's products: inside its budget, over it, a menu saved before real products, the products can't be read, or Ta-Ta's tomato is 20 days older than Ta-Ta's newest read (the 14-day rule leaves it out). Synthetic names and prices |
 | `cart` | (none), `tata`, `split` | Which store the List opens on: Géant (Ta-Ta lacks three items), Ta-Ta (it has everything and is cheapest, so its "Pedir ahora" button shows first), or Géant with Ta-Ta much cheaper on what it has. The chicken is a tray sold by weight |
@@ -80,7 +80,7 @@ Vite reads `.env`, then `.env.local` (gitignored), which overrides it.
 | `loading` | `session`, `data` | Stuck on the splash, or on the skeletons |
 | `safe` | `iphone` | Simulated 47 px top and 34 px bottom safe areas |
 
-Example: http://localhost:5199/?chat=empty&reply=slow. Check new screens at the widths and themes listed in [design.md](design.md#do), including the bottom of anything that scrolls under the glass dock.
+Example: http://localhost:5199/?chat=empty&reply=slow. Check new screens at the widths listed in [design.md](design.md#do), including the bottom of anything that scrolls under the glass dock.
 
 ## Deploy
 

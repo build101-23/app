@@ -1,4 +1,4 @@
-// The order button under the list (ADR 0031): it fills the selected supermarket's cart with what's left to buy there.
+// The order button under the list (ADR 0034): it fills the selected supermarket's cart with what's left to buy there.
 // Ta-Ta is a link, so its cart opens straight from the tap (ADR 0030). Disco and Géant need the extension, which
 // isn't out yet, so their button shows disabled with "Muy pronto".
 import { useState } from 'react'

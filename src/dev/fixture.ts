@@ -422,6 +422,17 @@ export const supabase = {
   },
 }
 
+// Uneven chunks, like a real stream once the network batches the model's deltas: 5 to 80 characters each.
+function burst(text: string) {
+  const chunks: string[] = []
+  for (let i = 0; i < text.length; ) {
+    const n = 5 + Math.floor(Math.random() * 76)
+    chunks.push(text.slice(i, i + n))
+    i += n
+  }
+  return chunks
+}
+
 const reply =
   'Buena elección: el pollo al horno con boniato se puede dejar listo el domingo y rinde para varias cenas.\n\nPara que entre en tu semana:\n- Hacé una bandeja grande y separala en porciones.\n- Sumá una verdura distinta cada día para variar.\n\n¿Querés que lo tengamos en cuenta para tu menú?'
 
@@ -436,7 +447,7 @@ window.fetch = async (input, init) => {
   if (mode === 'error') return new Response('fixture error', { status: 500 })
   if (mode === 'limit') return new Response('fixture limit', { status: 429 })
   const { text: sent, conversation_id } = JSON.parse(String(init?.body ?? '{}'))
-  const chunks = reply.match(/[\s\S]{1,14}/g) ?? []
+  const chunks = mode === 'burst' ? burst(reply) : (reply.match(/[\s\S]{1,14}/g) ?? [])
   const encoder = new TextEncoder()
   const body = new ReadableStream<Uint8Array>({
     async start(controller) {
@@ -449,7 +460,7 @@ window.fetch = async (input, init) => {
       send({ step: 'typing' })
       for (const chunk of chunks) {
         send({ text: chunk })
-        await wait(mode === 'trickle' ? 600 : 45)
+        await wait(mode === 'trickle' ? 600 : mode === 'burst' ? 80 + Math.random() * 270 : 45)
       }
       messages.get(conversation_id)?.push(text('user', sent), text('assistant', reply))
       controller.close()

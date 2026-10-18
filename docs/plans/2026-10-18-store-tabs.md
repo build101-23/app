@@ -1,6 +1,6 @@
 # The List shows one supermarket at a time, with an order button at the bottom
 
-Status: **done** in code (2026-10-18); the `chat` deploy (prompt line) goes with the merge. Branch `feat/store-tabs`, cut from `main` at `6165d26` (with build101-23/app#19 and #21). Its ADR is 0031.
+Status: **done** in code (2026-10-18); the `chat` deploy (prompt line) goes with the merge. Branch `feat/store-tabs`, cut from `main` at `6165d26` (with build101-23/app#19 and #21). Its ADR is 0034 (main took 0031 to 0033 meanwhile).
 
 ## Context
 - Today the List tab opens with a "Dónde comprar" card:
@@ -51,6 +51,6 @@ Status: **done** in code (2026-10-18); the `chat` deploy (prompt line) goes with
    - The fixture (`cart=tata`, the default, `prices=stale`) at 360, 390 and 1280px, light and dark.
    - Tap each tab: totals, tags, links, and the button enabled or disabled.
 6. **Docs step:**
-   - ADR 0031: the List shows one store at a time, without the split; it partly changes the store rule's presentation in `product.md`.
+   - ADR 0034: the List shows one store at a time, without the split; it partly changes the store rule's presentation in `product.md`.
    - `docs/product.md` §5 and §6, `docs/design.md` (List, Store icons), `docs/architecture.md` (List screen), `docs/adr/README.md`.
 7. Commit, push and open the PR after the user's OK.

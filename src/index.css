@@ -2,14 +2,14 @@
 
 :root {
   /* Color: light */
-  --ground: #f3f6f2;
+  --ground: #f8f9f8;
   --surface: #ffffff;
-  --surface-sunk: #e8eee9;
-  --line: #d8e1db;
-  /* The tile behind a supermarket's icon: white in both themes, since the icons are never recolored. */
+  --surface-sunk: #e9f2ec;
+  --line: #e3e8e4;
+  /* The tile behind a supermarket's icon: white, since the icons are never recolored. */
   --store-icon-bg: #ffffff;
   --line-strong: #74877d;
-  --ink: #14211b;
+  --ink: #0f1713;
   --ink-muted: #55645c;
   --brand: #1e8a5e;
   --brand-ink: #156b49;
@@ -66,6 +66,7 @@
   /* Motion */
   --dur-fast: 120ms;
   --dur: 200ms;
+  --dur-slow: 300ms;
   --ease: cubic-bezier(0.2, 0.7, 0.2, 1);
 
   --font: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
@@ -78,37 +79,6 @@
   -webkit-font-smoothing: antialiased;
   -webkit-text-size-adjust: 100%;
   text-size-adjust: 100%;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --ground: #0d1613;
-    --surface: #16221d;
-    --surface-sunk: #1d2b25;
-    --line: #26352e;
-    --line-strong: #5c7067;
-    --ink: #e6eee9;
-    --ink-muted: #9aaba3;
-    --brand-ink: #5cc495;
-    --primary: #5cc495;
-    --primary-hover: #7bd3aa;
-    --on-primary: #0b3d2b;
-    --bubble-user: #1d5a42;
-    --on-bubble-user: #e6eee9;
-    --focus: #5cc495;
-    --danger: #ff8a7a;
-    --danger-surface: #2a1715;
-    --success-surface: #13291f;
-    --glass: rgb(13 22 19 / 0.68);
-    --glass-solid: #0d1613;
-    --glass-line: rgb(230 238 233 / 0.12);
-    --glass-edge: rgb(255 255 255 / 0.08);
-    --glass-shadow: 0 1px 2px rgb(0 0 0 / 0.3), 0 12px 32px -8px rgb(0 0 0 / 0.6);
-    --capsule: #16221d;
-    --capsule-shadow: 0 1px 3px rgb(0 0 0 / 0.5);
-
-    color-scheme: dark;
-  }
 }
 
 /* Glass is a progressive enhancement: solid where it can't be drawn, or where people ask for less
@@ -445,12 +415,9 @@ a.button {
   gap: 16px;
 }
 
-/* Reserves the button's height, so the form doesn't jump when Google's script loads. Google's iframe document
-   is light: inheriting the dark color-scheme would make the browser paint it as an opaque white box. Its own
-   dark theme ('filled_black') still applies. */
+/* Reserves the button's height, so the form doesn't jump when Google's script loads. */
 .google-button {
   min-height: 44px;
-  color-scheme: light;
 }
 
 .divider {
@@ -649,6 +616,13 @@ a.button {
   max-width: calc(var(--column) + 2 * var(--gutter));
   margin: 0 auto;
   padding: 20px calc(var(--gutter) + var(--safe-right)) var(--dock-clear) calc(var(--gutter) + var(--safe-left));
+}
+
+/* The content fades in when it arrives, after the skeleton or on a tab switch. Skeletons stay out of it, so a quick
+   load doesn't swap a half-faded skeleton for content that starts at zero. ease-out, not --ease: that one reaches half
+   the opacity in about a sixth of the time and reads as a pop. */
+.page > :not(.skeleton) {
+  animation: fade-in var(--dur-slow) ease-out both;
 }
 
 /* Chat */
@@ -885,6 +859,8 @@ a.button {
 
 /* The status line under the last bubble while a reply is on its way. */
 .chat-status {
+  /* One line reserved, so the status coming and going moves nothing under the scroll position. */
+  min-height: 1.5em;
   margin-top: 4px;
   padding-left: 4px;
   color: var(--ink-muted);
@@ -1264,102 +1240,361 @@ a.button {
   max-width: 34ch;
 }
 
-/* A page loading: a heading-sized bar, then rows. */
-.page-skeleton {
+/* Skeletons keep the shape of the page that's loading. They reuse its classes (cards, hairlines, gaps), so the content
+   arrives where its placeholder was. Flat sunk shapes with the slow pulse: a shimmer would need a gradient fill. */
+
+.menu-skeleton {
   display: grid;
-  gap: 18px;
+  gap: 8px;
 }
 
-.page-skeleton .skeleton-line {
-  width: 85%;
-  height: 14px;
+.menu-skeleton {
+  display: grid;
+  gap: 12px;
 }
 
-.page-skeleton .skeleton-line:nth-child(2) {
-  width: 40%;
+.menu-skeleton .strip {
+  height: 52px;
+}
+
+.menu-skeleton .title {
+  width: 96px;
   height: 20px;
+  margin: 16px 0 14px;
 }
 
-.profile-skeleton {
+.menu-skeleton .meal {
   display: grid;
-  gap: 18px;
-  padding: 16px;
+  align-content: center;
+  gap: 10px;
+  min-height: 64px;
+  padding: 12px 0;
+  border-top: 1px solid var(--line);
 }
 
-.profile-skeleton .skeleton-line {
-  height: 14px;
-}
-
-/* Child 1 is the screen-reader label, so the lines are children 2 to 5: label (even), then value (odd). */
-.profile-skeleton .skeleton-line:nth-child(even) {
-  width: 30%;
+.menu-skeleton .slot {
+  width: 64px;
   height: 10px;
 }
 
-.profile-skeleton .skeleton-line:nth-child(odd) {
-  width: 70%;
+.menu-skeleton .recipe {
+  width: 52%;
+  max-width: 220px;
+  height: 14px;
 }
 
-/* Menu */
+.menu-skeleton .meal:nth-child(3n) .recipe {
+  width: 38%;
+}
 
-.menu {
+.menu-skeleton .pill {
+  width: 168px;
+  height: 44px;
+}
+
+.list-skeleton {
   display: grid;
   align-content: start;
   gap: 8px;
 }
 
-.menu section {
-  margin-top: 16px;
+.list-skeleton .prices .skeleton-line {
+  height: 14px;
 }
 
-/* With the numbers switch on: the day's total under its heading, and each meal's under its name. */
+.list-skeleton .prices .skeleton-line:first-child {
+  width: 42%;
+  height: 16px;
+  margin-bottom: 4px;
+}
+
+.list-skeleton .prices .skeleton-line:nth-child(2) {
+  width: 72%;
+}
+
+.list-skeleton .prices .skeleton-line:nth-child(3) {
+  width: 58%;
+}
+
+.list-skeleton .prices .skeleton-line:nth-child(4) {
+  width: 64%;
+}
+
+.list-skeleton .prices .skeleton-line:nth-child(5) {
+  width: 50%;
+}
+
+.list-skeleton .pill {
+  width: 112px;
+  height: 48px;
+}
+
+.list-skeleton .pill:nth-child(2) {
+  width: 96px;
+}
+
+.list-skeleton .section-heading {
+  width: 40%;
+  height: 16px;
+  margin: 24px 0 14px;
+}
+
+.list-skeleton li {
+  min-height: 49px;
+}
+
+.list-skeleton .box {
+  flex: none;
+  width: 20px;
+  height: 20px;
+  border-radius: 6px;
+}
+
+.list-skeleton .name {
+  width: 48%;
+  height: 14px;
+}
+
+.list-skeleton li:nth-child(even) .name {
+  width: 36%;
+}
+
+.list-skeleton .qty {
+  width: 48px;
+  height: 14px;
+  margin-left: auto;
+}
+
+.facts.skeleton > div {
+  display: grid;
+  gap: 14px;
+}
+
+.facts.skeleton .label {
+  width: 30%;
+  height: 12px;
+}
+
+.facts.skeleton .value {
+  width: 70%;
+  height: 16px;
+}
+
+.group.skeleton .heading {
+  width: 38%;
+  height: 16px;
+  margin: 4px 0 14px;
+}
+
+.group.skeleton li {
+  width: 72px;
+  height: 34px;
+}
+
+.group.skeleton li:nth-child(2) {
+  width: 96px;
+}
+
+.group.skeleton li:nth-child(3) {
+  width: 60px;
+}
+
+/* Menu */
+
+/* One day at a time: a strip of days over the day's card. */
+.menu {
+  display: grid;
+  align-content: start;
+  gap: 12px;
+}
+
+/* A segmented control of native radios (one tab stop, arrow keys between days): the selected day is filled with the
+   primary color. The input stretches over its label, invisible, so the whole segment is the target. */
+.days {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(44px, 1fr);
+  min-width: 0;
+  margin: 0;
+  padding: 3px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--surface-sunk);
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.days label {
+  position: relative;
+  display: grid;
+  place-items: center;
+  min-height: 46px;
+  border-radius: 999px;
+  font-size: 0.9375rem;
+  font-weight: 550;
+  text-transform: capitalize;
+  cursor: pointer;
+  transition: background-color var(--dur-fast) var(--ease);
+}
+
+.days input {
+  position: absolute;
+  inset: 0;
+  margin: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.days label:has(:checked) {
+  background: var(--primary);
+  color: var(--on-primary);
+  font-weight: 650;
+}
+
+.days label:has(:focus-visible) {
+  outline: 2px solid var(--focus);
+  outline-offset: -2px;
+}
+
+@media (hover: hover) {
+  .days label:not(:has(:checked)):hover {
+    background: color-mix(in srgb, var(--surface) 60%, transparent);
+  }
+}
+
+.day-card {
+  padding: 0 16px;
+}
+
+.day-card h2 {
+  padding: 16px 0 8px;
+  font-size: 1.25rem;
+  line-height: 1.3;
+  text-transform: capitalize;
+}
+
+/* With the numbers switch on: the day's total under its name, and each meal's under its recipe. */
 .menu .macros {
   display: block;
-  margin: 0 0 4px;
   color: var(--ink-muted);
   font-size: 0.8125rem;
   font-variant-numeric: tabular-nums;
 }
 
-.menu-day {
-  display: flex;
-  justify-content: space-between;
-  align-items: baseline;
-  gap: 12px;
-}
-
-.menu h2 {
-  margin-bottom: 4px;
-  font-size: 1rem;
-  text-transform: capitalize;
-}
-
-.menu .link {
-  color: var(--brand-ink);
+.day-card > .macros {
+  margin: -4px 0 8px;
 }
 
 .menu details {
-  border-bottom: 1px solid var(--line);
+  border-top: 1px solid var(--line);
 }
 
 .menu summary {
-  min-height: 44px;
-  padding: 10px 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 20px;
+  align-items: center;
+  gap: 0 12px;
+  min-height: 64px;
+  padding: 12px 0;
   cursor: pointer;
+  list-style: none;
 }
 
-.menu details ul {
-  margin: 0 0 8px;
-  padding-left: 20px;
+.menu summary::-webkit-details-marker {
+  display: none;
 }
 
-.menu details p {
+.menu summary .slot {
+  color: var(--ink-muted);
+  font-size: 0.8125rem;
+  font-weight: 600;
+}
+
+.menu summary .recipe {
+  font-weight: 550;
+}
+
+.menu summary .icon {
+  grid-column: 2;
+  grid-row: 1 / span 3;
+  width: 20px;
+  height: 20px;
+  color: var(--ink-muted);
+  transition: transform var(--dur) var(--ease);
+}
+
+.menu details[open] summary .icon {
+  transform: rotate(180deg);
+}
+
+/* An opened meal: what goes in it, how it's made, and the way to change it. */
+.meal-body {
+  display: grid;
+  gap: 16px;
+  padding-bottom: 16px;
+  animation: fade-in var(--dur) var(--ease);
+}
+
+.meal-body h3 {
+  margin: 0 0 6px;
+  color: var(--ink-muted);
+  font-size: 0.8125rem;
+  font-weight: 600;
+}
+
+.meal-body ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.meal-body li {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 4px 0;
+  font-size: 0.9375rem;
+}
+
+.meal-body li span:last-child {
+  color: var(--ink-muted);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.meal-body p {
   max-width: 60ch;
-  margin-bottom: 4px;
+  font-size: 0.9375rem;
 }
 
-.menu details .link {
-  margin-bottom: 8px;
+.menu .button {
+  justify-self: start;
+  min-height: 44px;
+}
+
+.menu .button .icon {
+  width: 20px;
+  height: 20px;
+}
+
+@media (min-width: 640px) {
+  .meal-body {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.5fr);
+    gap: 16px 32px;
+  }
+
+  .meal-body .button {
+    grid-column: 1 / -1;
+  }
+}
+
+/* Without this the selected day would disappear: forced colors drop the fill. */
+@media (forced-colors: active) {
+  .days label:has(:checked) {
+    forced-color-adjust: none;
+    background: Highlight;
+    color: HighlightText;
+  }
 }
 
 /* List */
@@ -1425,7 +1660,7 @@ a.button {
   gap: 8px;
 }
 
-/* One tab per supermarket on top of the list (ADR 0031). The selected one gets a 2px primary edge instead of its line. */
+/* One tab per supermarket on top of the list (ADR 0034). The selected one gets a 2px primary edge instead of its line. */
 .store-tabs {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));

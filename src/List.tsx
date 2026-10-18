@@ -58,7 +58,7 @@ const optionText = ({ stores, total }: Option) =>
 // The chosen total over the menu's days, on what's left to buy like the total. A one-day menu's total already is that.
 const perDay = (total: number, days: number) => (days > 1 ? t.prices.perDay(money(total / days), days) : '')
 
-// The store the List tab shows, picked for this menu version (ADR 0031). Another menu opens on the recommended one.
+// The store the List tab shows, picked for this menu version (ADR 0034). Another menu opens on the recommended one.
 // shortcut: the pick lives in this browser; move it next to menus.have if people switch devices
 function readTab(version: string): StoreKey | null {
   try {
@@ -157,7 +157,7 @@ export default function List({ session, onOpenChat }: { session: Session; onOpen
   }, [])
 
   if (menu === undefined) {
-    return <div className="page list">{error ? <Alert text={error} /> : <PageSkeleton label={t.list.loading} />}</div>
+    return <div className="page list">{error ? <Alert text={error} /> : <PageSkeleton label={t.list.loading} shape="list" />}</div>
   }
   if (!menu) {
     return (
@@ -177,7 +177,7 @@ export default function List({ session, onOpenChat }: { session: Session; onOpen
   const waiting = noPrices(rows, p)
   const priced = !!p && !waiting
   const plan = p?.plan
-  // The store whose products and prices the list shows (ADR 0031).
+  // The store whose products and prices the list shows (ADR 0034).
   const tab: StoreKey | null = plan
     ? (picked?.version === updated_at ? picked.store : null) ?? readTab(updated_at) ?? bestStore(plan)
     : null
