@@ -52,6 +52,20 @@ export const ChatIcon = () => (
   </Icon>
 )
 
+// A bubble in front of another: more than one chat.
+export const ChatsIcon = () => (
+  <Icon>
+    <path d="M3 6.5A2.5 2.5 0 0 1 5.5 4h7A2.5 2.5 0 0 1 15 6.5v4a2.5 2.5 0 0 1-2.5 2.5H8.5l-3 2.5V13A2.5 2.5 0 0 1 3 10.5Z" />
+    <path d="M17.5 9h1a2.5 2.5 0 0 1 2.5 2.5v4a2.5 2.5 0 0 1-2.5 2.5v2.5l-3-2.5h-4A2.5 2.5 0 0 1 9 15.5" />
+  </Icon>
+)
+
+export const PlusIcon = () => (
+  <Icon>
+    <path d="M12 5v14M5 12h14" />
+  </Icon>
+)
+
 export const MenuIcon = () => (
   <Icon>
     <rect x="3.75" y="5" width="16.5" height="15" rx="3" />

@@ -5,7 +5,7 @@ import { supabase } from './supabase'
 import { t } from './strings'
 import { MenuPreview } from './Menu'
 import { ListPreview, type MenuRow } from './List'
-import { Alert, AlertIcon, Mark, SendIcon } from './ui'
+import { Alert, AlertIcon, ChatsIcon, Mark, PlusIcon, SendIcon } from './ui'
 
 type Role = 'user' | 'assistant'
 // turn: counts the user's messages, so a turn's cards can be found. saved: a menu card from a save_menu call.
@@ -361,11 +361,18 @@ export default function Chat({
   return (
     <div className="chat" ref={root}>
       <div className="chat-bar">
-        <button type="button" className="link" disabled={busy} onClick={() => setShowList(!showList)}>
-          {showList ? t.chat.back : t.chat.chats}
+        <button
+          type="button"
+          // A toggle keeps its name; aria-pressed says whether the list is open.
+          aria-label={t.chat.chats}
+          aria-pressed={showList}
+          disabled={busy}
+          onClick={() => setShowList(!showList)}
+        >
+          <ChatsIcon />
         </button>
-        <button type="button" className="link" disabled={busy} onClick={newChat}>
-          {t.chat.newChat}
+        <button type="button" aria-label={t.chat.newChat} disabled={busy} onClick={newChat}>
+          <PlusIcon />
         </button>
       </div>
       {showList ? (
