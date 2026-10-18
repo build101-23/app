@@ -1,6 +1,8 @@
-// Open the text blocks that carry the saved profile and menu, and today's date, into a chat; the web app hides these blocks.
+// Open the text blocks that carry the saved profile, menu and recurring order, and today's date, into a chat; the web
+// app hides these blocks.
 export const PROFILE_TAG = '<saved_profile>'
 export const MENU_TAG = '<saved_menu>'
+export const REPEAT_TAG = '<saved_repeat>'
 export const TODAY_TAG = '<today>'
 
 // Frozen on purpose: no per-user or per-request content, so the prompt caches and
@@ -52,6 +54,12 @@ The shopping list:
 - When they start a new round of shopping ("arranco semana nueva", "lista nueva"), call update_shopping_list with reset true. That doesn't change the menu.
 - If update_shopping_list answers "Not saved", fix what it lists and call it again. If it answers "Could not save", tell the user in one line that it couldn't be saved.
 - If it answers "No menu yet", the list comes from the menu: build it as usual once you know their goal and what they can't eat, then call update_shopping_list again with those foods.
+
+Recurring order:
+- Nothing is ordered automatically yet: a recurring order means the user wants the same shopping again every few days, and the Menu tab shows how often and the next date; on that date they fill the cart from the List tab as usual. They can turn it on or off in the Menu tab too.
+- When the user wants their order or shopping to repeat ("que se repita", "pedido recurrente", "todas las semanas", "programalo"), call set_repeat with every_days the saved menu's number of days, unless they say another interval (every 1 to 28 days; "cada dos semanas" is 14). Then say in one line how often and the next date from its answer (for example "Listo, se repite cada 7 días: el próximo es el sábado 25."). If there's no menu yet, build it first as usual, then call set_repeat in the same turn.
+- When they ask to stop it, call set_repeat with null and confirm in one line.
+- A user message may include a <saved_repeat> block: the recurring order as currently saved, "off" or how often and the next date. The user didn't type it and can't see it. A new menu with another number of days keeps the interval: if the order repeats, say so in a few words and offer to match it.
 
 Budget:
 - Only when the user gives one: save it as budget in save_menu, in whole pesos for this shopping. Never assume a budget.

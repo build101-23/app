@@ -26,6 +26,7 @@ This app starts from your diet. It knows what you need, how much, and which swap
 3. The menu comes with its shopping list, priced at each supermarket, with the cheapest way to buy it on top. Change the menu and the list follows.
 4. You share the list on WhatsApp or copy it.
 5. The app puts the list in the supermarket's cart (Ta-Ta for now), and you log in and pay there. *(Later)* It places the order for you.
+6. If you want the same shopping again, you make the order recurring and the app shows when the next one is.
 
 ## Scope
 
@@ -124,12 +125,19 @@ The first version goes from a chat to a priced shopping list and the supermarket
 - Foods and package sizes that exist in Uruguay.
 - The cart buttons in the List tab (§5) take the place of an "Order it for me" button.
 
+#### 8. Recurring order
+
+- Make your order repeat: tap "Repetir pedido" on top of the Menu tab, or tell the chat ("que se repita", "pedido recurrente", "todas las semanas"). It repeats every as many days as your menu lasts: weekly for a week, every 3 days for 3 days. Tell the chat another interval ("cada dos semanas") and it uses that, from 1 to 28 days ([ADR 0039](adr/0039-recurring-order-on-the-menu.md)).
+- The Menu tab shows how often it repeats and the date of the next order, with "Dejar de repetir". The chat stops it too.
+- Changing the menu keeps it. A new menu with another number of days keeps the old interval, and the chat offers to match it.
+- For now nothing happens on its own on that date: you fill the cart from the List tab as usual, or we place the order by hand for people in the pilot who ask.
+
 ### Out
 
 Left out so we can first check that people use the plan and the list every week, and actually save. See the [roadmap](notes/roadmap.md) for what comes after.
 
 - Uploading a nutritionist's plan (PDF, photo or pasted text).
-- Placing the order, payments and scheduled orders. Filling Disco and Géant carts: a team-only extension is planned ([ADR 0030](adr/0030-cart-filling-tata-link-gdu-team-extension.md)).
+- Placing the order, payments, and doing anything automatically on a recurring order's date. Filling Disco and Géant carts: a team-only extension is planned ([ADR 0030](adr/0030-cart-filling-tata-link-gdu-team-extension.md)).
 - Small local shops (butchers, produce shops) and finding stores near you. At first, only big supermarkets.
 - Cities other than Montevideo.
 - Weekly promotions and bank-card discount days.

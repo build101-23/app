@@ -15,8 +15,9 @@ import {
   type ProductRow,
   type SearchRow,
 } from '../_shared/products.ts'
+import { MAX_REPEAT_DAYS, nextOrder, todayInMontevideo } from '../_shared/repeat.ts'
 import { stores } from '../_shared/stores.ts'
-import { MENU_TAG, PROFILE_TAG, SYSTEM_PROMPT, TODAY_TAG } from './prompt.ts'
+import { MENU_TAG, PROFILE_TAG, REPEAT_TAG, SYSTEM_PROMPT, TODAY_TAG } from './prompt.ts'
 
 type MessageParam = Anthropic.Beta.BetaMessageParam
 
@@ -203,6 +204,33 @@ const showShoppingList: Anthropic.Beta.BetaTool = {
   input_schema: object({}),
 }
 
+// The recurring order (ADR 0039): repeat_every and repeat_from on the menus row, which the Menu tab writes too.
+const setRepeat: Anthropic.Beta.BetaTool = {
+  name: 'set_repeat',
+  description:
+    "Make the user's order (the saved menu's shopping) repeat every every_days days from today, or stop it with null. The Menu tab shows it with the next date.",
+  strict: true,
+  input_schema: object({
+    every_days: {
+      ...nullable('integer'),
+      description: `1 to ${MAX_REPEAT_DAYS}: the menu's number of days unless the user asked for another interval. null stops it.`,
+    },
+  }),
+}
+
+// How the model reads the recurring order: "every 7 days, next order Saturday, October 25, 2026", or "off".
+function repeatText(every: number | null, from: string | null) {
+  if (!every || !from) return 'off'
+  const next = new Date(`${nextOrder(from, every, todayInMontevideo())}T12:00:00Z`).toLocaleDateString('en-US', {
+    timeZone: 'UTC',
+    weekday: 'long',
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+  })
+  return `every ${every} days, next order ${next}`
+}
+
 const json = (status: number, body: unknown) =>
   new Response(JSON.stringify(body), { status, headers: { ...cors, 'Content-Type': 'application/json' } })
 
@@ -243,7 +271,7 @@ Deno.serve(async (req) => {
   const [{ data: history, error }, { data: profile }, { data: menu }] = await Promise.all([
     supabase.from('messages').select('role, content').eq('conversation_id', conversationId).order('id'),
     supabase.from('profiles').select('data').maybeSingle(),
-    supabase.from('menus').select('data').maybeSingle(),
+    supabase.from('menus').select('data, repeat_every, repeat_from').maybeSingle(),
   ])
   if (error) return json(500, { error: error.message })
 
@@ -261,6 +289,8 @@ Deno.serve(async (req) => {
   if (menuText && menuText !== seen.findLast((t) => t.startsWith(MENU_TAG))) {
     content.push({ type: 'text', text: menuText })
   }
+  const repeat = menu ? `${REPEAT_TAG}${repeatText(menu.repeat_every, menu.repeat_from)}</saved_repeat>` : ''
+  if (repeat && repeat !== seen.findLast((t) => t.startsWith(REPEAT_TAG))) content.push({ type: 'text', text: repeat })
   // Today in Montevideo (the app's only city), so a menu can start tomorrow and name its days. Here, not in the
   // system prompt, which stays the same for every request so it caches.
   const today = new Date().toLocaleDateString('en-US', {
@@ -378,6 +408,17 @@ Deno.serve(async (req) => {
       const { error: saveError } = await admin.from('menus').update({ have }).eq('user_id', userId)
       return { problem: saveError ? `Could not save: ${saveError.message}` : '' }
     }
+    if (name === 'set_repeat') {
+      const every = (input as { every_days: number | null }).every_days
+      if (every !== null && !(Number.isInteger(every) && every >= 1 && every <= MAX_REPEAT_DAYS)) {
+        return { problem: `Not saved. every_days must be null or 1 to ${MAX_REPEAT_DAYS}.` }
+      }
+      const repeat = { repeat_every: every, repeat_from: every ? todayInMontevideo() : null }
+      const { data: row, error } = await admin.from('menus').update(repeat).eq('user_id', userId).select('user_id').maybeSingle()
+      if (error) return { problem: `Could not save: ${error.message}` }
+      if (!row) return { problem: 'No menu yet. Build the menu first.' }
+      return { problem: '', info: `Recurring order now: ${repeatText(repeat.repeat_every, repeat.repeat_from)}.` }
+    }
     if (name === 'show_menu' || name === 'show_shopping_list') {
       const { data: row, error } = await supabase.from('menus').select('user_id').maybeSingle()
       if (error) return { problem: `Could not check the menu: ${error.message}` }
@@ -422,7 +463,7 @@ Deno.serve(async (req) => {
             max_tokens: 16000,
             cache_control: { type: 'ephemeral' },
             system: SYSTEM_PROMPT,
-            tools: [saveProfile, saveMenu, showMenu, updateShoppingList, showShoppingList, searchProducts],
+            tools: [saveProfile, saveMenu, showMenu, updateShoppingList, showShoppingList, setRepeat, searchProducts],
             // No tools in the last round, so the turn ends on a reply about the earlier calls, not on tool results.
             tool_choice: { type: last ? 'none' : 'auto' },
             messages,

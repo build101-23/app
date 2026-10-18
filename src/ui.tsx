@@ -103,6 +103,14 @@ export const ProfileIcon = () => (
   </Icon>
 )
 
+// Two arrows chasing each other: a recurring order.
+export const RepeatIcon = () => (
+  <Icon>
+    <path d="M4.75 11a7 7 0 0 1 12.2-4.2M19.25 13a7 7 0 0 1-12.2 4.2" />
+    <path d="M17.5 3.5v3.75h-3.75M6.5 20.5v-3.75h3.75" />
+  </Icon>
+)
+
 export const SendIcon = () => (
   <Icon>
     <path d="M12 18.5v-13M6.5 11 12 5.5l5.5 5.5" strokeWidth={2.25} />

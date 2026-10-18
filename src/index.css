@@ -1559,6 +1559,36 @@ a.button {
   gap: 12px;
 }
 
+/* The recurring order: one flat card on top of the menu (ADR 0039). */
+.repeat {
+  display: grid;
+  justify-items: start;
+  gap: 4px;
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-card);
+  background: var(--surface);
+}
+
+.repeat p {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+}
+
+.repeat .icon {
+  color: var(--brand-ink);
+}
+
+.repeat .button {
+  margin-top: 8px;
+}
+
+.repeat .button.quiet {
+  margin-left: -12px;
+}
+
 /* A segmented control of native radios (one tab stop, arrow keys between days): the selected day is filled with the
    primary color. The input stretches over its label, invisible, so the whole segment is the target. */
 .days {
