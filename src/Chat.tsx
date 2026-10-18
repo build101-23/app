@@ -43,7 +43,7 @@ declare global {
 const Recognition = window.SpeechRecognition ?? window.webkitSpeechRecognition
 
 // Shows text, plus a preview after each save_menu call that saved and the turn's first show_menu call, and the list
-// card. Thinking, other tool calls, tool results and the server's profile and menu copies stay hidden.
+// card. Thinking, other tool calls, tool results and the server's profile, menu and date blocks stay hidden.
 function toBubbles(rows: Row[]): Bubble[] {
   const saved = new Set(
     rows
@@ -57,7 +57,7 @@ function toBubbles(rows: Row[]): Bubble[] {
   let turn = 0
   const bubbles = rows.flatMap((row) => {
     const text = row.content
-      .filter((block) => block.type === 'text' && !block.text?.startsWith('<saved_'))
+      .filter((block) => block.type === 'text' && !block.text?.startsWith('<saved_') && !block.text?.startsWith('<today>'))
       .map((block) => block.text)
       .join('\n')
     if (row.role === 'user' && text) {

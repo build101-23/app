@@ -44,16 +44,27 @@ test('flags what strict mode lets through', () => {
     "Recipe r1: an 'other' ingredient has no other_name.",
     'Recipe r1: other needs an amount above 0.',
     "monday: recipe r9 doesn't exist.",
-    'monday appears more than once.',
+    'Day 2 (monday) must come after monday: days go in order from the first one, sunday then monday, each once.',
   ])
 })
 
-test('a menu can cover fewer days, but at least one and each once', () => {
-  const weekend = week()
-  weekend.days = weekend.days.filter((entry) => entry.day === 'saturday' || entry.day === 'sunday')
-  assert.deepEqual(menuProblems(weekend), [])
-  weekend.days = []
-  assert.deepEqual(menuProblems(weekend), ['The menu needs at least one day.'])
+test('a menu covers 1 to 7 days in calendar order from the first, each once', () => {
+  const menu = week()
+  const pick = (...names: string[]) => names.map((name) => week().days.find((entry) => entry.day === name)!)
+  for (const run of [['saturday', 'sunday'], ['saturday', 'sunday', 'monday'], ['monday', 'wednesday', 'friday']]) {
+    menu.days = pick(...run)
+    assert.deepEqual(menuProblems(menu), [])
+  }
+  menu.days = pick('monday', 'wednesday', 'tuesday')
+  assert.deepEqual(menuProblems(menu), [
+    'Day 3 (tuesday) must come after wednesday: days go in order from the first one, sunday then monday, each once.',
+  ])
+  menu.days = [...week().days, ...pick('monday')]
+  assert.deepEqual(menuProblems(menu), [
+    'Day 8 (monday) must come after sunday: days go in order from the first one, sunday then monday, each once.',
+  ])
+  menu.days = []
+  assert.deepEqual(menuProblems(menu), ['The menu needs at least one day.'])
 })
 
 test('checks the budget and the picked products', () => {

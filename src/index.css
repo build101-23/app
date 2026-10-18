@@ -785,7 +785,7 @@ textarea {
   padding: 13px 16px;
 }
 
-/* The week the chat saved, shown under its reply as a card in the conversation. */
+/* The menu the chat saved, shown under its reply as a card in the conversation. */
 .menu-preview {
   display: grid;
   gap: 12px;

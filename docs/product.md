@@ -22,7 +22,7 @@ This app starts from your diet. It knows what you need, how much, and which swap
 ## How it works
 
 1. You chat with the AI nutritionist. If you have a nutritionist's plan, you describe it in the chat.
-2. The app combines that with your likes and restrictions, looks for the products the supermarkets sell, and proposes a menu with them: for the week, or for the days you ask ("para el finde"). You change it as you like. Your plan is your profile plus that menu.
+2. The app combines that with your likes and restrictions, looks for the products the supermarkets sell, and proposes a menu with them: for the week, or for the days you ask ("para el finde", "los 3 días que vienen"), from tomorrow unless you say otherwise. You change it as you like. Your plan is your profile plus that menu.
 3. The menu comes with its shopping list, priced at each supermarket, with the cheapest way to buy it on top. Change the menu and the list follows.
 4. You share the list on WhatsApp or copy it.
 5. *(Later)* The app places the order for you.
@@ -41,11 +41,11 @@ The first version goes from a chat to a priced shopping list, in Montevideo only
 - Voice as dictation: tap the mic, speak, and the text appears in the box for you to check and send. It uses the browser's speech recognition ([ADR 0010](adr/0010-browser-speech-recognition.md)); where that's missing, the keyboard's dictation still works. No live voice conversation.
 - If you don't have a plan, it builds one from scratch.
 - If you have a nutritionist's plan, it follows what you tell it about that plan.
-- It asks as little as possible: your goal and what you can't eat. It doesn't ask whether you have a nutritionist's plan; if you mention one, it follows it. Everything else it assumes, tells you, and lets you correct. Then it builds your weekly menu right away and shows a preview of the week in the chat, with a button to the Menu tab, and tells you the shopping list is ready too. Ask it to see the menu and it shows the same preview.
-- Ask for the shopping list ("dale", "mostrame la lista") and it shows it in the chat: what's left to buy by section, the total at the end, and a button to the List tab. Then it asks what you already have at home.
+- It asks as little as possible: your goal and what you can't eat. It doesn't ask whether you have a nutritionist's plan; if you mention one, it follows it. Everything else it assumes, tells you, and lets you correct. Then it builds your menu right away, a week unless you ask for fewer days ([§4](#4-menu)), and shows a preview of it in the chat, with a button to the Menu tab, and tells you the shopping list is ready too. Ask it to see the menu and it shows the same preview.
+- Ask for the shopping list ("dale", "mostrame la lista") and it shows it in the chat: what's left to buy by section, the total and what it comes to per day ([§6](#6-save-money)) at the end, and a button to the List tab. Then it asks what you already have at home.
 - Tell it what you already have at home ("tengo dos bananas", "tengo medio kilo de pollo"), to take something off the list or to buy less, and the list in the chat updates with its new total. That never changes the menu. "Arranco semana nueva" clears it.
 - Ask from the list for something you'd eat differently ("cambiame la carne por pollo", "sacame el brócoli del menú") and it changes the menu in the background, says in one line what changed, and shows the updated list.
-- It builds the menu only with products it found at Disco, Géant and Ta-Ta ([ADR 0024](adr/0024-agent-builds-the-menu-from-real-products.md)), and can tell you the total, where it's cheapest and whether it fits your budget: the same numbers as the List tab. It never writes the list or makes up a price.
+- It builds the menu only with products it found at Disco, Géant and Ta-Ta ([ADR 0024](adr/0024-agent-builds-the-menu-from-real-products.md)), and can tell you the total, what it comes to per day, where it's cheapest and whether it fits your budget: the same numbers as the List tab. Whenever it says the total, it says the per-day amount too. It never writes the list or makes up a price.
 - Tell it a budget for the shopping ("tengo $ 1.500") and it builds to fit: the split between two stores if that does it, otherwise cheaper foods your plan allows, never smaller amounts. If it still doesn't fit, it says how much is missing. With room, it picks known brands.
 - If you ask for something the stores don't sell, or something it can't do, it says so in one line.
 - Normal, everyday food you can buy at any supermarket in Montevideo.
@@ -70,18 +70,20 @@ The first version goes from a chat to a priced shopping list, in Montevideo only
 - With numbers on, give the chat a calorie or protein target and it builds the menu to it, with the same values the Menu tab adds up.
 - With no target, on or off, a menu aims at maintenance: about 2000–2200 kcal a day, nearer 2500 for a man or someone very active; a moderate deficit or surplus only when your goal is to lose or gain weight ([plan](plans/2026-10-17-default-calories.md)).
 
-#### 4. Weekly menu
+#### 4. Menu
 
-- The whole week, or the days you ask for (one to seven), day by day, each meal with amounts and short instructions.
+- A week by default. Ask the chat for fewer days ("planificame los 3 días que vienen", "para el finde") and it plans 1 to 7, from tomorrow unless you say otherwise ("desde hoy", "desde el lunes"). Ask for more than 7 and it builds the week and tells you a week is the most ([ADR 0028](adr/0028-menus-of-1-to-7-days.md)).
+- Each day is named by its weekday, in calendar order from the first, and the chat says which days it's planning: asked on a Friday, 3 days are sábado, domingo and lunes. Changing a meal keeps the days; a new plan starts tomorrow again.
+- Day by day, each meal with amounts and short instructions.
 - Change a meal or a day ("swap Tuesday's dinner") by chat or by tapping it.
-- A few recipes that repeat, on purpose: too much variety makes the shopping list huge and expensive.
+- A few recipes that repeat, fewer for a shorter menu, on purpose: too much variety makes the shopping list huge and expensive.
 - Saved as soon as the AI proposes it, with its shopping list. There's no confirm step: "confirm" sounded like a payment, and every change updates the list anyway ([ADR 0022](adr/0022-list-follows-the-menu.md)).
 - Ingredients come from a fixed list of everyday foods, with amounts raw as bought; anything else is named as is ([ADR 0013](adr/0013-menu-saved-by-a-chat-tool.md)). Each one comes with the product the AI picked at each supermarket, from what they sell ([ADR 0024](adr/0024-agent-builds-the-menu-from-real-products.md)).
 
 #### 5. Shopping list
 
 - Built from the saved menu as soon as there is one, and it follows every change to the menu. Also shown in the chat ([§1](#1-chat-with-the-ai-nutritionist)).
-- Adds up the whole week and groups it by section, in the order you walk the store: fruit and vegetables, pantry, meat and fish, dairy, cold cuts and eggs, and "Otros" for foods outside the catalog.
+- Adds up the whole menu and groups it by section, in the order you walk the store: fruit and vegetables, pantry, meat and fish, dairy, cold cuts and eggs, and "Otros" for foods outside the catalog.
 - Converts to how things are sold: "1,1 kg of rice" becomes "2 × 1 kg", with what the menu uses next to it. Meat, fish, ham, cheese, fruit and vegetables show a weight (or a count), since they're sold loose or by weight. It always rounds up, never down.
 - Accounts for raw vs. cooked: the menu's amounts are raw as bought, and the chat converts cooked amounts you give it (plans often say cooked rice; you buy it dry).
 - Cross out what you already have at home, or buy less of it with −; or tell the chat. Your marks stay when the menu changes, until you tap "Lista nueva" or tell the chat you're starting a new week.
@@ -94,6 +96,7 @@ The first version goes from a chat to a priced shopping list, in Montevideo only
 - Prices only what's left to buy: crossed-out items aren't priced, and partly-had ones are priced on what's left.
 - Each store is costed on the whole units you'd add to the cart: packs, or pieces, trays and bags for food sold by weight ([ADR 0023](adr/0023-scraper-prices-for-the-unit-of-sale.md)). What's left over is paid for.
 - Shows what the whole list costs at each supermarket.
+- Under the chosen total (the recommended one, or the split if you picked it), what it comes to per day of the menu: "$ 277 por día · menú de 7 días". It's what's left to buy divided by the menu's days, so it drops as you cross things out. Not shown for a 1-day menu, or when neither one store nor two have the whole list.
 - With a budget, it says whether the list fits and how much is left, or how much is missing, and when a split between two stores would fit.
 - Prices are estimates and show the date they were checked. A menu saved before real prices asks you to rebuild it in the chat.
 
