@@ -71,7 +71,7 @@ The picker and the alternative palettes never reach the production build.
    - one fresh finish review, one fix batch and one verdict pass.
 9. **Docs:**
    - `docs/design.md` rewritten for v2;
-   - ADR 0024 superseding 0023, plus the ADR index;
+   - ADR 0026 superseding 0025, plus the ADR index;
    - `architecture.md` and `development.md`;
    - `.impeccable/design.json`.
 

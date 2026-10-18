@@ -26,10 +26,10 @@ One file per decision: `NNNN-short-title.md`. ADRs are append-only: never rewrit
 | 0020 | [CI on Tenki runners](0020-ci-on-tenki-runners.md) | Accepted | 2026-10-17 |
 | 0021 | [The numbers switch lives in the profile; macros come from a fixed table](0021-numbers-switch-in-the-profile.md) | Accepted | 2026-10-17 |
 | 0022 | [The shopping list follows the menu, and shows in the chat](0022-list-follows-the-menu.md) | Accepted | 2026-10-17 |
-| 0023 | [VIVERI identity and a token-based UI system](0023-viveri-identity-and-ui-system.md) | Superseded by 0024 | 2026-10-17 |
-| 0024 | [Coral and aquamarine identity, floating glass dock](0024-coral-identity-and-glass-dock.md) | Proposed (colors superseded by 0026) | 2026-10-17 |
-| 0025 | [Google's button leads the sign-in screen](0025-google-leads-sign-in.md) | Proposed | 2026-10-17 |
-| 0026 | [Naranja zapallo colors](0026-naranja-zapallo-colors.md) | Proposed | 2026-10-17 |
+| 0025 | [VIVERI identity and a token-based UI system](0025-viveri-identity-and-ui-system.md) | Superseded by 0026 | 2026-10-17 |
+| 0026 | [Coral and aquamarine identity, floating glass dock](0026-coral-identity-and-glass-dock.md) | Proposed (colors superseded by 0028) | 2026-10-17 |
+| 0027 | [Google's button leads the sign-in screen](0027-google-leads-sign-in.md) | Proposed | 2026-10-17 |
+| 0028 | [Naranja zapallo colors](0028-naranja-zapallo-colors.md) | Proposed | 2026-10-17 |
 
 ## Template
 

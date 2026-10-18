@@ -6,7 +6,7 @@ Living doc: how the system is *now*. Reasoning lives in [ADRs](adr/), not here.
 
 - **Web app** (`src/`): a single-page app installed on the phone as a PWA. It talks to Supabase with the public key and the user's login token. Screens: Chat (with a preview of each menu it saved or showed and a button to the Menu tab, and a live shopping list card with its total and a button to the List tab), Menu (the week, Cambiar buttons that hand a draft to the chat, and kcal and macros per meal and per day when the numbers switch is on), List (the saved menu added up into a shopping list by section, with what you have at home crossed out or reduced, and share or copy; on top, where to buy it by the store rule) and Profile (with the numbers switch).
 - **Supabase**: one hosted project.
-  - Auth: Google's sign-in button first ([ADR 0025](adr/0025-google-leads-sign-in.md)), or a magic link email for now and an emailed code from milestone 6.
+  - Auth: Google's sign-in button first ([ADR 0027](adr/0027-google-leads-sign-in.md)), or a magic link email for now and an emailed code from milestone 6.
   - Postgres (`supabase/migrations/`), with row-level security on every table. Users read only their own rows, except the price catalog below. They write only `conversations`, `menus.have` and the profile's `show_numbers` (through `set_show_numbers`); the `chat` function writes the rest ([ADR 0014](adr/0014-client-reads-chat-function-writes.md)):
     - `conversations`: the user's chats, with a title (the first message) and `updated_at` for sorting.
     - `messages`: the turns of each conversation. `content` holds each message exactly as sent to or returned by Claude, thinking blocks included. The history is append-only and replayed as is.
@@ -37,7 +37,7 @@ Living doc: how the system is *now*. Reasoning lives in [ADRs](adr/), not here.
 - Client: installable web app (PWA), Capacitor later ([ADR 0002](adr/0002-pwa-now-capacitor-later.md))
 - Framework: Vite + React + TypeScript ([ADR 0004](adr/0004-vite-react-supabase-claude.md))
 - UI language: Spanish, strings in `src/strings.ts` ([ADR 0006](adr/0006-spanish-ui.md))
-- UI design: plain CSS with design tokens in `src/index.css`, pumpkin orange and black, floating glass dock, no CSS framework ([ADR 0024](adr/0024-coral-identity-and-glass-dock.md), [ADR 0026](adr/0026-naranja-zapallo-colors.md), [design.md](design.md))
+- UI design: plain CSS with design tokens in `src/index.css`, pumpkin orange and black, floating glass dock, no CSS framework ([ADR 0026](adr/0026-coral-identity-and-glass-dock.md), [ADR 0028](adr/0028-naranja-zapallo-colors.md), [design.md](design.md))
 - Backend: Supabase: auth, Postgres, Edge Functions ([ADR 0004](adr/0004-vite-react-supabase-claude.md))
 - AI: `claude-sonnet-5-5` at medium effort via the Anthropic SDK ([ADR 0007](adr/0007-sonnet-for-chat.md))
 - Hosting: Cloudflare Worker serving the static build ([ADR 0005](adr/0005-cloudflare-workers.md))

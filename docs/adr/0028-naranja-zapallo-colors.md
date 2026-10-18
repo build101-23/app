@@ -1,8 +1,8 @@
-# 0026. Naranja zapallo colors
+# 0028. Naranja zapallo colors
 
 - Status: Proposed
 - Date: 2026-10-17
-- Supersedes the colors of [0024](0024-coral-identity-and-glass-dock.md); its dock, layout and logo geometry stay.
+- Supersedes the colors of [0026](0026-coral-identity-and-glass-dock.md); its dock, layout and logo geometry stay.
 
 ## Context
 Seeing Coral manda (coral, aquamarine and black) in the running app, the user kept the floating glass dock but not the colors. They tried eleven palettes in the dev picker ([plan](../plans/2026-10-17-viveri-v2-palette-options.md)) and chose "Naranja zapallo", pumpkin orange and black, asking for it "un pelín más oscuro".

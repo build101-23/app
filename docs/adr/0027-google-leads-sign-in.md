@@ -1,4 +1,4 @@
-# 0025. Google's button leads the sign-in screen
+# 0027. Google's button leads the sign-in screen
 
 - Status: Proposed
 - Date: 2026-10-17

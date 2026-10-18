@@ -155,7 +155,7 @@ components:
 
 # Design System: VIVERI
 
-Living doc: how the interface looks *now*. Tokens live as CSS custom properties at the top of [`src/index.css`](../src/index.css); this file explains them. The colors come from [ADR 0026](adr/0026-naranja-zapallo-colors.md); the dock, layout and everything else from [ADR 0024](adr/0024-coral-identity-and-glass-dock.md), which replaced the green and tangerine identity and the desktop rail of [ADR 0023](adr/0023-viveri-identity-and-ui-system.md).
+Living doc: how the interface looks *now*. Tokens live as CSS custom properties at the top of [`src/index.css`](../src/index.css); this file explains them. The colors come from [ADR 0028](adr/0028-naranja-zapallo-colors.md); the dock, layout and everything else from [ADR 0026](adr/0026-coral-identity-and-glass-dock.md), which replaced the green and tangerine identity and the desktop rail of [ADR 0025](adr/0025-viveri-identity-and-ui-system.md).
 
 ## Overview
 
@@ -322,7 +322,7 @@ Sunk-surface pills with ink text: the can't-eat, dislikes, likes and wants lists
 - **Google first:** Google's official button is the one primary action: pill, "Continuar con Google", black (`filled_black`) in light mode and white (`outline`) in dark mode, up to 400 px wide. Its look and text are Google's; we only pick theme, shape, size and language. A 44 px box holds its place while Google's script loads.
 - **Email behind a link:** a quiet "Entrar con tu email" link under it. Pressing it opens the form in place, below a hairline, with its own hint, and moves focus to the email field. The form's button is secondary, so the card never has two primary actions.
 - **Email only:** with no Google client ID, or when Google's script can't load, the card is the email form with a primary button, and the header gives the email hint. If the script failed, an inline alert says Google isn't available and to use email.
-- Why: [ADR 0025](adr/0025-google-leads-sign-in.md).
+- Why: [ADR 0027](adr/0027-google-leads-sign-in.md).
 
 ### Chat bubbles
 - **User:** orange with black text, tail corner bottom right.
