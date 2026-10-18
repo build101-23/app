@@ -412,10 +412,14 @@ window.fetch = async (input, init) => {
   const { text: sent, conversation_id } = JSON.parse(String(init?.body ?? '{}'))
   const chunks = reply.match(/[\s\S]{1,14}/g) ?? []
   const encoder = new TextEncoder()
+  // `plain` sends the bare text and no steps, like a chat function deployed from before ADR 0029.
+  const plain = mode === 'plain'
   const body = new ReadableStream<Uint8Array>({
     async start(controller) {
-      const send = (event: { text: string } | { step: string }) =>
-        controller.enqueue(encoder.encode(`${JSON.stringify(event)}\n`))
+      const send = (event: { text: string } | { step: string }) => {
+        if (!plain) controller.enqueue(encoder.encode(`${JSON.stringify(event)}\n`))
+        else if ('text' in event) controller.enqueue(encoder.encode(event.text))
+      }
       for (const step of ['thinking', 'search_products']) {
         send({ step })
         await wait(mode === 'slow' ? 3000 : 1500)
@@ -429,5 +433,6 @@ window.fetch = async (input, init) => {
       controller.close()
     },
   })
-  return new Response(body, { headers: { 'Content-Type': 'application/x-ndjson; charset=utf-8' } })
+  const type = plain ? 'text/plain; charset=utf-8' : 'application/x-ndjson; charset=utf-8'
+  return new Response(body, { headers: { 'Content-Type': type } })
 }

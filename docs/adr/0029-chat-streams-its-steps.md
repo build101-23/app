@@ -18,3 +18,4 @@ The `chat` function streamed plain text, so the browser couldn't know the step. 
 - The status line can say what's happening ("Buscando los mejores precios…", "Armando tu menú…") with no extra model calls.
 - A new tool needs a label in `t.chat.steps`, or it shows the fallback.
 - The function and the web app deploy separately, so the format changed in one step: deploy the function first. Until the web app catches up, an open old client shows raw JSON while a reply streams; the reload at the end of the turn puts the right bubble back.
+- The other way round, a function deployed from a checkout older than this decision answers `text/plain`. The browser reads that body as the reply, with no steps, so turns still work ([plan](../plans/2026-10-18-chat-plain-text-fallback.md)).
