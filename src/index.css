@@ -866,6 +866,24 @@ textarea {
   font-size: 0.8125rem;
 }
 
+/* Each step fades in; while it lasts, a band of ink sweeps across the muted words, as AI chats do. */
+.chat-status span {
+  display: inline-block;
+  animation: fade-in var(--dur) var(--ease);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .chat-status span {
+    background: linear-gradient(90deg, var(--ink-muted) 40%, var(--ink) 50%, var(--ink-muted) 60%) 0 0 / 250% 100%;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    animation:
+      fade-in var(--dur) var(--ease),
+      shimmer 1.8s linear infinite;
+  }
+}
+
 /* Empty chat: the welcome and four ways to start, in the user's voice, low near the composer. */
 .chat-start {
   display: grid;
@@ -1507,6 +1525,17 @@ textarea {
 @keyframes pulse {
   50% {
     opacity: 0.5;
+  }
+}
+
+/* The band starts left of the words and leaves on the right. */
+@keyframes shimmer {
+  from {
+    background-position: 100% 0;
+  }
+
+  to {
+    background-position: 0 0;
   }
 }
 

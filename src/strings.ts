@@ -35,9 +35,18 @@ export const t = {
     send: 'Enviar',
     listen: 'Hablar',
     micError: 'No pude usar el micrófono.',
-    // The visible status line: before the first words, then while they stream.
+    // The visible status line: before the chat function reports a step, then each step it reports (ADR 0029).
     waiting: 'Armando la respuesta…',
-    typing: 'Escribiendo…',
+    steps: {
+      thinking: 'Pensando…',
+      typing: 'Escribiendo…',
+      search_products: 'Buscando los mejores precios…',
+      save_menu: 'Armando tu menú…',
+      save_profile: 'Guardando lo que me contaste…',
+      update_shopping_list: 'Actualizando tu lista…',
+      show_menu: 'Preparando tu menú…',
+      show_shopping_list: 'Sumando tu lista…',
+    } as Record<string, string>,
     disclaimer: 'No reemplaza a tu nutricionista.',
     healthData: 'Tus datos de salud',
     loading: 'Cargando la conversación…',
