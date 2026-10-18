@@ -185,9 +185,11 @@ function Shell({ session }: { session: Session }) {
 
   return (
     <div className="shell" data-keyboard={keyboardOpen ? 'open' : undefined}>
+      {/* Always the app's name, whatever the tab; the section's name is for screen readers. */}
       <header>
         <Tile size={30} />
-        <h1>{t.tabs[tab]}</h1>
+        <Wordmark height={18} />
+        <h1 className="sr-only">{t.tabs[tab]}</h1>
       </header>
       <main>
         {tab === 'chat' && (

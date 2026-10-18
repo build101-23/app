@@ -1,11 +1,12 @@
 // The store rule and the saving (docs/product.md, "Which store to buy at" and "How much you saved").
-// Plain TS shared by the web app, so no Deno or DOM globals here. Prices come in as an argument (ADR 0019).
+// Plain TS shared by the web app and the chat function, so no Deno or DOM globals here. Prices come in as an argument:
+// offers.ts builds them from the products the chat agent picked (ADR 0024).
 export const stores = ['disco', 'geant', 'tata'] as const // = stores.key in the database; this order breaks every tie
 export type StoreKey = (typeof stores)[number]
 
 // base_qty: pack content in the food's catalog unit. by_weight: sold loose, price is per base_qty.
-// shortcut: one pack size per food and store; with real offers, take the cheapest size for the week (Later, ADR 0019)
-export type Offer = { price: number; base_qty: number; by_weight?: boolean }
+// sku, name, url: the product behind the offer, for the screen; the rule ignores them.
+export type Offer = { price: number; base_qty: number; by_weight?: boolean; sku?: string; name?: string; url?: string }
 // List item id -> store -> offer. A missing store means it doesn't sell that item.
 export type Prices = Partial<Record<string, Partial<Record<StoreKey, Offer>>>>
 // A list item id and what's left to buy of it (list.ts left()).

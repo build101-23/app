@@ -2,8 +2,11 @@ import Anthropic from 'npm:@anthropic-ai/sdk@0.135.0'
 import { createClient } from 'npm:@supabase/supabase-js@2.118.0'
 import { catalog, type CatalogKey } from '../_shared/catalog.ts'
 import { buildList, itemId, listLines, type Have } from '../_shared/list.ts'
-import { days, foodProblems, menuProblems, type Ingredient, type MenuData } from '../_shared/menu.ts'
+import { days, foodProblems, menuProblems, menuShapeProblems, type Ingredient, type MenuData } from '../_shared/menu.ts'
 import { nutritionText } from '../_shared/nutrition.ts'
+import { pricing, verdict } from '../_shared/offers.ts'
+import { productColumns, productProblems, searchText, skusByStore, type ProductRow, type SearchRow } from '../_shared/products.ts'
+import { stores } from '../_shared/stores.ts'
 import { MENU_TAG, PROFILE_TAG, SYSTEM_PROMPT } from './prompt.ts'
 
 type MessageParam = Anthropic.Beta.BetaMessageParam
@@ -15,6 +18,8 @@ const anthropic = new Anthropic() // reads the ANTHROPIC_API_KEY secret
 const admin = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!)
 
 const DAILY_TURNS = 100
+// Model calls per turn: searching, saving and replying, with room to fix a save.
+const ROUNDS = 6
 
 const cors = {
   'Access-Control-Allow-Origin': '*',
@@ -64,20 +69,20 @@ const saveProfile: Anthropic.Beta.BetaTool = {
 }
 
 const object = (properties: Record<string, unknown>) => ({
-  type: 'object',
+  type: 'object' as const,
   properties,
   required: Object.keys(properties),
   additionalProperties: false,
 })
 
-// A few recipes that repeat, referenced by id from the days. Recipes come first so they're written
-// before the days that point at them. Strict can't check ids, units or the 7 days:
-// menuProblems (../_shared/menu.ts) does.
+// A few recipes that repeat, referenced by id from the days, and the product picked for each food at each store from
+// search_products (ADR 0024). Recipes come first so they're written before the days that point at them. Not strict:
+// with the products its grammar went over the API's cap (400). menuShapeProblems checks the shape, menuProblems the
+// ids, units and days (../_shared/menu.ts), productProblems the skus (../_shared/products.ts).
 const saveMenu: Anthropic.Beta.BetaTool = {
   name: 'save_menu',
   description:
-    "Save the user's weekly menu, Monday to Sunday. Each call replaces the saved menu, so always send the whole week.",
-  strict: true,
+    "Save the user's menu: the days they asked for (1 to 7), the recipes, the budget and the products picked from search_products. Each call replaces the saved menu, so always send all of it. The answer gives the real price of the shopping list.",
   input_schema: object({
     recipes: {
       type: 'array',
@@ -110,12 +115,40 @@ const saveMenu: Anthropic.Beta.BetaTool = {
     },
     days: {
       type: 'array',
+      description: 'Each day once, only the days the user asked for; the whole week if they did not say.',
       items: object({
         day: { type: 'string', enum: [...days] },
         meals: { type: 'array', items: object({ slot: { type: 'string' }, recipe_id: { type: 'string' } }) },
       }),
     },
+    budget: {
+      ...nullable('integer'),
+      description: 'Whole pesos for this shopping, only if the user gave one; null otherwise. Never assume it.',
+    },
+    products: {
+      type: 'array',
+      description:
+        'One entry per food on the shopping list (food, unit and other_name as in the recipes), with the store_sku you picked at each store from search_products, or null where none fits.',
+      // No food enum here: menuProblems checks these foods like the recipes'.
+      items: object({
+        food: { type: 'string', description: "The catalog food or 'other', as in the recipes." },
+        other_name: nullable('string'),
+        unit: { type: 'string', enum: ['g', 'ml', 'un'] },
+        disco: nullable('string'),
+        geant: nullable('string'),
+        tata: nullable('string'),
+      }),
+    },
   }),
+}
+
+// Reads the store_products catalog through the search_products RPC. Writes nothing. Not strict: one list of strings
+// is easy to check in runTool, and every strict tool adds to a grammar the API caps.
+const searchProducts: Anthropic.Beta.BetaTool = {
+  name: 'search_products',
+  description:
+    "Search the supermarkets' products (Disco, Géant, Ta-Ta), with real prices. Send every search you need in one call: two or three Spanish queries per food, the generic name and the cuts, forms or varieties it's sold as (pollo: suprema, pechuga, muslo; papa: papa rosada; tomate: tomate perita).",
+  input_schema: object({ queries: { type: 'array', items: { type: 'string' }, description: '1 to 20 queries.' } }),
 }
 
 // Partial on purpose: only the foods sent change, so marks made in the List tab meanwhile stay.
@@ -224,30 +257,78 @@ Deno.serve(async (req) => {
   const newRows: MessageParam[] = [{ role: 'user', content }]
   messages.push(newRows[0])
 
-  // Runs one tool call for the user. Returns what went wrong, or '' once it's done. show_menu only reports, so its
-  // answer is never an error: the web app shows the card whenever the chat has a menu. A list card needs a menu.
-  async function runTool(name: string, input: unknown): Promise<string> {
+  // The picked products as store_products has them now, one query per store: Disco and Géant share sku ids.
+  async function productRows(menu: MenuData): Promise<ProductRow[]> {
+    const skus = skusByStore(menu)
+    const reads = await Promise.all(
+      stores
+        .filter((store) => skus[store].length)
+        .map((store) =>
+          supabase.from('store_products').select(productColumns).eq('store_key', store).in('store_sku', skus[store]),
+        ),
+    )
+    const failed = reads.find((read) => read.error)
+    if (failed?.error) throw new Error(failed.error.message)
+    return reads.flatMap((read) => (read.data ?? []) as unknown as ProductRow[])
+  }
+
+  // The price as the model reads it. Never an error: a saved menu stays saved if prices can't be read.
+  async function priceText(menu: MenuData, have: Have): Promise<string> {
+    try {
+      return `Prices (real, from the stores' websites; quote only these): ${verdict(pricing(menu, have, await productRows(menu)))}`
+    } catch (err) {
+      console.error(err)
+      return 'Prices unavailable right now.'
+    }
+  }
+
+  // Runs one tool call for the user. problem: what went wrong, or '' once it's done. info: what the model reads after
+  // that (search results, prices). show_menu only reports, so its answer is never an error: the web app shows the card
+  // whenever the chat has a menu. A list card needs a menu.
+  async function runTool(name: string, input: unknown): Promise<{ problem: string; info?: string }> {
     const updated_at = new Date().toISOString()
     if (name === 'save_profile') {
       const { error } = await admin.from('profiles').upsert({ user_id: userId, data: input, updated_at })
-      return error ? `Could not save: ${error.message}` : ''
+      return { problem: error ? `Could not save: ${error.message}` : '' }
+    }
+    if (name === 'search_products') {
+      const sent = (input as { queries?: unknown }).queries
+      const texts = Array.isArray(sent) ? sent.filter((q): q is string => typeof q === 'string') : []
+      const queries = [...new Set(texts.map((q) => q.trim()).filter(Boolean))].slice(0, 20)
+      if (!queries.length) return { problem: 'Send at least one query.' }
+      const found = await Promise.all(queries.map((q) => supabase.rpc('search_products', { q, lim: 5 })))
+      const failed = found.find((result) => result.error)
+      if (failed?.error) return { problem: `Could not search: ${failed.error.message}` }
+      return { problem: '', info: searchText(queries.map((query, i) => ({ query, rows: (found[i].data ?? []) as SearchRow[] }))) }
     }
     if (name === 'save_menu') {
       // A copy: the stored assistant turn must keep the input exactly as the model wrote it.
+      const shape = menuShapeProblems(input)
+      if (shape.length) return { problem: `Not saved. Fix this and call save_menu again:\n${shape.join('\n')}` }
       const menu = structuredClone(input) as MenuData
       const problems = menuProblems(menu)
-      if (problems.length) return `Not saved. Fix this and call save_menu again:\n${problems.join('\n')}`
-      const { error } = await admin
+      if (!problems.length) {
+        try {
+          problems.push(...productProblems(menu, await productRows(menu)))
+        } catch (err) {
+          return { problem: `Could not check the products: ${(err as Error).message}` }
+        }
+      }
+      if (problems.length) return { problem: `Not saved. Fix this and call save_menu again:\n${problems.join('\n')}` }
+      const { data: saved, error } = await admin
         .from('menus')
         .upsert({ user_id: userId, data: menu, updated_at })
-      return error ? `Could not save: ${error.message}` : ''
+        .select('have')
+        .single()
+      if (error) return { problem: `Could not save: ${error.message}` }
+      return { problem: '', info: await priceText(menu, saved.have ?? {}) }
     }
     if (name === 'update_shopping_list') {
       type Mark = Pick<Ingredient, 'food' | 'other_name' | 'unit'> & { have: number | null }
       const { reset, items } = structuredClone(input) as { reset: boolean; items: Mark[] }
       const { data: row, error } = await supabase.from('menus').select('data, have').maybeSingle()
-      if (error) return `Could not save: ${error.message}`
-      if (!row) return 'No menu yet. Build the menu first.'
+      if (error) return { problem: `Could not save: ${error.message}` }
+      if (!row) return { problem: 'No menu yet. Build the menu first.' }
       const onList = new Set(buildList(row.data).map((item) => item.id))
       const problems = items.flatMap((item, i) => {
         const where = `Item ${i + 1}`
@@ -259,7 +340,7 @@ Deno.serve(async (req) => {
           `${where}: ${item.other_name ?? item.food} in ${item.unit} is not on this week's list. If the menu has it, use the food, unit and other_name exactly as in <saved_menu>. If not, leave it out, send the rest again and tell the user in a few words.`,
         ]
       })
-      if (problems.length) return `Not saved. Fix this and call update_shopping_list again:\n${problems.join('\n')}`
+      if (problems.length) return { problem: `Not saved. Fix this and call update_shopping_list again:\n${problems.join('\n')}` }
       const have: Have = reset ? {} : row.have
       for (const item of items) {
         const id = itemId(item.food, item.other_name, item.unit)
@@ -269,23 +350,24 @@ Deno.serve(async (req) => {
       // shortcut: read then write, and the List tab writes its whole map, so a List tab that hasn't reloaded since
       // (it reloads when shown) can undo this. Fine for one person on one phone; merge per item if that changes.
       const { error: saveError } = await admin.from('menus').update({ have }).eq('user_id', userId)
-      return saveError ? `Could not save: ${saveError.message}` : ''
+      return { problem: saveError ? `Could not save: ${saveError.message}` : '' }
     }
     if (name === 'show_menu' || name === 'show_shopping_list') {
       const { data: row, error } = await supabase.from('menus').select('user_id').maybeSingle()
-      if (error) return `Could not check the menu: ${error.message}`
-      return row ? '' : 'No menu yet. Build the menu first.'
+      if (error) return { problem: `Could not check the menu: ${error.message}` }
+      return { problem: row ? '' : 'No menu yet. Build the menu first.' }
     }
-    return `Unknown tool ${name}.`
+    return { problem: `Unknown tool ${name}.` }
   }
 
   // The list as it stands, for the model's next edit: "la mitad" or "comprá solo 500 g" start from real numbers.
   async function listState(): Promise<string> {
     const { data: row, error } = await supabase.from('menus').select('data, have').maybeSingle()
     if (error) return `\nCould not read the list: ${error.message}`
+    if (!row) return ''
     const intro =
-      "The list card with the total is in the chat. Don't write the list or prices. The list now (week: what the menu uses; have: at home; buy: what the card buys):"
-    return row ? `\n${intro}\n${listLines(row.data, row.have)}` : ''
+      "The list card with the total is in the chat. Don't write the list. The list now (week: what the menu uses; have: at home; buy: what the card buys):"
+    return `\n${await priceText(row.data, row.have)}\n${intro}\n${listLines(row.data, row.have)}`
   }
 
   const encoder = new TextEncoder()
@@ -301,16 +383,20 @@ Deno.serve(async (req) => {
         controller.enqueue(encoder.encode(delta))
       }
 
+      // The function stops at 150 s and a cut-off turn stores nothing, so late rounds go without tools (ADR 0024).
+      const started = Date.now()
+      const late = () => Date.now() - started > 100_000
       try {
-        for (let round = 0; round < 5; round++) {
+        for (let round = 0; round < ROUNDS; round++) {
+          const last = round === ROUNDS - 1 || late()
           const reply = anthropic.beta.messages.stream({
             model: 'claude-sonnet-5-5',
             max_tokens: 16000,
             cache_control: { type: 'ephemeral' },
             system: SYSTEM_PROMPT,
-            tools: [saveProfile, saveMenu, showMenu, updateShoppingList, showShoppingList],
+            tools: [saveProfile, saveMenu, showMenu, updateShoppingList, showShoppingList, searchProducts],
             // No tools in the last round, so the turn ends on a reply about the earlier calls, not on tool results.
-            tool_choice: { type: round < 4 ? 'auto' : 'none' },
+            tool_choice: { type: last ? 'none' : 'auto' },
             messages,
             // Prompt changes during development drop old reasoning instead of failing with a 400.
             thinking: { type: 'adaptive', block_binding: { prefix_mismatch_behavior: 'drop_block' } },
@@ -321,6 +407,9 @@ Deno.serve(async (req) => {
           reply.on('text', write)
           const message = await reply.finalMessage()
           breakBeforeNext = wrote
+          // Cost and time per round, in the function's logs.
+          const tools = message.content.flatMap((block) => (block.type === 'tool_use' ? [block.name] : []))
+          console.log(JSON.stringify({ round, ms: Date.now() - started, usage: message.usage, tools }))
 
           // Either of these, stored, would make every later request in this chat fail.
           // A tool call with no result (cut off at max_tokens, or a refusal): store nothing, so the user can resend.
@@ -338,15 +427,17 @@ Deno.serve(async (req) => {
 
           // Before the last round, say so: otherwise the model may promise or report a save it can no longer make.
           const note =
-            round === 3 ? "\nNo more tool calls this turn: tell the user in one line what was saved and what wasn't." : ''
+            round === ROUNDS - 2 || late()
+              ? "\nNo more tool calls this turn: tell the user in one line what was saved and what wasn't."
+              : ''
           const calls: { id: string; content: string; is_error: boolean; list: boolean }[] = []
           for (const block of message.content) {
             if (block.type !== 'tool_use') continue
-            const problem = await runTool(block.name, block.input)
-            const show = block.name.startsWith('show_')
+            const { problem, info } = await runTool(block.name, block.input)
+            const done = block.name === 'search_products' ? '' : block.name.startsWith('show_') ? 'Shown.' : 'Saved.'
             const list = !problem && (block.name === 'show_shopping_list' || block.name === 'update_shopping_list')
             const is_error = !!problem && block.name !== 'show_menu'
-            calls.push({ id: block.id, content: problem || (show ? 'Shown.' : 'Saved.'), is_error, list })
+            calls.push({ id: block.id, content: problem || [done, info].filter(Boolean).join('\n'), is_error, list })
           }
           // Read once every call has run, so a save_menu in the same message is already in the list.
           const lastList = calls.findLast((call) => call.list)

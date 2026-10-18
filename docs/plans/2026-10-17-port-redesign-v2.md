@@ -8,7 +8,7 @@ The VIVERI v2 redesign (pumpkin orange and black, a floating glass dock, Google'
 ## Approach
 1. **Source branch.** `redesign/v2-source` is `6bf25ae` plus v2's changed files (`src/`, `docs/`, `public/`, `index.html`, `package.json`, `vite.config.ts`, `README.md`). That way the merge has a true common base.
 2. **Port branch.** `redesign/v2-port` starts from `main` and merges the source branch with `--no-commit`.
-3. **ADRs.** v2's 0008–0011 collided with `main`'s, so they took the next free numbers, which moved each time `main` added ADRs. They are now 0025–0028 (see step 9 and the revision below), with their cross-links updated. ADR 0025 now stands on its own: the "Google's own button" decision it pointed to was never committed.
+3. **ADRs.** v2's 0008–0011 collided with `main`'s, so they took the next free numbers, which moved each time `main` added ADRs. They are now 0025–0028 (see step 9 and the revision below), with their cross-links updated. ADR 0027 now stands on its own: the "Google's own button" decision it pointed to was never committed.
 4. **Code.** `main`'s behavior, with v2's look and structure on top:
    - `App.tsx`: v2's shell, splash and sign-in, and `main`'s Menu, List, chat draft and tab lock.
    - `Chat.tsx`: `main`'s chats, menu card, voice input and Enter-to-send, inside v2's skeleton, typing mark, alerts and floating composer.
@@ -48,3 +48,38 @@ v2 was chosen over v3 (pull request 14, which stays open for now). `main` moved 
    - An adversarial review of the merge: parity with `main`, design and accessibility, and docs.
    - The screens in the fixture.
 7. **Docs:** `design.md` (top bar, List prices, budget and product links, no more "example prices"), `development.md`, the ADR index, `milestones.md`, and the results here.
+
+**Results**
+- **Merged** `origin/main` at `3adc3b2`.
+  - Conflicts in `src/List.tsx`, the ADR index and `open-decisions.md`, resolved by keeping both sides.
+  - The renumber is its own commit before the merge, so `main`'s 0023 and 0024 kept their numbers and links.
+- **On top of the merge:**
+  - the top bar shows the tile and the wordmark, in ink, on every tab;
+  - the client ID is in `.env`, and the fixture never uses it;
+  - Google's slot has `color-scheme: light`;
+  - the List's product line sits under the name;
+  - over budget stays ink;
+  - the fixture's `prices` scenario.
+- **Adversarial review.** Four reviewers (parity with `main`, design and accessibility, docs, fixture and build), each checked by a skeptic: 16 findings, 9 confirmed, all fixed.
+  - **Chat.** "Reintentar" is disabled during a turn. Before, it could reopen the chat mid-reply and swap the history under the streaming text. The load alert now sits after the history, where the view is, and a new turn clears a stale one. Both bugs came from the first port, not from `main`.
+  - **Docs.**
+    - a stale ADR number in this plan;
+    - Preview sign-in needs the Google origin too;
+    - a typography entry for the old screen title;
+    - a split Motion table;
+    - a dead anchor in the coral plan.
+  - **Fixture.** The default prices now show a split to choose, a saving and a food no store sells online, and `over` shows that a split fits. The links go to `example.com`.
+  - **Rejected:** 7, most of them unchanged from `main`. For example, the product link sits inside the checkbox's label, and over budget uses `role="alert"`.
+- **Checks.**
+  - Lint 0 warnings, `tsc -b` passes, `npm test` 45 of 45, and the build passes with the client ID and no fixture or picker code.
+  - Fixture builds with and without `FIXTURE_NO_GOOGLE` carry the placeholder or nothing, never the real ID.
+  - In the fixture at 375 px, light and dark:
+    - the top bar on every tab;
+    - List with every price state, with no horizontal scroll;
+    - the chat's list card;
+    - the sign-in;
+    - the chat's load error.
+- **Not checked:**
+  - real Google sign-in, which needs the origins in Google Cloud;
+  - real data and devices;
+  - dock contrast measurements on the new List rows.

@@ -23,7 +23,7 @@ Chosen by the user in this conversation, not by an impeccable concept-seed roll 
 ## Identity
 | Role | Light | Dark |
 |---|---|---|
-| Brand field (sign-in, splash) | coral → peach → aquamarine gradient ([stops in design.md](../design.md#secondary)) | same |
+| Brand field (sign-in, splash) | coral → peach → aquamarine gradient ([stops in directions.css](../../src/dev/directions.css)) | same |
 | Ground / surface / chips | `#FFF6F2` / `#FFFFFF` / `#FCE6DE` | `#0E0E0E` / `#1A1918` / `#262423` |
 | Ink / secondary ink | `#121212` / `#5E524E` | `#F6F1EE` / `#B5ABA7` |
 | User bubble | coral, black text | same |

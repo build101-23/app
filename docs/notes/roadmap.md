@@ -21,12 +21,13 @@ Ideas for after the first version ([scope](../product.md#scope)). Grouped by are
 
 **Money**
 - Cheaper options the plan allows: store brands, fruit and vegetables in season, another cut of meat that fits.
-- Several pack sizes per store, picking the cheapest for the week.
 - Weekly promotions and bank-card discount days, counted in the price.
 - A menu that leans toward what's on sale this week, inside the plan.
 - Price history, to tell a real deal from a fake one.
 - Show the saving against the store you usually shop at, not only the average.
-- Weekly budget and a cheaper mode.
+- A cheaper mode, and choosing brands item by item (a budget per menu is in: [ADR 0024](../adr/0024-agent-builds-the-menu-from-real-products.md)).
+- Product search with embeddings, if text search starts missing products; a cache of searches if a turn's time or cost grows.
+- Macros from the picked products' labels instead of a table per food ([ADR 0021](../adr/0021-numbers-switch-in-the-profile.md)).
 - Prices from local butchers and produce shops.
 - Alerts when something you buy every week drops in price.
 

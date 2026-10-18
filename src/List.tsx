@@ -1,11 +1,11 @@
 import { useEffect, useState } from 'react'
 import type { Session } from '@supabase/supabase-js'
 import type { CatalogKey, Unit } from '../supabase/functions/_shared/catalog.ts'
-import { buildList, left, stepHave, toBuy, type Have, type Item } from '../supabase/functions/_shared/list.ts'
+import { buildList, stepHave, toBuy, type Have, type Item } from '../supabase/functions/_shared/list.ts'
 import type { MenuData } from '../supabase/functions/_shared/menu.ts'
-// Temporary example prices: swapped for the real loader per ADR 0019.
-import { examplePrices, pricesDate } from '../supabase/functions/_shared/prices.ts'
-import { planStores, type Option } from '../supabase/functions/_shared/stores.ts'
+import { lineOf, pricing, type Pricing } from '../supabase/functions/_shared/offers.ts'
+import type { Option } from '../supabase/functions/_shared/stores.ts'
+import { usePrices } from './prices'
 import { supabase } from './supabase'
 import { t } from './strings'
 
@@ -48,15 +48,8 @@ const listText = (items: Item[], have: Have) =>
     }),
   ].join('\n')
 
-// Priced on what's left to buy, unrounded; crossed-out items have nothing left.
-function priceList(items: Item[], have: Have) {
-  const toPrice = items.map((item) => ({ id: item.id, amount: left(item, have) })).filter((need) => need.amount > 0)
-  const plan = planStores(toPrice, examplePrices)
-  return { plan, priced: toPrice.length > plan.notFound.length }
-}
-
 const money = new Intl.NumberFormat('es-UY', { style: 'currency', currency: 'UYU', maximumFractionDigits: 0 }).format
-const pricesDay = new Date(pricesDate).toLocaleDateString('es-UY', { day: 'numeric', month: 'long' })
+const day = (iso: string) => new Date(iso).toLocaleDateString('es-UY', { day: 'numeric', month: 'long' })
 const optionText = ({ stores, total }: Option) =>
   stores.length === 1
     ? t.prices.oneStore(t.stores[stores[0]], money(total))
@@ -72,28 +65,53 @@ function readPick() {
   }
 }
 
+// The chosen option against the menu's budget (ADR 0024), plus a hint when one store is over but the split fits.
+function budgetText(p: Pricing, chosen: Option | null) {
+  if (p.budget == null || !chosen) return null
+  const over = chosen.total - p.budget
+  if (over <= 0) return { alert: false, text: t.prices.budgetFits(money(p.budget), money(-over)) }
+  const split = p.splitFits && chosen.stores.length === 1 && p.plan.split
+  const hint = split ? ` ${t.prices.splitFits(t.stores[split.stores[0]], t.stores[split.stores[1]])}` : ''
+  return { alert: true, text: `${t.prices.budgetOver(money(p.budget), money(over))}${hint}` }
+}
+
+// Why there's no total yet: still reading, the read failed, a menu saved before real products, or nothing priced.
+function noPrices(rows: unknown, p: Pricing | undefined) {
+  if (rows === undefined) return t.prices.loading
+  if (!p) return t.prices.loadError
+  return p.status === 'old' ? t.prices.oldMenu : p.status === 'none' ? t.prices.none : ''
+}
+
 // The list as it stands, with its total: the chat's card under a list tool call. Live, like the List tab.
 export function ListPreview({ row, busy, onOpen }: { row: MenuRow; busy: boolean; onOpen: () => void }) {
+  const rows = usePrices(row.data)
+  const p = rows ? pricing(row.data, row.have, rows) : undefined
   const items = buildList(row.data)
-  const { plan, priced } = priceList(items, row.have)
-  const { single, split, notFound } = plan
-  const chosen = (readPick() === row.updated_at && split) || single || split
   const nothingToBuy = items.every((item) => toBuy(item, row.have) === 0)
-  const total = chosen
-    ? `${optionText(chosen)}${single ? '' : ` ${t.prices.noOneStore}`}`
-    : `${t.prices.noOneStore} ${plan.perStore.map(({ store, total }) => `${t.stores[store]} ${money(total)}`).join(' · ')}`
+  const waiting = noPrices(rows, p)
+  let summary = null
+  if (p && !waiting) {
+    const { single, split, notFound } = p.plan
+    const chosen = (readPick() === row.updated_at && split) || single || split
+    const total = chosen
+      ? `${optionText(chosen)}${single ? '' : ` ${t.prices.noOneStore}`}`
+      : `${t.prices.noOneStore} ${p.plan.perStore.map(({ store, total }) => `${t.stores[store]} ${money(total)}`).join(' · ')}`
+    const budget = budgetText(p, chosen)
+    summary = (
+      <p>
+        <strong>{total}</strong>
+        {budget && `\n${budget.text}`}
+        <small className="muted">
+          {notFound.length > 0 && `\n${t.prices.missing(notFound.length)}`}
+          {p.checkedAt && `\n${t.prices.checked(day(p.checkedAt))}`}
+        </small>
+      </p>
+    )
+  }
   return (
     <div className="bubble assistant list-preview">
       <p>{nothingToBuy ? t.list.nothingLeft : listText(items, row.have)}</p>
-      {priced && (
-        <p>
-          <strong>{total}</strong>
-          <small className="muted">
-            {notFound.length > 0 && `\n${t.prices.missing(notFound.length)}`}
-            {`\n${t.prices.sample(pricesDay)}`}
-          </small>
-        </p>
-      )}
+      {summary ?? (!nothingToBuy && <p className="muted">{waiting}</p>)}
       <button type="button" className="button primary" disabled={busy} onClick={onOpen}>
         {t.chat.openList}
       </button>
@@ -107,6 +125,7 @@ export default function List({ session }: { session: Session }) {
   const [error, setError] = useState('')
   const [notice, setNotice] = useState('')
   const [pickedFor, setPickedFor] = useState(readPick)
+  const rows = usePrices(menu?.data)
 
   // Reads again whenever the app comes back to the screen, so marks saved from the chat or another device
   // show up before the next tap writes the whole map over them.
@@ -135,9 +154,15 @@ export default function List({ session }: { session: Session }) {
   const text = listText(items, have)
   const nothingToBuy = items.every((item) => toBuy(item, have) === 0)
 
-  const { plan, priced } = priceList(items, have)
-  const { single, split } = plan
+  // Priced on what's left to buy, unrounded; crossed-out items have nothing left.
+  const p = rows ? pricing(menu.data, have, rows) : undefined
+  const waiting = noPrices(rows, p)
+  const priced = !!p && !waiting
+  const plan = p?.plan
+  const single = plan?.single ?? null
+  const split = plan?.split ?? null
   const chosen = (pickedFor === updated_at && split) || single || split
+  const budget = p && budgetText(p, chosen)
 
   function pick(toSplit: boolean) {
     const version = toSplit ? updated_at : null
@@ -185,7 +210,12 @@ export default function List({ session }: { session: Session }) {
 
   return (
     <div className="page list">
-      {priced && (
+      {!priced && !nothingToBuy && (
+        <section className="prices">
+          <p className="muted">{waiting}</p>
+        </section>
+      )}
+      {priced && plan && (
         <section className="prices">
           <h2 id="where">{t.prices.where}</h2>
           {single && split ? (
@@ -209,6 +239,7 @@ export default function List({ session }: { session: Session }) {
               </p>
             )
           )}
+          {budget && <p role={budget.alert ? 'alert' : undefined}>{budget.text}</p>}
           {chosen && chosen.saving > 0 && <p>{t.prices.saving(money(chosen.saving))}</p>}
           <ul>
             {plan.perStore.map(({ store, total, missing }) => (
@@ -218,7 +249,7 @@ export default function List({ session }: { session: Session }) {
               </li>
             ))}
           </ul>
-          <p className="muted">{t.prices.sample(pricesDay)}</p>
+          {p?.checkedAt && <p className="muted">{t.prices.checked(day(p.checkedAt))}</p>}
         </section>
       )}
       <p className="muted">{t.list.hint}</p>
@@ -249,8 +280,12 @@ export default function List({ session }: { session: Session }) {
                 const buy = toBuy(item, have)
                 const crossed = buy === 0
                 const needs = qty(item.amount, item.unit)
-                const store = chosen && chosen.stores.length === 2 ? chosen.at[item.id] : undefined
-                const tag = !priced ? '' : plan.notFound.includes(item.id) ? t.prices.notFound : store ? t.stores[store] : ''
+                const store = chosen ? chosen.at[item.id] : undefined
+                const tag = !priced || !plan ? '' : plan.notFound.includes(item.id) ? t.prices.notFound : ''
+                // What to buy for this line at the store the chosen option buys it in, and its link.
+                const need = p?.needs.find((n) => n.id === item.id)
+                const offer = store && p?.prices[item.id]?.[store]
+                const line = need && offer ? lineOf(need, offer) : null
                 return (
                   <li key={item.id} className={crossed ? 'have' : undefined}>
                     <label>
@@ -260,8 +295,17 @@ export default function List({ session }: { session: Session }) {
                         aria-label={t.list.have(name)}
                         onChange={() => toggle(item, crossed)}
                       />
-                      <span>{name}</span>
-                      {tag && <small className="muted">{tag}</small>}
+                      <span className="item">
+                        <span>{name}</span>
+                        {tag && <small className="muted">{tag}</small>}
+                        {line && offer && store && (
+                          <small className="muted">
+                            <a href={offer.url} target="_blank" rel="noreferrer">
+                              {t.prices.product(line.packs, offer.name ?? '', t.stores[store], money(line.cost))}
+                            </a>
+                          </small>
+                        )}
+                      </span>
                     </label>
                     <span className="qty">
                       {crossed ? needs : buyText(item, buy)}

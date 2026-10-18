@@ -90,6 +90,63 @@ const fullProfile = {
   want: ['pizza los viernes', 'más legumbres'],
 }
 
+// prices: ok (default), over (the total doesn't fit the budget), old (a menu saved before real products), error.
+const pricesMode = scenario('prices', 'ok')
+
+// The product the chat agent picked for each list item, with its pack size and price per store (null: not sold
+// there). Synthetic names and prices.
+const stores = ['disco', 'geant', 'tata'] as const
+type Store = (typeof stores)[number]
+const picked: { food: string; unit: string; name: string; size: number; price: Record<Store, number | null> }[] = [
+  { food: 'oats', unit: 'g', name: 'Avena arrollada 400 g', size: 400, price: { disco: 79, geant: 75, tata: 82 } },
+  { food: 'milk', unit: 'ml', name: 'Leche entera 1 L', size: 1000, price: { disco: 52, geant: 50, tata: 49 } },
+  { food: 'banana', unit: 'g', name: 'Banana 1 kg', size: 1000, price: { disco: 79, geant: 75, tata: 82 } },
+  { food: 'chicken_breast', unit: 'g', name: 'Pechuga de pollo 1 kg', size: 1000, price: { disco: 329, geant: 315, tata: 239 } },
+  { food: 'sweet_potato', unit: 'g', name: 'Boniato 1 kg', size: 1000, price: { disco: 69, geant: 72, tata: 65 } },
+  { food: 'olive_oil', unit: 'ml', name: 'Aceite de oliva 500 ml', size: 500, price: { disco: 389, geant: 299, tata: 375 } },
+  { food: 'lentils', unit: 'g', name: 'Lentejas 400 g', size: 400, price: { disco: 69, geant: 65, tata: null } },
+  { food: 'onion', unit: 'g', name: 'Cebolla 1 kg', size: 1000, price: { disco: 45, geant: 49, tata: 42 } },
+  { food: 'carrot', unit: 'g', name: 'Zanahoria 1 kg', size: 1000, price: { disco: null, geant: null, tata: null } },
+  { food: 'crushed_tomato', unit: 'g', name: 'Tomate triturado 1 kg', size: 1000, price: { disco: 79, geant: 75, tata: 72 } },
+  { food: 'yogurt', unit: 'g', name: 'Yogur natural 1 kg', size: 1000, price: { disco: 149, geant: 145, tata: 155 } },
+  { food: 'apple', unit: 'g', name: 'Manzana roja 1 kg', size: 1000, price: { disco: 89, geant: null, tata: 85 } },
+]
+const sku = (i: number) => String(1000 + i)
+
+// As store_products returns them for the List tab and the list card. Disco and Géant share sku ids, as on the real sites.
+const productRows = picked.flatMap((p, i) =>
+  stores.flatMap((store) =>
+    p.price[store] == null
+      ? []
+      : [
+          {
+            store_key: store,
+            store_sku: sku(i),
+            name: p.name,
+            url_path: `/${sku(i)}`,
+            base_qty: p.size,
+            base_unit: p.unit,
+            size_qty: null,
+            size_unit: null,
+            size_source: null,
+            price: p.price[store],
+            currency: 'UYU',
+            availability: 'InStock',
+            checked_at: '2026-10-16T09:00:00Z',
+            stores: { base_url: `https://example.com/${store}` },
+          },
+        ],
+  ),
+)
+
+async function readProducts(filters: Record<string, unknown>) {
+  if (scenario('loading', '') === 'data') return never()
+  await wait(500)
+  if (pricesMode === 'error') return { data: null, error: { message: 'fixture error' } }
+  const skus = filters.store_sku as string[]
+  return { data: productRows.filter((row) => row.store_key === filters.store_key && skus.includes(row.store_sku)), error: null }
+}
+
 const ingredient = (food: string, amount: number, unit: string) => ({ food, other_name: null, amount, unit })
 const menuData = {
   recipes: [
@@ -136,6 +193,18 @@ const menuData = {
       { slot: 'Cena', recipe_id: i % 2 ? 'chicken' : 'lentils' },
     ],
   })),
+  // A menu saved before real products has neither.
+  ...(pricesMode === 'old'
+    ? {}
+    : {
+        budget: pricesMode === 'over' ? 2000 : 2500,
+        products: picked.map((p, i) => ({
+          food: p.food,
+          other_name: null,
+          unit: p.unit,
+          ...Object.fromEntries(stores.map((store) => [store, p.price[store] == null ? null : sku(i)])),
+        })),
+      }),
 }
 
 // The end of the sample chat: a saved menu, then the list, which the chat shows as a menu card and a list card.
@@ -230,6 +299,18 @@ export const supabase = {
     },
   },
   from(table: string) {
+    // The List tab's and the list card's read of the picked products, one store at a time.
+    if (table === 'store_products') {
+      const filters: Record<string, unknown> = {}
+      const products = {
+        select: (_columns: string) => products,
+        eq: (column: string, value: unknown) => ((filters[column] = value), products),
+        in: (column: string, values: unknown[]) => ((filters[column] = values), products),
+        then: <A, B>(resolve: (value: { data: unknown; error: unknown }) => A, reject?: (reason: unknown) => B) =>
+          readProducts(filters).then(resolve, reject),
+      }
+      return products
+    }
     const query = {
       eq: (_column: string, _value: unknown) => query,
       order: (_column: string, _options?: unknown) => load(table),

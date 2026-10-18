@@ -284,6 +284,8 @@ export default function Chat({
     e.preventDefault()
     const text = draft.trim()
     if (!text || busy) return
+    // A new turn replaces a stale load alert; a failed reload after it raises its own.
+    setLoadFailed(false)
     // stop() still delivers the last results, which would refill the box we're about to clear.
     if (recognizer.current) {
       recognizer.current.onresult = () => {}
@@ -385,17 +387,6 @@ export default function Chat({
               <span className="skeleton-line" />
             </div>
           )}
-          {loadFailed && (
-            <div role="alert" className="alert">
-              <AlertIcon />
-              <div>
-                <p>{t.chat.loadError}</p>
-                <button type="button" className="button quiet" onClick={retry}>
-                  {t.retry}
-                </button>
-              </div>
-            </div>
-          )}
           {loaded && !loadFailed && bubbles.length === 0 && !error && (
             <p className="bubble assistant">{t.chat.welcome}</p>
           )}
@@ -415,6 +406,19 @@ export default function Chat({
                 <span className="sr-only">{t.chat.typing}</span>
               </p>
             ),
+          )}
+          {/* After the history, where the view is: a reload that fails after a reply must not alert out of sight. */}
+          {loadFailed && (
+            <div role="alert" className="alert">
+              <AlertIcon />
+              <div>
+                <p>{t.chat.loadError}</p>
+                {/* Reopening mid-turn would swap the history under the streaming reply. */}
+                <button type="button" className="button quiet" disabled={busy} onClick={retry}>
+                  {t.retry}
+                </button>
+              </div>
+            </div>
           )}
           {error && (
             <div role="alert" className="alert">

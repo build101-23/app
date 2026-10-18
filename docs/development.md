@@ -11,7 +11,7 @@ Living doc: how to work on the app *now*.
 5. Only if you run the [price scraper](#price-scraper): `python3 -m venv scraper/.venv && scraper/.venv/bin/pip install -r scraper/requirements.txt` (Python 3.13).
 
 Sign-in has two ways in:
-- **Google**: the button only shows when `VITE_GOOGLE_CLIENT_ID` is set. The OAuth client is a web application client in Google Cloud Console → Google Auth Platform → Clients. Its authorized JavaScript origins must list `http://localhost`, `http://localhost:5173` and the [deployed URL](#deploy). In Supabase, the same client ID goes under Authentication → Sign In / Providers → Google → Client IDs. While the Google app is in Testing, only its listed test users can sign in.
+- **Google**: the button only shows when `VITE_GOOGLE_CLIENT_ID` is set. The OAuth client is a web application client in Google Cloud Console → Google Auth Platform → Clients. Its authorized JavaScript origins must list `http://localhost`, `http://localhost:5173`, the [deployed URL](#deploy) and every Preview URL you sign in on (for example `https://redesign-v2-port-app.build101-23.workers.dev`), each on its own: Google allows no wildcards. An origin that isn't listed makes Google answer `Error 400: origin_mismatch`. A new origin can take from a few minutes to a few hours to work. In Supabase, the same client ID goes under Authentication → Sign In / Providers → Google → Client IDs. While the Google app is in Testing, only its listed test users can sign in.
 - **Magic link**: Supabase's default email. The link only sends you back to URLs listed under Authentication → URL Configuration → Redirect URLs, so that list must include `http://localhost:5173/**` and the [deployed URL](#deploy). Supabase's built-in email sender is rate-limited and meant for testing. The pilot needs our own SMTP ([milestones](notes/milestones.md)).
 
 ## Commands
@@ -26,13 +26,14 @@ Sign-in has two ways in:
 | `npx supabase migration new <name>` | Create an empty migration in `supabase/migrations/` |
 | `npx supabase db push` | Apply new migrations to the hosted database (asks for the database password) |
 | `npx supabase functions deploy chat` | Deploy the `chat` Edge Function. Functions aren't deployed by pushing to `main`. |
+| `deno check --no-lock --node-modules-dir=none supabase/functions/chat/index.ts` | Type-check the `chat` function (Deno 2), which `npm run build` doesn't cover |
 | `scraper/.venv/bin/python -m scraper` | Read supermarket prices into Supabase, 25 minutes at most ([below](#price-scraper)) |
 
 When a migration takes away a write that the deployed function still makes with the user's token, deploy the function first, then `db push`. The other way round, the function breaks until it's deployed.
 
 `db push` connects straight to Postgres on ports 5432 and 6543, which some Wi-Fi networks block. If it hangs at "Initialising login role...", switch to another network (a phone hotspot works).
 
-There's no local Supabase (that needs Docker), so Edge Functions are tested against the hosted project after deploying. Their logs are in the dashboard under Edge Functions → chat → Logs.
+There's no local Supabase (that needs Docker), so Edge Functions are tested against the hosted project after deploying. Their logs are in the dashboard under Edge Functions → chat → Logs. Each Claude call in a chat turn logs one JSON line with its round, the milliseconds since the turn started, its token usage and the tools it called: that's where a turn's time and cost show.
 
 ## Environment variables
 
@@ -40,7 +41,7 @@ There's no local Supabase (that needs Docker), so Edge Functions are tested agai
 | --- | --- | --- |
 | `VITE_SUPABASE_URL` | `.env` (committed) | Project URL, e.g. `https://<ref>.supabase.co` (without `/rest/v1/`) |
 | `VITE_SUPABASE_PUBLISHABLE_KEY` | `.env` (committed) | Publishable key (`sb_publishable_...`) |
-| `VITE_GOOGLE_CLIENT_ID` | `.env` (committed) | Google OAuth client ID (`...apps.googleusercontent.com`). Not set yet: while it's empty, the Google button stays hidden and email is the only way in. |
+| `VITE_GOOGLE_CLIENT_ID` | `.env` (committed) | Google OAuth client ID (`...apps.googleusercontent.com`). Empty hides the Google button and leaves email as the only way in. |
 | `SUPABASE_DB_PASSWORD` | `.env.local`, only if you run migrations | Database password, from the shared vault |
 | `SUPABASE_SECRET_KEY` | `scraper/.env.local`, only if you run the scraper | The scraper's own secret key ([below](#secrets)). The project URL comes from `.env`. |
 
@@ -59,7 +60,7 @@ Vite reads `.env`, then `.env.local` (gitignored), which overrides it.
 - `npm test` runs Node's built-in test runner on `supabase/functions/_shared/*.test.ts`. That code is plain TS, so it runs without Deno.
 - Node only strips types from the tests, so `npm run build` type-checks them (`tsconfig.node.json` includes `_shared`).
 - CI ([workflow](../.github/workflows/ci.yml), [ADR 0020](adr/0020-ci-on-tenki-runners.md)) runs lint, build and tests, and the scraper's tests, on pull requests and on pushes to `main`, on Tenki runners, and skips pull requests from forks. It uses Node 24, like Cloudflare; your local Node may be newer. It doesn't block Cloudflare deploys.
-- The `chat` function itself has no tests: try it against the hosted project after deploying.
+- The `chat` function itself has no tests: keep its logic in `_shared`, type-check it with `deno check` and try it against the hosted project after deploying.
 - Scraper: `scraper/.venv/bin/python -m unittest discover -s scraper/tests -t .`. Hand-written fixtures, no network.
 
 ### Screens with synthetic data
@@ -72,7 +73,8 @@ Vite reads `.env`, then `.env.local` (gitignored), which overrides it.
 | `google` | `ok`, `error`, `unreachable` | The simulated Google button signs you in, Supabase rejects its token, or the button can't load (the email form takes over) |
 | `chat` | `long`, `empty`, `error` | Sample conversation, no messages, or a load error |
 | `reply` | `ok`, `error`, `slow` | The streamed reply to a sent message |
-| `menu` | `saved`, `none` | A saved menu with its shopping list, or no menu yet |
+| `menu` | `saved`, `none` | A saved menu with its shopping list and its products, or no menu yet |
+| `prices` | `ok`, `over`, `old`, `error` | The saved menu's products: inside its budget (one store or a cheaper split to choose, and one food no store sells online), over it at one store but not split, a menu saved before real products, or the products can't be read. Synthetic names and prices |
 | `numbers` | `off`, `on`, `error` | The numbers switch off, on (calories and macros in Menu), or failing to save |
 | `profile` | `full`, `empty`, `error` | Saved profile, nothing saved, or a load error |
 | `loading` | `session`, `data` | Stuck on the splash, or on the chat and profile skeletons |
@@ -82,7 +84,7 @@ Vite reads `.env`, then `.env.local` (gitignored), which overrides it.
 
 Example: http://localhost:5299/?chat=empty&reply=slow.
 
-The fixture replaces Google's script with a dashed "Continuar con Google (simulado)" button and gives itself a placeholder client ID, so nothing reaches Google. To see the sign-in screen as it is without a client ID, start it with `FIXTURE_NO_GOOGLE=1 npm run dev:fixture`.
+The fixture replaces Google's script with a dashed "Continuar con Google (simulado)" button and swaps the real client ID for a placeholder, so nothing reaches Google. To see the sign-in screen as it is without a client ID, start it with `FIXTURE_NO_GOOGLE=1 npm run dev:fixture`.
 
 ### Color directions (dev only)
 In `npm run dev` and `npm run dev:fixture`, a small "Paleta (dev)" picker in the top-right corner switches between the shipped default, "Naranja zapallo", and ten alternatives, including the previous default "Coral manda" ([design.md](design.md#color-directions-under-review)): a list with ‹ › buttons to step through them, and a one-line mood for the current one. It lives in `src/dev/`: `picker.tsx`, the list in `palettes.ts`, and the colors in `directions.css` (Coral manda and its two variants) and `palettes.css` (the rest, generated from the palette exploration's data). `src/main.tsx` loads it only when `import.meta.env.DEV`, so `npm run build` leaves all of it out. Check new screens at 360 px, 390 px and 1280 px wide, in light and dark ([design.md](design.md)).
@@ -92,15 +94,16 @@ In `npm run dev` and `npm run dev:fixture`, a small "Paleta (dev)" picker in the
 - The web app is a Cloudflare Worker serving the static build ([ADR 0005](adr/0005-cloudflare-workers.md)), live at https://app.build101-23.workers.dev.
 - Every push to `main` builds (`npm run build`) and deploys automatically. Build logs are in the Cloudflare dashboard under Workers & Pages → app → Builds.
 - Every other pushed branch builds too and gets its own Preview URL (`npx wrangler preview`); the URL is in that build's log. The Worker's settings live in `wrangler.jsonc`; Preview-only settings go in its `previews` block.
-- Signing in on a Preview only works if its URL is in Supabase's Redirect URLs (below).
+- Signing in on a Preview needs its URL in Supabase's Redirect URLs for the magic link (below), and its origin in the Google client's authorized JavaScript origins for Google ([Setup](#setup)).
 - In Supabase, under Authentication → URL Configuration, the Site URL is the deployed URL and the Redirect URLs include `https://app.build101-23.workers.dev/**`.
 
 ## Price scraper
 
-How it works and why: [ADR 0015](adr/0015-price-scraper-python-job-with-time-budget.md) and [ADR 0018](adr/0018-gdu-listings-and-food-pages.md). Reading rules: [ADR 0008](adr/0008-how-we-read-supermarket-sites.md).
+How it works and why: [ADR 0015](adr/0015-price-scraper-python-job-with-time-budget.md), [ADR 0018](adr/0018-gdu-listings-and-food-pages.md) and [ADR 0023](adr/0023-scraper-prices-for-the-unit-of-sale.md). Reading rules: [ADR 0008](adr/0008-how-we-read-supermarket-sites.md).
 
 - `scraper/.venv/bin/python -m scraper` reads all four chains for 25 minutes at most and saves as it goes. Ctrl-C stops it and keeps what it read.
-- Narrow a run with `--minutes`, `--stores devoto,tata`, `--limit N` (at most N pages per chain and phase) and `--phases` (`categories,brands,food`; `brands` needs `categories`). `--phases food` tops up food products without reading the listings again.
+- Run it with `--stores disco,geant,tata` at least weekly, and before a demo: the chat's product search only sees products read within 14 days of their store's newest read, and saved menus price their products as the last run read them ([ADR 0024](adr/0024-agent-builds-the-menu-from-real-products.md)).
+- Narrow a run with `--minutes`, `--stores devoto,tata`, `--limit N` (at most N pages per chain and phase) and `--phases` (`categories,brands,food`; `brands` needs `categories`). `--phases food` reads the food product pages again, oldest first, without reading the listings ([ADR 0023](adr/0023-scraper-prices-for-the-unit-of-sale.md)). A 25-minute run of all phases rarely gets through all of them.
 - `--dry-run` writes NDJSON to `scraper/data/out/` instead of Supabase, and needs no key.
 - The GDU sitemap is cached for 24 hours in `scraper/data/cache/`. `--refresh-sitemap` reads it again.
 - Every run leaves one `scrape_runs` row per chain: `status` (`done`, `interrupted`, `blocked`, `failed`), `price_context` and counters in `stats`.

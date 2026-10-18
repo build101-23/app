@@ -32,18 +32,11 @@ typography:
     fontWeight: 650
     lineHeight: 1.2
     letterSpacing: "-0.02em"
-  headline:
+  section-heading:
     fontFamily: "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif"
-    fontSize: "1.4375rem"
-    fontWeight: 650
-    lineHeight: 1.25
-    letterSpacing: "-0.01em"
-  title:
-    fontFamily: "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif"
-    fontSize: "1.25rem"
+    fontSize: "1.0625rem"
     fontWeight: 650
     lineHeight: 1.3
-    letterSpacing: "-0.01em"
   body:
     fontFamily: "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif"
     fontSize: "1rem"
@@ -225,7 +218,6 @@ The dev-only picker (see [development.md](development.md#color-directions-dev-on
 ### Hierarchy
 - **Title large** (650, 1.75rem, 1.2): the sign-in heading.
 - **Section heading** (650, 1.0625rem, 1.3): Menu's days and List's sections and "Dónde comprar".
-- **Title** (650, 1.25rem, 1.3): the screen title.
 - **Body** (400, 1rem, 1.5; 1.45 in bubbles): messages, values, hints.
 - **Label** (550, 0.9375rem): field labels, chips, alerts; profile section headings at 1rem/650.
 - **Meta** (400, 0.875rem): definition-list labels.
@@ -237,7 +229,7 @@ The dev-only picker (see [development.md](development.md#color-directions-dev-on
 
 ## Layout
 
-- **Every width:** a title bar (the tile plus the screen title, aligned to the content column), one scrolling work area, and the dock floating over the bottom. Content sits in a 720 px column centered on wide screens. The dock is centered below it; there's no side navigation.
+- **Every width:** a title bar (the tile plus the VIVERI wordmark in ink, aligned to the content column; always the app's name, never the screen's, which is an `sr-only` `h1` for screen readers), one scrolling work area, and the dock floating over the bottom. Content sits in a 720 px column centered on wide screens. The dock is centered below it; there's no side navigation.
 - **Dock clearance:** `--dock-space` is the height from the viewport's bottom edge to the top of the dock (68 px dock + 12 px gap + the bottom safe area).
   - **Pages** end with that much room plus 28 px, so their last line scrolls clear of the dock.
   - **Chat:** messages scroll all the way down, behind the floating composer and the dock. The list reserves space below the last message equal to the dock, the composer (its live height in `--composer-h`, from a `ResizeObserver`) and a margin, and `scroll-padding-bottom` keeps auto-scroll there too.
@@ -330,7 +322,7 @@ Sunk-surface pills with ink text: the can't-eat, dislikes, likes and wants lists
 - **Waiting for a reply:** a black bubble with the mark.
 - **Arrival:** messages that arrive while you're in the chat rise 6 px and fade in over 160 ms (`.bubble.fresh`). The loaded history doesn't animate, so coming back to the chat from another tab never replays it.
 - **Menu card:** a saved or shown menu is an assistant bubble with the week (day in bold, meals on one line) and a primary "Ver menú" button.
-- **List card:** the list as it stands, by section, with the total in bold, the example-prices line in small muted text, and a primary "Ver lista" button.
+- **List card:** the list as it stands, by section, with the total in bold, the budget line when the menu has a budget, a small muted line with how many products weren't found and the date the prices were read, and a primary "Ver lista" button. Until the prices are read, or when they can't be, one muted line says so.
 - **Chats bar:** "Chats" and "Nuevo chat" as quiet links above the messages, with a hairline under them. The chat list replaces the messages and scrolls behind the composer and dock the same way.
 - **Voice input:** a 48 px round button beside send, surface with a strong line; while listening it takes the orange fill and pulses.
 
@@ -339,8 +331,11 @@ Sunk-surface pills with ink text: the can't-eat, dislikes, likes and wants lists
 - **Buttons:** one primary action per screen ("Compartir"), secondary for the next ("Copiar"), and quiet links for "Cambiar" and "Lista nueva". Never orange.
 - **Menu:** each day is a heading with "Cambiar", then its meals as rows that open to the ingredients and how to make it, separated by hairlines. With the numbers switch on, the day's total and each meal's calories and macros sit under them in small muted text.
 - **Numbers switch** (Perfil): a card with the label and a 52 × 32 px toggle, orange when on. If saving fails it flips back and shows an inline alert.
-- **List:** "Dónde comprar" is a card on top. The items are hairline rows with a checkbox, the amount to buy (what the menu needs under it, muted) and round 44 px − and + buttons. Crossed-out items are muted and struck through.
-- **Prices:** only the example prices of [ADR 0019](adr/0019-example-prices-until-matched.md), always with their muted "Precios de ejemplo del …, no son reales." line.
+- **List:** "Dónde comprar" is a card on top. The items are hairline rows with a checkbox, the name, the amount to buy (what the menu needs under it, muted) and round 44 px − and + buttons. Crossed-out items are muted and struck through.
+  - Under the name, in small muted type, either "No encontrado online" or the product to buy at the chosen store ("2 × Boniato 1 kg · Géant · $ 144"), underlined as a link to its page.
+- **Prices:** from the products the chat picked ([ADR 0024](adr/0024-agent-builds-the-menu-from-real-products.md)), always with the muted line saying the date they were read and that they may change.
+  - When the menu has a budget, a line in ink says whether the total fits. Over budget is announced to screen readers, but it isn't an error, so it stays ink, not crimson.
+  - While the prices load, for a menu saved before real products, or when they can't be read, the card holds one muted line instead.
 
 ### Alerts and states
 - **Inline alert:** danger on the danger surface, a 20 px icon, 14 px radius. Below the message goes either the provider's raw detail (sign-in) or a "Reintentar" button (chat history, profile).
@@ -369,7 +364,6 @@ Sunk-surface pills with ink text: the can't-eat, dislikes, likes and wants lists
 | `rise-in` | 160ms, 6px | a new bubble |
 | `converge` | 1.2s loop | the mark while waiting |
 | `pulse` | 1.4s loop | skeletons |
-
 | `dock-in` | 200ms, 8px rise, 0.98 scale | the dock appearing (first load, keyboard down), never on tab switch |
 
 `prefers-reduced-motion: reduce` turns every animation and transition off.
@@ -388,5 +382,5 @@ Sunk-surface pills with ink text: the can't-eat, dislikes, likes and wants lists
 - **Don't** stack translucent surfaces, animate the dock, or add shimmer or refraction to it.
 - **Don't** use orange for errors; errors are crimson-rose with an icon.
 - **Don't** reintroduce side navigation; the dock is the navigation at every width.
-- **Don't** show real-looking prices or savings without the example-prices line, or make medical claims.
+- **Don't** show prices or savings without the date they were read and that they may change, or make medical claims.
 - **Don't** add a CSS framework or component library for styling.

@@ -17,7 +17,7 @@ from dataclasses import dataclass, field
 from urllib.parse import urlparse
 
 from .rows import add_note, make_row, previous_if_higher, to_float
-from .sizes import parse_size, size_fields, size_from_unit
+from .sizes import fix_mojibake, parse_size, size_fields, size_from_unit
 
 BASE = "https://www.tata.com.uy"
 GRAPHQL_URL = f"{BASE}/api/graphql"
@@ -101,21 +101,22 @@ def iter_pages(fetch: Callable[[Facets, int], tuple[int, list[dict]]], tree: lis
 def node_row(node: dict, paths: dict[str, str], run_id: int, checked_at: str) -> dict:
     offers = (node.get("offers") or {}).get("offers") or []
     offer = offers[0] if offers else {}
-    name = node.get("name")
+    name = fix_mojibake(node.get("name"))
     # Sold by weight or volume, the price is for unitMultiplier × measurementUnit, which can differ
-    # from the weight in the name ("... 780 G" priced for 0.827 kg).
+    # from the weight in the name ("... 780 G" priced for 0.827 kg). Over 1 kg, it's per kg.
     name_size = parse_size(name)
     size, source = size_from_unit(node.get("measurementUnit"), to_float(node.get("unitMultiplier"))), "unit"
     if size is None:
         size, source = name_size, "name"
-    mismatch = source == "unit" and name_size and (name_size["base_qty"], name_size["base_unit"]) != (
+    per_kg = source == "unit" and size["size_unit"] == "kg" and size["size_qty"] > 1
+    mismatch = source == "unit" and not per_kg and name_size and (name_size["base_qty"], name_size["base_unit"]) != (
         size["base_qty"], size["base_unit"])
     category_ids = [str(c) for c in node.get("categoriesIds") or [] if str(c) in paths]
     price = to_float(offer.get("price"))
     multicurrency = bool(node.get("hasMulticurrencyPrice"))
     row = make_row(
         store_key="tata", store_sku=str(node["sku"]), store_code=node.get("gtin"), name=name,
-        brand=(node.get("brand") or {}).get("name"),
+        brand=fix_mojibake((node.get("brand") or {}).get("name")),
         category=max((paths[c] for c in category_ids), key=lambda p: p.count("/"), default=None),
         url_path=f"/{node['slug']}/p", **size_fields(size, source),
         price=price, previous_price=previous_if_higher(to_float(offer.get("listPrice")), price),
@@ -126,6 +127,8 @@ def node_row(node: dict, paths: dict[str, str], run_id: int, checked_at: str) ->
     )
     if mismatch:
         add_note(row, f"priced for {size['size_qty']:g} {size['size_unit']}; the name says otherwise")
+    if per_kg and name_size and name_size["base_unit"] == "g" and abs(name_size["base_qty"] - size["size_qty"] * 1000) > 0.5:
+        add_note(row, f"sold as {size['size_qty']:g} kg; the name says otherwise")
     if multicurrency:
         add_note(row, "multicurrency price in source; currency unknown")
     return row

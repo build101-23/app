@@ -504,6 +504,8 @@ textarea {
   display: flex;
   justify-content: center;
   min-height: 44px;
+  /* Google's iframe would otherwise inherit the dark scheme and draw an opaque white box around its button. */
+  color-scheme: light;
 }
 
 /* The email form under Google: a hairline separates the two ways in. */
@@ -570,11 +572,8 @@ textarea {
     max(calc(var(--gutter) + var(--safe-left)), calc((100% - var(--column)) / 2));
   border-bottom: 1px solid var(--line);
   background: var(--ground);
-}
-
-.shell > header h1 {
-  font-size: 1.25rem;
-  line-height: 1.3;
+  /* The wordmark sits on the ground here, not on the brand field, so it follows the theme's ink. */
+  --wordmark: var(--ink);
 }
 
 /* The page area reserves its scrollbar on both edges, so centered page content stays under the title
@@ -844,7 +843,7 @@ textarea {
   margin-top: 12px;
 }
 
-/* The list as it stands, with its total and the example-prices line, as an assistant bubble. */
+/* The list as it stands, with its total, the budget line and the prices' date, as an assistant bubble. */
 .list-preview p + p {
   margin-top: 12px;
 }
@@ -1183,8 +1182,21 @@ textarea {
   min-height: 48px;
 }
 
-.list section label small {
-  margin-left: auto;
+/* The name, then the store tag or the product to buy there, one under the other. It shrinks and wraps beside the
+   checkbox. */
+.list label .item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  padding: 4px 0;
+  overflow-wrap: anywhere;
+}
+.list label .item small {
+  font-size: 0.8125rem;
+}
+.list label .item a {
+  color: inherit;
 }
 
 .list input[type='checkbox'],
@@ -1227,6 +1239,11 @@ textarea {
 
 [role='alert']:not(.alert) {
   color: var(--danger);
+}
+
+/* Over budget is announced, but it isn't an error: it stays ink. */
+.list .prices [role='alert'] {
+  color: var(--ink);
 }
 
 /* Profile */

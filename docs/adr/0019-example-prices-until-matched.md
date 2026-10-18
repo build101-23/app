@@ -1,6 +1,6 @@
 # 0019. Example prices bundled with the app until real prices are matched
 
-- Status: Accepted
+- Status: Superseded by 0024
 - Date: 2026-10-17
 
 ## Context
