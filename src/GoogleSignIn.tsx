@@ -74,7 +74,7 @@ export default function GoogleSignIn() {
         })
         gsi.renderButton(el, {
           type: 'standard',
-          theme: matchMedia('(prefers-color-scheme: dark)').matches ? 'filled_black' : 'outline',
+          theme: 'outline',
           size: 'large',
           text: 'continue_with',
           shape: 'pill',

@@ -80,7 +80,7 @@ Vite reads `.env`, then `.env.local` (gitignored), which overrides it.
 | `loading` | `session`, `data` | Stuck on the splash, or on the skeletons |
 | `safe` | `iphone` | Simulated 47 px top and 34 px bottom safe areas |
 
-Example: http://localhost:5199/?chat=empty&reply=slow. Check new screens at the widths and themes listed in [design.md](design.md#do), including the bottom of anything that scrolls under the glass dock.
+Example: http://localhost:5199/?chat=empty&reply=slow. Check new screens at the widths listed in [design.md](design.md#do), including the bottom of anything that scrolls under the glass dock.
 
 ## Deploy
 

@@ -6,7 +6,7 @@
   --surface: #ffffff;
   --surface-sunk: #e9f2ec;
   --line: #e3e8e4;
-  /* The pill behind a supermarket's logo: white in both themes, since the logos are never recolored. */
+  /* The pill behind a supermarket's logo: white, since the logos are never recolored. */
   --store-logo-bg: #ffffff;
   --store-logo-h: 24px;
   --store-logo-w: 64px;
@@ -81,37 +81,6 @@
   -webkit-font-smoothing: antialiased;
   -webkit-text-size-adjust: 100%;
   text-size-adjust: 100%;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --ground: #0b0f0d;
-    --surface: #141a17;
-    --surface-sunk: #1c2420;
-    --line: #252d29;
-    --line-strong: #5f6f67;
-    --ink: #e9efeb;
-    --ink-muted: #9ba9a2;
-    --brand-ink: #5cc495;
-    --primary: #5cc495;
-    --primary-hover: #7bd3aa;
-    --on-primary: #0b3d2b;
-    --bubble-user: #1d5a42;
-    --on-bubble-user: #e9efeb;
-    --focus: #5cc495;
-    --danger: #ff8a7a;
-    --danger-surface: #2a1715;
-    --success-surface: #13291f;
-    --glass: rgb(11 15 13 / 0.68);
-    --glass-solid: #0b0f0d;
-    --glass-line: rgb(233 239 235 / 0.12);
-    --glass-edge: rgb(255 255 255 / 0.08);
-    --glass-shadow: 0 1px 2px rgb(0 0 0 / 0.3), 0 12px 32px -8px rgb(0 0 0 / 0.6);
-    --capsule: #141a17;
-    --capsule-shadow: 0 1px 3px rgb(0 0 0 / 0.5);
-
-    color-scheme: dark;
-  }
 }
 
 /* Glass is a progressive enhancement: solid where it can't be drawn, or where people ask for less
@@ -448,12 +417,9 @@ a.button {
   gap: 16px;
 }
 
-/* Reserves the button's height, so the form doesn't jump when Google's script loads. Google's iframe document
-   is light: inheriting the dark color-scheme would make the browser paint it as an opaque white box. Its own
-   dark theme ('filled_black') still applies. */
+/* Reserves the button's height, so the form doesn't jump when Google's script loads. */
 .google-button {
   min-height: 44px;
-  color-scheme: light;
 }
 
 .divider {

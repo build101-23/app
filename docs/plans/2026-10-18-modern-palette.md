@@ -2,6 +2,8 @@
 
 Status: **adopted** ([ADR 0031](../adr/0031-cleaner-neutral-palette.md)). Previewed locally first, then adopted at the user's word.
 
+Update: the dark theme was removed afterwards ([ADR 0033](../adr/0033-light-theme-only.md)), so everything below about dark mode (its tokens and its glass measurements) is the record of what was done then, not of what's in the app.
+
 ## Context
 The neutrals read as sage-grey: a green-tinted ground, grey-green chips and skeletons, and a green-black dark theme. That's the "wellness" look [design.md](../design.md#overview) says the app avoids. The brand colors can't move: green dots, the deep green (the app icon tile) and the tangerine apex are in the approved logo and icons.
 

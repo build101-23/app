@@ -22,22 +22,6 @@ colors:
   danger: "#b42318"
   danger-surface: "#fcedea"
   success-surface: "#e3f1e8"
-  ground-dark: "#0b0f0d"
-  surface-dark: "#141a17"
-  surface-sunk-dark: "#1c2420"
-  line-dark: "#252d29"
-  line-strong-dark: "#5f6f67"
-  ink-dark: "#e9efeb"
-  ink-muted-dark: "#9ba9a2"
-  brand-ink-dark: "#5cc495"
-  primary-hover-dark: "#7bd3aa"
-  bubble-user-dark: "#1d5a42"
-  glass-dark: "#0b0f0dad"
-  glass-solid-dark: "#0b0f0d"
-  capsule-dark: "#141a17"
-  danger-dark: "#ff8a7a"
-  danger-surface-dark: "#2a1715"
-  success-surface-dark: "#13291f"
 typography:
   title-large:
     fontFamily: "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif"
@@ -166,13 +150,9 @@ components:
     height: "56px"
   tab-bar:
     backgroundColor: "{colors.glass}"
-    backgroundColorDark: "{colors.glass-dark}"
     fallbackColor: "{colors.glass-solid}"
-    fallbackColorDark: "{colors.glass-solid-dark}"
     textColor: "{colors.ink}"
-    textColorDark: "{colors.ink-dark}"
     activeCapsule: "{colors.capsule}"
-    activeCapsuleDark: "{colors.capsule-dark}"
     backdropBlur: "18px"
     typography: "{typography.tab}"
     rounded: "{rounded.pill}"
@@ -201,7 +181,7 @@ The navigation is a neutral glass dock floating over that content ([ADR 0026](ad
 
 **Key Characteristics:**
 - The app's name on every screen: the approved logo in a light top bar. The dock, not a title, says which section you're in.
-- Neutral glass navigation: a floating dock in translucent white (or near-black in dark mode), the only element with depth.
+- Neutral glass navigation: a floating dock in translucent white, the only element with depth.
 - Tangerine marks "the one" and nothing else.
 - Round forms taken from the dots: pills, capsules, a circular send button, soft bubbles.
 - One system typeface, a tight scale, 16 px body text.
@@ -209,12 +189,12 @@ The navigation is a neutral glass dock floating over that content ([ADR 0026](ad
 
 ## Colors
 
-A near-white ground with a faint green tint (graphite in dark mode), the icon's deep green for the user's words and actions, neutral glass for the navigation, and one tangerine accent, each with a dark-theme counterpart. The neutrals were cleaned up on 2026-10-18 ([ADR 0031](adr/0031-cleaner-neutral-palette.md)); the brand colors didn't change. Contrast was computed for every text pair (all ≥ 4.5:1) and every UI graphic (≥ 3:1) in both themes. The glass was measured on real pixels instead (see [Navigation](#navigation)).
+A near-white ground with a faint green tint, the icon's deep green for the user's words and actions, neutral glass for the navigation, and one tangerine accent. The app has one theme, the light one ([ADR 0033](adr/0033-light-theme-only.md)). The neutrals were cleaned up on 2026-10-18 ([ADR 0031](adr/0031-cleaner-neutral-palette.md)); the brand colors didn't change. Contrast was computed for every text pair (all ≥ 4.5:1) and every UI graphic (≥ 3:1). The glass was measured on real pixels instead (see [Navigation](#navigation)).
 
 ### Primary
 - **Deep green** (#0B3D2B): the icon tile's color. The user's chat bubbles, primary buttons in light mode. White on it is 12.2:1.
 - **Brand green** (#1E8A5E): the logo's dots and wordmark; focus rings in light mode. Never body text (3.97:1 on the ground).
-- **Green ink** (#156B49 light, #5CC495 dark): text-safe green for links and quiet buttons. In dark mode #5CC495 is also the primary button fill, with deep-green text (5.7:1).
+- **Green ink** (#156B49): text-safe green for links and quiet buttons.
 
 ### Secondary
 - **Tangerine** (#E85D2A): a graphic, never text. The active-tab dot, the send button (white arrow, 3.5:1), the mark's apex.
@@ -231,7 +211,7 @@ A near-white ground with a faint green tint (graphite in dark mode), the icon's 
 ### Named Rules
 **The One Rule.** Tangerine appears once per region and always means "the one": the current tab, the send action, the apex of the mark. It never colors text, borders, or decoration.
 
-**The Mark Keeps Its Colors Rule.** The logo and the mark are always drawn in their approved colors (green dots, tangerine apex, green wordmark), on light and dark grounds alike, and always on `ground` or `surface`: never on a color field or on glass. No white or recolored wordmark exists; don't invent one.
+**The Mark Keeps Its Colors Rule.** The logo and the mark are always drawn in their approved colors (green dots, tangerine apex, green wordmark), and always on `ground` or `surface`: never on a color field or on glass. No white or recolored wordmark exists; don't invent one.
 
 **The Flat Fill Rule.** Every fill outside the glass is flat and opaque. No gradients, glows or images behind content.
 
@@ -292,7 +272,7 @@ Flat content, glass navigation ([ADR 0026](adr/0026-glass-navigation-layer.md)).
   - one soft two-layer shadow.
   
   Nothing else gets a blur or a shadow.
-- **Opaque fallback.** The glass turns into solid glass (#FFFFFF light, #0B0F0D dark), with no blur:
+- **Opaque fallback.** The glass turns into solid glass (#FFFFFF), with no blur:
   - when `backdrop-filter` isn't supported (`@supports`);
   - with `prefers-contrast: more`, which also adds a 1px strong-line border;
   - with `prefers-reduced-transparency: reduce`.
@@ -308,7 +288,7 @@ Round, from the dots. Pills (999px) for buttons, chips, the status pill and the 
 
 ### Buttons
 - **Shape:** pill (999px), 48px tall (52px on sign-in), 600 weight.
-- **Primary:** deep green with white text (light); green #5CC495 with deep-green text (dark). Hover darkens or lightens one step; press scales to 0.98.
+- **Primary:** deep green with white text. Hover darkens one step; press scales to 0.98.
 - **Secondary:** transparent, with a 1px strong-line inset outline. Used for sign-out, so leaving is never the loudest action.
 - **Quiet:** underlined green-ink text, 44px tall ("Usar otro email").
 - **Disabled:** 55% opacity.
@@ -320,7 +300,7 @@ Round, from the dots. Pills (999px) for buttons, chips, the status pill and the 
 
 ### Sign-in
 - At the window's left edge at every width: the logo (44px) in the corner, then a column of at most 400px with the title "Ingresar", Google's button, an "o con tu email" divider (a hairline on each side), the email hint and the form.
-- **Google's button** is Google's own (Google Identity Services, [ADR 0027](adr/0027-google-sign-in-button.md)): we choose only its theme (outline, or dark when the system is dark), large size, the pill shape that matches our buttons, "Continuar con Google" and the `es-419` locale. Its 44px slot is reserved so the form doesn't jump while Google's script loads. Without a client ID it isn't shown, and neither is the divider.
+- **Google's button** is Google's own (Google Identity Services, [ADR 0027](adr/0027-google-sign-in-button.md)): we choose only its outline theme, large size, the pill shape that matches our buttons, "Continuar con Google" and the `es-419` locale. Its 44px slot is reserved so the form doesn't jump while Google's script loads. Without a client ID it isn't shown, and neither is the divider.
 - A failed Google sign-in shows the inline alert under the button, and the email form stays available.
 
 ### Send button
@@ -359,7 +339,7 @@ A 44px tangerine circle with a white up arrow. Disabled: sunk surface with a mut
 - A page (20px top, dock clearance at the bottom). There's no confirm step: the list follows the menu ([ADR 0022](adr/0022-list-follows-the-menu.md)).
 - Loading shows the page skeleton; with no menu yet, the empty state; a failed load, the inline alert.
 - One day at a time ([ADR 0032](adr/0032-menu-shows-one-day-at-a-time.md)): a day strip over the day's card.
-  - **Day strip** (only when the menu has more than one day): a segmented control of native radios in a sunk-surface pill track (3px padding, 46px segments). Each segment is the day's first three letters (Lun, Mar, Mié…); the radio's accessible name is the whole day, and a screen-reader legend names the group. Saved order, never sorted. The selected day is filled with the primary color (deep green in light mode, #5CC495 in dark) with bold text. The arrow keys move between days. It opens on the first day, since the menu starts tomorrow and there's no "today" in it. In forced colors the selected day uses `Highlight`. Not tangerine: that's the dock's dot, and two on screen would break The One Rule.
+  - **Day strip** (only when the menu has more than one day): a segmented control of native radios in a sunk-surface pill track (3px padding, 46px segments). Each segment is the day's first three letters (Lun, Mar, Mié…); the radio's accessible name is the whole day, and a screen-reader legend names the group. Saved order, never sorted. The selected day is filled with the primary color (deep green) with bold text. The arrow keys move between days. It opens on the first day, since the menu starts tomorrow and there's no "today" in it. In forced colors the selected day uses `Highlight`. Not tangerine: that's the dock's dot, and two on screen would break The One Rule.
   - **Day card:** a surface card with the day's name at the Title size (capitalized) and each meal as a row under a hairline: the slot in caption type, the recipe at 1rem/550, and a chevron that turns when the meal is open (64px tall, so it's an easy target). Meals are native `<details>` with a shared `name`, so opening one closes the others where the browser supports it.
   - **An opened meal:** "Ingredientes" as a plain list (name left, amount right in muted tabular figures), "Cómo se hace", and a secondary "Cambiar este plato" button with the chat icon. From 640px the ingredients and the instructions sit in two columns. It fades in over `--dur`.
   - **"Cambiar el martes"** is a secondary button under the card. At most two "Cambiar" buttons are on screen. "Cambiar" takes you to the chat with a draft ready to finish.
@@ -411,13 +391,13 @@ Sunk-surface pills (6px 14px) listing what the chat saved: can't eat, dislikes, 
   - **Active item:** an opaque inner capsule (#FFFFFF / #141A17) with a 6px tangerine dot above the icon, plus `aria-current="page"`. The dot always sits inside the capsule, never on the glass.
   - **Why three signals:** against glass over dark content, the capsule alone is too faint. So "active" is told by the capsule, the dot and the weight together.
   - **Focus:** inside the navigation layer, keyboard focus is a 2px ink ring (#0F1713 / #E9EFEB), drawn on the item's outer 2px. The brand-green ring doesn't reach 3:1 on this glass.
-  - **Tint, measured:** white at 50% in light mode and #0B0F0D at 68% in dark mode. Both were measured on real pixels in headless Chrome, first for [the glass dock](plans/2026-10-17-glass-dock-living-color.md#results) and again, with the current colors, for [the cleaner palette](plans/2026-10-18-modern-palette.md#results) (the numbers below). The dock's own ink was hidden, and the glass was captured over uniform worst-case fills and over the real chat, Menú, Lista and profile scrolled beneath it.
-    - The worst cases come from the fills: ink in light mode, white in dark mode.
-    - Labels and icons: ≥ 5.28:1 (light) and ≥ 5.80:1 (dark).
-    - The ink ring against its neighbors: ≥ 4.68:1 and ≥ 5.80:1.
-    - The dot on the capsule: 3.48:1 and 5.07:1.
-    - The disclaimer: ≥ 5.21:1 and ≥ 5.80:1.
-    - Light 50% is the lowest tint that keeps at least 10% margin on every threshold. Dark stays at 68%; with the current colors 65% also passes (≥ 5.21:1 everywhere), and it is the floor if the dark glass is ever lowered.
+  - **Tint, measured:** white at 50%. It was measured on real pixels in headless Chrome, first for [the glass dock](plans/2026-10-17-glass-dock-living-color.md#results) and again, with the current colors, for [the cleaner palette](plans/2026-10-18-modern-palette.md#results) (the numbers below). The dock's own ink was hidden, and the glass was captured over uniform worst-case fills and over the real chat, Menú, Lista and profile scrolled beneath it.
+    - The worst case comes from the fills: ink under the glass.
+    - Labels and icons: ≥ 5.28:1.
+    - The ink ring against its neighbors: ≥ 4.68:1.
+    - The dot on the capsule: 3.48:1.
+    - The disclaimer: ≥ 5.21:1.
+    - 50% is the lowest tint that keeps at least 10% margin on every threshold.
   - **Hover** (pointer devices): inactive items get a half-strength capsule wash.
   - **While the chat saves a turn**, the items are disabled, since leaving would hide that turn. The other items fade to 55%; the current one keeps its capsule and dot.
 
@@ -445,7 +425,7 @@ Drawn for this app on a 24px grid: 1.75px round strokes, `currentColor` (the sen
   - `disco.svg`: `https://www.disco.com.uy/img/Disco/logo.svg`, the red oval alone (their `logo-header.svg` adds a "FRESH MARKET" seal).
   - `geant.svg`: `https://www.geant.com.uy/img/Geant/logo-header.svg`.
   - `tata.svg`: `https://www.tata.com.uy/logoMobile.svg`, the red wordmark (their `logo.svg` is all white, for their red header).
-- `StoreLogo` in `src/ui.tsx` puts one on a white pill, `--store-logo-w` × `--store-logo-h` (64 × 24px), with a 1px line border, in both themes. The logos are never recolored, so the pill stays white in dark mode too.
+- `StoreLogo` in `src/ui.tsx` puts one on a white pill, `--store-logo-w` × `--store-logo-h` (64 × 24px), with a 1px line border. The logos are never recolored, so the pill is always white.
 - Only in the List's "Dónde comprar" card. The logo is decorative: the store's name is always written next to it. The product lines under each item and the chat's list card keep the name as text.
 
 ### Motion
@@ -472,7 +452,7 @@ Drawn for this app on a 24px grid: 1.75px round strokes, `currentColor` (the sen
 - **Do** re-measure the glass on real pixels, against the worst content beneath, after changing the tint, the dock colors or the content colors.
 - **Do** give every new screen its loading, empty and error states, with the skeleton, empty-state and alert patterns above.
 - **Do** put new copy in `src/strings.ts`, in Rioplatense Spanish.
-- **Do** check new screens with the dev fixture ([development.md](development.md#testing)) at 360px, 390px and 1280px, in light and dark.
+- **Do** check new screens with the dev fixture ([development.md](development.md#testing)) at 360px, 390px and 1280px.
 
 ### Don't:
 - **Don't** recolor, redraw or rearrange the mark or the wordmark, or set "VIVERI" in a font as a stand-in logo.

@@ -28,14 +28,15 @@ One file per decision: `NNNN-short-title.md`. ADRs are append-only: never rewrit
 | 0022 | [The shopping list follows the menu, and shows in the chat](0022-list-follows-the-menu.md) | Accepted (the model sees prices: 0024) | 2026-10-17 |
 | 0023 | [Scraper prices for the unit of sale](0023-scraper-prices-for-the-unit-of-sale.md) | Accepted | 2026-10-17 |
 | 0024 | [The chat agent searches real products and builds the menu from them](0024-agent-builds-the-menu-from-real-products.md) | Accepted (days' order and start from 0028) | 2026-10-17 |
-| 0025 | [VIVERI identity and a token-based UI system](0025-viveri-identity-and-ui-system.md) | Proposed (navigation and depth amended by 0026; neutrals by 0031) | 2026-10-17 |
-| 0026 | [Glass navigation layer](0026-glass-navigation-layer.md) | Proposed (dark tint and capsule colors amended by 0031) | 2026-10-17 |
+| 0025 | [VIVERI identity and a token-based UI system](0025-viveri-identity-and-ui-system.md) | Proposed (navigation and depth amended by 0026; neutrals by 0031; dark theme removed by 0033) | 2026-10-17 |
+| 0026 | [Glass navigation layer](0026-glass-navigation-layer.md) | Proposed (dark tint and capsule colors superseded by 0033) | 2026-10-17 |
 | 0027 | [Sign in with Google's own button](0027-google-sign-in-button.md) | Accepted | 2026-10-17 |
 | 0028 | [Menus in calendar order from tomorrow, named by weekday](0028-menus-of-1-to-7-days.md) | Accepted | 2026-10-17 |
 | 0029 | [The chat streams the step it's on](0029-chat-streams-its-steps.md) | Accepted | 2026-10-18 |
 | 0030 | [Cart filling: Ta-Ta by link, Disco and Géant by a team extension](0030-cart-filling-tata-link-gdu-team-extension.md) | Accepted | 2026-10-18 |
 | 0031 | [A cleaner neutral palette](0031-cleaner-neutral-palette.md) | Accepted | 2026-10-18 |
 | 0032 | [The Menu tab shows one day at a time](0032-menu-shows-one-day-at-a-time.md) | Accepted | 2026-10-18 |
+| 0033 | [Light theme only](0033-light-theme-only.md) | Accepted | 2026-10-18 |
 
 ## Template
 
