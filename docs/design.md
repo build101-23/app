@@ -340,7 +340,8 @@ A 44px tangerine circle with a white up arrow. Disabled: sunk surface with a mut
   - They are surface cards (16px radius, 1px line) in a 2 × 2 grid, sitting low near the composer, and tapping one sends its text as your message.
   - They only promise what the chat does today (a plan and its menu, your restrictions, your time) and never savings, real prices or calories.
 - **Status line:**
-  - While a reply is pending, a muted caption line under the last bubble says "Armando la respuesta…"; once words arrive, it says "Escribiendo…".
+  - While a reply is pending, a caption line under the last bubble says what the chat is doing: "Armando la respuesta…" until the chat function reports a step, then that step: thinking, writing, or the tool it's calling ("Buscando los mejores precios…"). Labels: `t.chat.steps` in [`src/strings.ts`](../src/strings.ts) ([ADR 0029](adr/0029-chat-streams-its-steps.md)).
+  - Each new step fades in, and a band of ink sweeps across the muted words (`shimmer`), as other AI chats do. Never lighter than the muted caption.
   - It disappears when the reply stops streaming (the turn may still be saving), and is a `role="status"` region.
   - The waiting bubble still shows the animated mark.
 - **Chat bar:** above the conversation, on the ground and aligned to the content column: "Chats" (or "Volver") on the left, "Nuevo chat" on the right, both green-ink links. Disabled while a turn is saving.
@@ -432,9 +433,10 @@ Drawn for this app on a 24px grid: 1.75px round strokes, `currentColor` (the sen
 | `rise-in` | 160ms, 6px | a new bubble arriving |
 | `dot-in` | 180ms scale | the active-tab dot |
 | `converge` | 1.2s loop | the mark while waiting |
+| `shimmer` | 1.8s loop | the chat's status line |
 | `pulse` | 1.4s loop (1.2s on the microphone) | skeletons, listening |
 
-`prefers-reduced-motion: reduce` turns every animation and transition off; the mark then shows all seven dots, static.
+`prefers-reduced-motion: reduce` turns every animation and transition off; the mark then shows all seven dots, static, and the status line is plain muted text.
 
 ## Do's and Don'ts
 

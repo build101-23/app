@@ -399,8 +399,8 @@ export const supabase = {
 const reply =
   'Buena elección: el pollo al horno con boniato se puede dejar listo el domingo y rinde para varias cenas.\n\nPara que entre en tu semana:\n- Hacé una bandeja grande y separala en porciones.\n- Sumá una verdura distinta cada día para variar.\n\n¿Querés que lo tengamos en cuenta para tu menú?'
 
-// Stream the chat function's reply the way the real one does: plain text, in chunks. The finished turn is
-// stored in its conversation, as the server would, so reloading the messages keeps it.
+// Stream the chat function's reply the way the real one does: a few steps, then the text in chunks, one JSON object
+// per line. The finished turn is stored in its conversation, as the server would, so reloading the messages keeps it.
 const realFetch = window.fetch.bind(window)
 window.fetch = async (input, init) => {
   const url = typeof input === 'string' ? input : input instanceof URL ? input.href : input.url
@@ -414,13 +414,20 @@ window.fetch = async (input, init) => {
   const encoder = new TextEncoder()
   const body = new ReadableStream<Uint8Array>({
     async start(controller) {
+      const send = (event: { text: string } | { step: string }) =>
+        controller.enqueue(encoder.encode(`${JSON.stringify(event)}\n`))
+      for (const step of ['thinking', 'search_products']) {
+        send({ step })
+        await wait(mode === 'slow' ? 3000 : 1500)
+      }
+      send({ step: 'typing' })
       for (const chunk of chunks) {
-        controller.enqueue(encoder.encode(chunk))
+        send({ text: chunk })
         await wait(mode === 'trickle' ? 600 : 45)
       }
       messages.get(conversation_id)?.push(text('user', sent), text('assistant', reply))
       controller.close()
     },
   })
-  return new Response(body, { headers: { 'Content-Type': 'text/plain; charset=utf-8' } })
+  return new Response(body, { headers: { 'Content-Type': 'application/x-ndjson; charset=utf-8' } })
 }

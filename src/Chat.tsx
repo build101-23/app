@@ -122,8 +122,9 @@ export default function Chat({
   const [loadFailed, setLoadFailed] = useState(false)
   // The last read of the chats list failed; the list view says so and can read it again.
   const [listFailed, setListFailed] = useState(false)
-  // While a reply streams: the visible status line.
+  // While a reply streams: the visible status line, and the step the chat function last reported.
   const [streaming, setStreaming] = useState(false)
+  const [step, setStep] = useState('')
   const [error, setError] = useState('')
   const [listening, setListening] = useState(false)
   const root = useRef<HTMLDivElement>(null)
@@ -277,6 +278,7 @@ export default function Chat({
     }
     setBusy(true)
     setStreaming(true)
+    setStep('')
     onBusy(true)
     setError('')
     setLoadFailed(false)
@@ -313,13 +315,22 @@ export default function Chat({
       })
       if (res.status === 429) failure = t.chat.limit
       if (!res.ok || !res.body) throw new Error(`chat failed: ${res.status}`)
+      // One JSON object per line, text or step (ADR 0029). A chunk can end mid-line: the rest waits for the next.
       const reader = res.body.pipeThrough(new TextDecoderStream()).getReader()
       let reply = ''
+      let rest = ''
       for (;;) {
         const { done, value } = await reader.read()
         if (done) break
-        reply += value
-        setReply(reply)
+        const lines = (rest + value).split('\n')
+        rest = lines.pop() ?? ''
+        for (const line of lines) {
+          const event: { text?: string; step?: string } = JSON.parse(line)
+          if (event.step) setStep(event.step)
+          if (!event.text) continue
+          reply += event.text
+          setReply(reply)
+        }
       }
       setStreaming(false)
       if (!reply) setReply(t.chat.noReply)
@@ -345,7 +356,7 @@ export default function Chat({
     submit(draft.trim())
   }
 
-  const waiting = streaming && bubbles.at(-1)?.text === ''
+  const status = streaming ? (t.chat.steps[step] ?? t.chat.waiting) : ''
 
   return (
     <div className="chat" ref={root}>
@@ -442,9 +453,9 @@ export default function Chat({
               </p>
             ),
           )}
-          {/* Always mounted, so screen readers announce each change of its text. */}
+          {/* Always mounted, so screen readers announce each change of its text. Keyed, so each step fades in. */}
           <p className="chat-status" role="status">
-            {streaming ? (waiting ? t.chat.waiting : t.chat.typing) : ''}
+            {status && <span key={status}>{status}</span>}
           </p>
           {error && <Alert text={error} />}
           <div ref={end} />

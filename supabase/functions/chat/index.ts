@@ -385,14 +385,16 @@ Deno.serve(async (req) => {
   const encoder = new TextEncoder()
   const stream = new ReadableStream({
     async start(controller) {
+      // One JSON object per line: the reply's text, or the step the status line shows (ADR 0029).
+      const send = (event: { text: string } | { step: string }) =>
+        controller.enqueue(encoder.encode(`${JSON.stringify(event)}\n`))
       // Separates the text before and after a tool call, which are separate bubbles once reloaded.
       let wrote = false
       let breakBeforeNext = false
       const write = (delta: string) => {
-        if (breakBeforeNext) controller.enqueue(encoder.encode('\n\n'))
+        send({ text: breakBeforeNext ? `\n\n${delta}` : delta })
         breakBeforeNext = false
         wrote = true
-        controller.enqueue(encoder.encode(delta))
       }
 
       // The function stops at 150 s and a cut-off turn stores nothing, so late rounds go without tools (ADR 0024).
@@ -417,6 +419,12 @@ Deno.serve(async (req) => {
             betas: ['server-side-fallback-2026-07-01', 'thinking-binding-controls-2026-08-01'],
           })
           reply.on('text', write)
+          // The tool being called, writing, or thinking: each block says which as it starts.
+          reply.on('streamEvent', (event) => {
+            if (event.type !== 'content_block_start') return
+            const block = event.content_block
+            send({ step: block.type === 'tool_use' ? block.name : block.type === 'text' ? 'typing' : 'thinking' })
+          })
           const message = await reply.finalMessage()
           breakBeforeNext = wrote
           // Cost and time per round, in the function's logs.
@@ -483,5 +491,5 @@ Deno.serve(async (req) => {
     },
   })
 
-  return new Response(stream, { headers: { ...cors, 'Content-Type': 'text/plain; charset=utf-8' } })
+  return new Response(stream, { headers: { ...cors, 'Content-Type': 'application/x-ndjson; charset=utf-8' } })
 })
