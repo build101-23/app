@@ -245,9 +245,9 @@ A green-tinted neutral ground, the icon's deep green for the user's words and ac
 ### Hierarchy
 - **Title large** (650, 1.75rem, 1.2): the sign-in heading.
 - **Headline** (650, 1.4375rem, 1.25): reserved for page headings; no current screen uses it.
-- **Title** (650, 1.25rem, 1.3): sheet titles (the health-data dialog). Screens have no visible title: the top bar shows the logo, and the section's name is a screen-reader-only `h1`.
+- **Title** (650, 1.25rem, 1.3): sheet titles (the health-data dialog) and the Menu's day name. Screens have no visible title: the top bar shows the logo, and the section's name is a screen-reader-only `h1`.
 - **Body** (400, 1rem, 1.5; 1.45 in bubbles): messages, values, hints.
-- **Label** (550, 0.9375rem): field labels, chips, alerts, profile section headings, and Menu days and List sections (at 1rem, 650).
+- **Label** (550, 0.9375rem): field labels, chips, alerts, profile section headings, and List sections (at 1rem, 650).
 - **Meta** (400, 0.875rem): definition-list labels above profile values.
 - **Caption** (0.8125rem): the status pill, error details, the chat's status line and disclaimer, dates in the chats list, and the List's store tags and menu amounts.
 - **Tab** (550, 0.8125rem; 650 when active).
@@ -343,6 +343,10 @@ A 44px tangerine circle with a white up arrow. Disabled: sunk surface with a mut
   - While a reply is pending, a caption line under the last bubble says what the chat is doing: "Armando la respuesta…" until the chat function reports a step, then that step: thinking, writing, or the tool it's calling ("Buscando los mejores precios…"). Labels: `t.chat.steps` in [`src/strings.ts`](../src/strings.ts) ([ADR 0029](adr/0029-chat-streams-its-steps.md)).
   - Each new step fades in, and a band of ink sweeps across the muted words (`shimmer`), as other AI chats do. Never lighter than the muted caption.
   - It disappears when the reply stops streaming (the turn may still be saving), and is a `role="status"` region.
+  - It keeps one line of height even when empty (`min-height: 1.5em`), so it coming and going moves nothing under the scroll position.
+- **Streaming text:**
+  - The reply's text is shown at a steady pace, not as each network chunk lands (`paceText` in [`src/pace.ts`](../src/pace.ts)): every animation frame reveals an eighth of what's waiting, at least one character. A burst spreads over a few frames and a trickle still moves. It shows everything at once in a hidden tab and with reduced motion, and the stored turn replaces the bubbles only once the text has finished showing.
+  - The list follows the end while the reply grows, in a layout effect so the text and the scroll move in the same frame. Scroll up to read and it stops following; sending a message or opening a chat follows again.
   - The waiting bubble still shows the animated mark.
 - **Chat bar:** above the conversation, on the ground and aligned to the content column: a chats icon (two bubbles) on the left that opens and closes the list of chats, tinted while the list is open, and a + on the right for a new chat. Both are 44px round green-ink icon buttons, named "Chats" and "Nuevo chat" for screen readers, and muted while a turn is saving.
 - **Chats list:** replaces the conversation when open. Rows of title and date, 48px tall, hairlines between them; the open chat is at weight 650. It keeps the same clearance as the messages. If the list can't be read, it says so with a "Reintentar" of its own; a conversation that can't open shows its alert in the conversation.
@@ -354,9 +358,13 @@ A 44px tangerine circle with a white up arrow. Disabled: sunk surface with a mut
 ### Menu
 - A page (20px top, dock clearance at the bottom). There's no confirm step: the list follows the menu ([ADR 0022](adr/0022-list-follows-the-menu.md)).
 - Loading shows the page skeleton; with no menu yet, the empty state; a failed load, the inline alert.
-- Each day is a section: its name (capitalized, 1rem/650) with a green-ink "Cambiar" link on the right. Each meal is a row that opens: the slot in muted ink, the recipe, then its ingredients, short instructions and its own "Cambiar".
-- With the numbers switch on ([ADR 0021](adr/0021-numbers-switch-in-the-profile.md)), the day's total goes under its heading and each meal's macros under its name, in muted caption type with tabular figures. Off by default: the app talks about meals, not numbers.
-- "Cambiar" takes you to the chat with a draft ready to finish.
+- One day at a time ([ADR 0032](adr/0032-menu-shows-one-day-at-a-time.md)): a day strip over the day's card.
+  - **Day strip** (only when the menu has more than one day): a segmented control of native radios in a sunk-surface pill track (3px padding, 46px segments). Each segment is the day's first three letters (Lun, Mar, Mié…); the radio's accessible name is the whole day, and a screen-reader legend names the group. Saved order, never sorted. The selected day is filled with the primary color (deep green in light mode, #5CC495 in dark) with bold text. The arrow keys move between days. It opens on the first day, since the menu starts tomorrow and there's no "today" in it. In forced colors the selected day uses `Highlight`. Not tangerine: that's the dock's dot, and two on screen would break The One Rule.
+  - **Day card:** a surface card with the day's name at the Title size (capitalized) and each meal as a row under a hairline: the slot in caption type, the recipe at 1rem/550, and a chevron that turns when the meal is open (64px tall, so it's an easy target). Meals are native `<details>` with a shared `name`, so opening one closes the others where the browser supports it.
+  - **An opened meal:** "Ingredientes" as a plain list (name left, amount right in muted tabular figures), "Cómo se hace", and a secondary "Cambiar este plato" button with the chat icon. From 640px the ingredients and the instructions sit in two columns. It fades in over `--dur`.
+  - **"Cambiar el martes"** is a secondary button under the card. At most two "Cambiar" buttons are on screen. "Cambiar" takes you to the chat with a draft ready to finish.
+  - Switching days replays the page fade-in on the card (it's keyed by day). The accordion's height isn't animated.
+- With the numbers switch on ([ADR 0021](adr/0021-numbers-switch-in-the-profile.md)), the day's total goes under its name and each meal's macros under its recipe, in muted caption type with tabular figures. Off by default: the app talks about meals, not numbers.
 
 ### List
 - A page. On top, when the list is priced from the products the chat picked ([ADR 0024](adr/0024-agent-builds-the-menu-from-real-products.md)), a flat card "Dónde comprar":
@@ -415,7 +423,8 @@ Sunk-surface pills (6px 14px) listing what the chat saved: can't eat, dislikes, 
 
 ### Alerts and states
 - **Inline alert:** danger text on the danger surface, a 20px alert icon, 14px radius (`Alert` in `src/ui.tsx` when there's nothing to do but read it). Below the message goes either a muted detail line (the provider's raw message on sign-in) or a quiet "Reintentar" button when the failed load can be retried (chats, profile).
-- **Skeletons:** sunk-surface shapes in the layout of what's loading (bubbles, definition rows; `PageSkeleton` in `src/ui.tsx` for Menu and List), with a slow opacity pulse, inside a `role="status"` region with a screen-reader label.
+- **Skeletons:** flat sunk-surface shapes with a slow opacity pulse, in the layout of what's loading, inside a `role="status"` region with a screen-reader label (the rest `aria-hidden`). Chat has bubbles; Menu has the day strip, a card with a title bar and four meal rows with hairlines, and a pill; List has the "Dónde comprar" card, the two button pills and a section of rows (checkbox, name, amount); Profile has the facts card and two groups of chips. They reuse the real page's classes (`.day-card`, `.prices`, `.list li`, `.facts`, `.chips`), so gaps and hairlines match and the content arrives where its placeholder was; `PageSkeleton` in `src/ui.tsx` takes the shape (`menu` or `list`), and Profile's is in `src/Profile.tsx`. No shimmer: a sweeping band needs a gradient fill, which the Flat Fill Rule rules out. Every skeleton has the `skeleton` class, which the page fade-in skips.
+- **Content arriving:** on Menu, List and Profile, what replaces a skeleton (and each page on a tab switch) fades in over `--dur-slow`: every direct child of `.page` except `.skeleton`, so a quick load never shows a half-faded skeleton. Chat's bubbles already have `rise-in`.
 - **Not available yet:** something in the product plan but not in the app yet shows a "Muy pronto" pill and says only what's true today. Today that's the health-data consent dialog.
 - **Empty screens** (Profile, Menu, List; `EmptyState` in `src/ui.tsx`): the mark, one line of copy, and an "Ir al chat" primary button.
 - **Results that appear in place** (the chat's status line, "Lista copiada.") live in a `role="status"` element that is always mounted, so screen readers announce each change of its text.
@@ -424,7 +433,7 @@ Sunk-surface pills (6px 14px) listing what the chat saved: can't eat, dislikes, 
 `Mark` in [`src/ui.tsx`](../src/ui.tsx) draws the approved icon's seven circles, with unchanged centers and radii, cropped to the dots. It is the system's state glyph: inside an assistant bubble while a reply hasn't started (with the visible status line below it), on the splash after a 400ms delay, and static on the empty profile. The `converge` animation lights the dots from the outer pair inward to the apex, 1.2s per loop, 0.15s apart.
 
 ### Icons
-Drawn for this app on a 24px grid: 1.75px round strokes, `currentColor` (the send arrow uses a 2.25px stroke). Chat, Menú (a calendar with three dots), Lista (a checklist), Perfil, send, alert, mail, and the microphone (drawn inline in `src/Chat.tsx`; while listening it becomes a filled stop square).
+Drawn for this app on a 24px grid: 1.75px round strokes, `currentColor` (the send arrow uses a 2.25px stroke). Chat, Menú (a calendar with three dots), Lista (a checklist), Perfil, send, alert, mail, a chevron (opens a Menu meal), and the microphone (drawn inline in `src/Chat.tsx`; while listening it becomes a filled stop square).
 
 ### Logo and app icons
 - `src/assets/viveri-logo.svg` and `public/favicon.svg` are byte-for-byte copies of the approved `recommended-horizontal.svg` and `recommended-icon.svg` (from the logo exploration, `C:\prompt-lab\assets\logo-app\v1\`).
@@ -444,6 +453,7 @@ Drawn for this app on a 24px grid: 1.75px round strokes, `currentColor` (the sen
 | --- | --- | --- |
 | `--dur-fast` | 120ms | press feedback, color changes |
 | `--dur` | 200ms | fades |
+| `--dur-slow` | 300ms, `ease-out` | a page's content fading in (`--ease` is too sharp for an opacity fade) |
 | `--ease` | cubic-bezier(0.2, 0.7, 0.2, 1) | everything that isn't a loop |
 | `rise-in` | 160ms, 6px | a new bubble arriving |
 | `dot-in` | 180ms scale | the active-tab dot |
