@@ -145,7 +145,7 @@ const saveMenu: Anthropic.Beta.BetaTool = {
 const searchProducts: Anthropic.Beta.BetaTool = {
   name: 'search_products',
   description:
-    "Search the supermarkets' products (Disco, Géant, Ta-Ta), with real prices. Send every search you need in one call: two or three Spanish queries per food, the generic name and the cuts or forms it's sold as (pollo: suprema, pechuga, muslo).",
+    "Search the supermarkets' products (Disco, Géant, Ta-Ta), with real prices. Send every search you need in one call: two or three Spanish queries per food, the generic name and the cuts, forms or varieties it's sold as (pollo: suprema, pechuga, muslo; papa: papa rosada; tomate: tomate perita).",
   strict: true,
   input_schema: object({ queries: { type: 'array', items: { type: 'string' }, description: '1 to 20 queries.' } }),
 }

@@ -219,7 +219,7 @@ Delete `prices.ts` and its test, the `sample` label, the prompt passage, the `st
 ## What changed while building it
 - `main` had moved on: no confirm step and a list card in the chat ([ADR 0022](../adr/0022-list-follows-the-menu.md)). So prices reach the model through `save_menu` and the existing list tools (`show_shopping_list`, `update_shopping_list`), not a separate `get_prices` tool.
 - Turns stop calling tools after 100 s instead of 110 s, to leave room for the reply.
-- The search ranks ties by price. Tune it once the scraper's unit-of-sale run lands (fresh produce at Disco and Géant).
+- After the scraper's unit-of-sale run, a second migration ranks names that start with the query's first word first, then the closest names, and leaves out products with no size: ties by price had put juices before fresh bananas and ornaments before potatoes.
 
 ## Left out
 The cart and zone availability, Devoto, embeddings, a search cache, asking for the budget (the teammate), share text with prices, promotions, a scheduled scraper, and the Supabase MCP in production.
