@@ -784,29 +784,93 @@ a.button {
   padding: 13px 16px;
 }
 
-/* The menu the chat saved, shown under its reply as a card in the conversation. */
-.menu-preview {
-  display: grid;
-  gap: 12px;
-  white-space: normal;
+/* The menu the chat saved, shown under its reply: a card, not a bubble (a bubble's tail belongs to a speaker). A
+   badge and a title, one row per day under hairlines, and the way to the tab. */
+.menu-card {
+  align-self: flex-start;
+  width: min(100%, 28rem);
+  padding: 0 16px 16px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-card);
+  background: var(--surface);
+  animation: rise-in 160ms var(--ease) both;
 }
 
-.menu-preview ul {
+.bubble.user + .menu-card,
+.menu-card + .bubble.user {
+  margin-top: 10px;
+}
+
+.menu-card header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 0 12px;
+}
+
+.menu-card .badge {
   display: grid;
-  gap: 6px;
+  place-items: center;
+  flex: none;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--surface-sunk);
+}
+
+.menu-card .badge .icon {
+  width: 18px;
+  height: 18px;
+}
+
+.menu-card header strong {
+  flex: 1;
+  font-weight: 650;
+}
+
+.menu-card ul {
   margin: 0;
   padding: 0;
   list-style: none;
-  font-size: 0.9375rem;
 }
 
-.menu-preview strong {
-  display: block;
+.menu-card li {
+  display: grid;
+  grid-template-columns: 2.5rem minmax(0, 1fr);
+  gap: 12px;
+  padding: 10px 0;
+  border-top: 1px solid var(--line);
+  font-size: 0.9375rem;
+  line-height: 1.4;
+}
+
+.menu-card .day {
+  color: var(--ink-muted);
+  font-size: 0.8125rem;
   font-weight: 650;
   text-transform: capitalize;
 }
 
-.menu-preview .button,
+/* The tab has the whole menu; here two lines are enough to tell the days apart. */
+.menu-card .meals {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  overflow: hidden;
+}
+
+.menu-card .button {
+  margin-top: 4px;
+  min-height: 44px;
+}
+
+.menu-card .button .icon {
+  width: 18px;
+  height: 18px;
+  transform: rotate(-90deg);
+}
+
 .list-preview .button {
   justify-self: start;
   min-height: 44px;

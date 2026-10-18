@@ -59,6 +59,8 @@ export const t = {
     noChats: 'Todavía no tenés chats.',
     noReply: 'No pude responder eso. Probá decirlo de otra forma.',
     openMenu: 'Ver menú',
+    // The menu card in the chat: its title, and how long the menu is.
+    menuCard: { title: 'Tu menú', length: (days: number) => (days === 1 ? '1 día' : `${days} días`) },
     openList: 'Ver lista',
   },
   menu: {

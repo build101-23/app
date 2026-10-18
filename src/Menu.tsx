@@ -3,7 +3,7 @@ import type { MenuData } from '../supabase/functions/_shared/menu.ts'
 import { addMacros } from '../supabase/functions/_shared/nutrition.ts'
 import { supabase } from './supabase'
 import { t } from './strings'
-import { Alert, ChatIcon, ChevronIcon, EmptyState, PageSkeleton } from './ui'
+import { Alert, ChatIcon, ChevronIcon, EmptyState, MenuIcon, PageSkeleton } from './ui'
 
 type MenuRow = { data: MenuData }
 
@@ -14,24 +14,36 @@ function macrosLine({ kcal, protein, carbs, fat, missing }: ReturnType<typeof ad
   return missing.length ? `${line} (${t.menu.without([...new Set(missing)].join(', '))})` : line
 }
 
-// The menu as a save_menu call saved it, shown in the chat under that reply. Here and in the tab, days keep their
-// saved order: a menu can start on any day (ADR 0028).
+// The menu as a save_menu call saved it, shown in the chat under that reply: a card with one row per day. Here and in
+// the tab, days keep their saved order: a menu can start on any day (ADR 0028).
 export function MenuPreview({ menu, busy, onOpen }: { menu: MenuData; busy: boolean; onOpen: () => void }) {
   const names = new Map(menu.recipes.map((recipe) => [recipe.id, recipe.name]))
   return (
-    <div className="bubble assistant menu-preview">
+    <section className="menu-card" aria-label={t.chat.menuCard.title}>
+      <header>
+        <span className="badge">
+          <MenuIcon />
+        </span>
+        <strong>{t.chat.menuCard.title}</strong>
+        <span className="pill">{t.chat.menuCard.length(menu.days.length)}</span>
+      </header>
       <ul>
         {menu.days.map(({ day, meals }) => (
           <li key={day}>
-            <strong>{t.menu.days[day]}</strong>
-            {meals.map((meal) => names.get(meal.recipe_id)).join(' · ')}
+            {/* Three letters on screen; the whole day for screen readers. */}
+            <span className="day" aria-hidden="true">
+              {t.menu.days[day].slice(0, 3)}
+            </span>
+            <span className="sr-only">{t.menu.days[day]}: </span>
+            <span className="meals">{meals.map((meal) => names.get(meal.recipe_id)).join(' · ')}</span>
           </li>
         ))}
       </ul>
       <button type="button" className="button secondary" disabled={busy} onClick={onOpen}>
         {t.chat.openMenu}
+        <ChevronIcon />
       </button>
-    </div>
+    </section>
   )
 }
 
