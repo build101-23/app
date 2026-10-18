@@ -1,6 +1,6 @@
 # 0025. VIVERI identity and a token-based UI system
 
-- Status: Proposed (navigation and depth amended by [0026](0026-glass-navigation-layer.md))
+- Status: Proposed (navigation and depth amended by [0026](0026-glass-navigation-layer.md); logo and icon files replaced by [0035](0035-mark-is-the-first-v.md))
 - Date: 2026-10-17
 
 ## Context

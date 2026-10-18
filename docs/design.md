@@ -168,7 +168,7 @@ Living doc: how the interface looks *now*. Tokens live as CSS custom properties 
 
 **Creative North Star: "Siete en uno" (Seven into One)**
 
-The approved mark is seven dots: six in a V, the week, converging on one tangerine dot, the one list and the one next step. The interface uses that idea as its notation instead of decorating with it. Green and deep green carry the everyday work, and tangerine appears only where there is exactly one thing: the screen you're on, the action that sends, the apex of the mark.
+The approved mark is seven dots: six in a V, the week, converging on one tangerine dot, the one list and the one next step. In the logo the mark is the first letter, the V of VIVERI ([ADR 0035](adr/0035-mark-is-the-first-v.md)). The interface uses that idea as its notation instead of decorating with it. Green and deep green carry the everyday work, and tangerine appears only where there is exactly one thing: the screen you're on, the action that sends, the apex of the mark.
 
 It is a working tool for people planning meals on a phone, at home or in a supermarket aisle, so it reads first as a familiar app: a top bar, a tab bar, a chat, standard controls. The identity lives in the content, not in the navigation:
 - the logo at the top of every screen;
@@ -405,14 +405,16 @@ Sunk-surface pills (6px 14px) listing what the chat saved: can't eat, dislikes, 
 - **Results that appear in place** (the chat's status line, "Lista copiada.") live in a `role="status"` element that is always mounted, so screen readers announce each change of its text.
 
 ### The mark (signature component)
-`Mark` in [`src/ui.tsx`](../src/ui.tsx) draws the approved icon's seven circles, with unchanged centers and radii, cropped to the dots. It is the system's state glyph: inside an assistant bubble while a reply hasn't started (with the visible status line below it), on the splash after a 400ms delay, and static on the empty profile. The `converge` animation lights the dots from the outer pair inward to the apex, 1.2s per loop, 0.15s apart.
+`Mark` in [`src/ui.tsx`](../src/ui.tsx) draws the app icon's seven circles (`public/favicon.svg`), with unchanged centers and radii, cropped to the dots. It is the system's state glyph: inside an assistant bubble while a reply hasn't started (with the visible status line below it), on the splash after a 400ms delay, and static on the empty profile. The `converge` animation lights the dots from the outer pair inward to the apex, 1.2s per loop, 0.15s apart.
 
 ### Icons
 Drawn for this app on a 24px grid: 1.75px round strokes, `currentColor` (the send arrow uses a 2.25px stroke). Chat, Menú (a calendar with three dots), Lista (a checklist), Perfil, send, alert, mail, a chevron (opens a Menu meal), and the microphone (drawn inline in `src/Chat.tsx`; while listening it becomes a filled stop square).
 
 ### Logo and app icons
-- `src/assets/viveri-logo.svg` and `public/favicon.svg` are byte-for-byte copies of the approved `recommended-horizontal.svg` and `recommended-icon.svg` (from the logo exploration, `C:\prompt-lab\assets\logo-app\v1\`).
-- `public/icons/icon-180.png`, `icon-192.png` and `icon-512.png` were rendered from that icon SVG with headless Microsoft Edge at 1× scale. Each PNG carries its origin in a `tEXt` chunk. The 512 also serves as the maskable icon; the mark sits inside the 40% safe circle.
+- `src/assets/viveri-logo.svg` is a byte-for-byte copy of the integrated logo: the mark as the first V, then IVERI (`C:\prompt-lab\assets\logo-app\v3\recommended-integrated.svg`). It is 183.03 × 57.8 units, so 89px wide in the top bar (28px tall) and 139px on sign-in (44px).
+- `public/favicon.svg` is a byte-for-byte copy of the app icon redrawn with the same V (`C:\prompt-lab\assets\logo-app\v4\recommended-icon.svg`).
+- Both replaced the v1 files on 2026-10-18 ([ADR 0035](adr/0035-mark-is-the-first-v.md)). Every dot in them is a true circle; v1's horizontal logo had two dots about 4% taller than wide.
+- `public/icons/icon-180.png`, `icon-192.png` and `icon-512.png` were rendered from that icon SVG with headless Google Chrome at 1× scale. Each PNG carries its origin in a `tEXt` chunk. The 512 also serves as the maskable icon; the mark sits inside the 40% safe circle.
 - The 16px favicon is the full icon; a simplified small-size mark doesn't exist yet.
 
 ### Store icons

@@ -4,28 +4,28 @@ import disco from './assets/stores/disco.png'
 import geant from './assets/stores/geant.png'
 import tata from './assets/stores/tata.png'
 
-// The VIVERI mark as seven circles. Centers and radii are taken unchanged from the approved icon
-// (C:\prompt-lab\assets\logo-app\v1\recommended-icon.svg); the viewBox only crops away the tile.
-// Colors are the horizontal logo's: brand green dots, tangerine apex.
+// The VIVERI mark as seven circles. Centers and radii are taken unchanged from the app icon
+// (public/favicon.svg, from C:\prompt-lab\assets\logo-app\v4\recommended-icon.svg); the viewBox only
+// crops away the tile. Colors are the logo's: brand green dots, tangerine apex.
 const pairs = [
-  { r: 4.48, y: 27.05, x: [25.34, 70.66] },
-  { r: 5.12, y: 38.67, x: [32.09, 63.91] },
-  { r: 5.76, y: 51.4, x: [39.48, 56.52] },
+  { r: 4.7, y: 25.74, x: [26.94, 69.06] },
+  { r: 5.08, y: 38.57, x: [33.35, 62.65] },
+  { r: 5.47, y: 52.1, x: [40.09, 55.91] },
 ]
 
 export function Mark({ size = 24, animated = false }: { size?: number; animated?: boolean }) {
   return (
     <svg
       className={animated ? 'mark animated' : 'mark'}
-      viewBox="20.86 22.57 54.28 50.86"
+      viewBox="22.24 21.04 51.52 53.92"
       width={size}
-      height={(size * 50.86) / 54.28}
+      height={(size * 53.92) / 51.52}
       aria-hidden="true"
     >
       {pairs.map((pair, i) =>
         pair.x.map((cx) => <circle key={cx} className={`dot step-${i + 1}`} cx={cx} cy={pair.y} r={pair.r} fill="#1E8A5E" />),
       )}
-      <circle className="dot step-4" cx={48} cy={66.07} r={7.36} fill="#E85D2A" />
+      <circle className="dot step-4" cx={48} cy={67.97} r={6.99} fill="#E85D2A" />
     </svg>
   )
 }
