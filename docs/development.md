@@ -107,7 +107,8 @@ How it works and why: [ADR 0015](adr/0015-price-scraper-python-job-with-time-bud
 
 The pitch deck is `pitch/VIVERI_presentacion_v4.html`: one self-contained file (brand fonts embedded, no network, no build step), and it is the deck's source, so edits go straight into it. `pitch/VIVERI_presentacion_v3.html` is the previous version.
 
-- **Run it:** `npm run pitch` and open http://localhost:8080, or open the file directly in Chrome or Edge. Both ways keep the presenter view in sync.
+- **Online:** https://app.build101-23.workers.dev/pitch/ (public, not linked from the app). `npm run build` copies the file to `dist/pitch/index.html`, so it deploys with the app on every push to `main`, and each branch Preview has it at `/pitch/` too.
+- **Locally:** `npm run pitch` and open http://localhost:8080, or open the file directly in Chrome or Edge. Every way keeps the presenter view in sync.
 - **Keys:** → / Space reveal or advance, ← back, F full screen, P presenter view (open it on your screen, the deck on the projector), N notes, T and D start or pause the pitch and demo timers, R resets both timers, A replays the logo animation, H shows all keys.
 - **Start from zero:** Shift+R, or "Reiniciar" in the bottom controls or the presenter view (asks first): back to the cover with nothing revealed and both timers at 00:00. Home goes to the cover without touching the timers.
 - `?motion=full` keeps the full animations when the OS asks for reduced motion (Windows with animation effects off). Print to PDF from the browser gives one slide per page.
