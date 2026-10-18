@@ -33,10 +33,11 @@ One file per decision: `NNNN-short-title.md`. ADRs are append-only: never rewrit
 | 0027 | [Sign in with Google's own button](0027-google-sign-in-button.md) | Accepted | 2026-10-17 |
 | 0028 | [Menus in calendar order from tomorrow, named by weekday](0028-menus-of-1-to-7-days.md) | Accepted | 2026-10-17 |
 | 0029 | [The chat streams the step it's on](0029-chat-streams-its-steps.md) | Accepted | 2026-10-18 |
-| 0030 | [Cart filling: Ta-Ta by link, Disco and Géant by a team extension](0030-cart-filling-tata-link-gdu-team-extension.md) | Accepted | 2026-10-18 |
+| 0030 | [Cart filling: Ta-Ta by link, Disco and Géant by a team extension](0030-cart-filling-tata-link-gdu-team-extension.md) | Accepted (the buttons moved under the list by 0034) | 2026-10-18 |
 | 0031 | [A cleaner neutral palette](0031-cleaner-neutral-palette.md) | Accepted | 2026-10-18 |
 | 0032 | [The Menu tab shows one day at a time](0032-menu-shows-one-day-at-a-time.md) | Accepted | 2026-10-18 |
 | 0033 | [Light theme only](0033-light-theme-only.md) | Accepted | 2026-10-18 |
+| 0034 | [The List shows one supermarket at a time](0034-list-shows-one-store-at-a-time.md) | Accepted | 2026-10-18 |
 
 ## Template
 

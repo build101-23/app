@@ -1,6 +1,6 @@
 # 0030. Cart filling: Ta-Ta by link, Disco and Géant by a team extension
 
-- Status: Accepted
+- Status: Accepted (the buttons moved under the list, one per selected store, by [0034](0034-list-shows-one-store-at-a-time.md))
 - Date: 2026-10-18
 
 ## Context
