@@ -165,9 +165,9 @@ export const t = {
   // The cart buttons at the bottom of "Dónde comprar" (docs/plans/2026-10-18-fill-cart.md).
   // The order button under the list (ADR 0034).
   cart: {
-    order: (store: string) => `Pedir ahora en ${store}`,
+    order: (store: string) => `Comprar ahora en ${store}`,
     // On the button in the actions row, next to its siblings: the store's icon says where; the name is for screen readers.
-    orderShort: 'Pedir',
+    orderShort: 'Comprar',
     adds: (n: number, total: string) =>
       `Se ${n === 1 ? 'agrega 1 producto' : `agregan ${n} productos`} a tu carrito · ${total} estimado, sin envío. Lo que ya tenías en el carrito queda.`,
     // What the cart leaves out, one line per reason, worded so nothing has to agree with the names ("Ajo, Lentejas").

@@ -361,10 +361,13 @@ export default function List({ session, onOpenChat }: { session: Session; onOpen
           </button>
         )}
         {/* The same size as its neighbors, at the right edge; the full one, with its notes, is under the list. */}
-        {priced &&
-          p &&
-          !nothingToBuy &&
-          orders.map(({ store, ids }) => <Order key={store} p={p} store={store} ids={ids} compact />)}
+        {priced && p && !nothingToBuy && (
+          <div className="list-orders">
+            {orders.map(({ store, ids }) => (
+              <Order key={store} p={p} store={store} ids={ids} compact />
+            ))}
+          </div>
+        )}
       </div>
       {/* Always mounted, so "Lista copiada." is announced when its text appears. */}
       <p className="muted" role="status">
