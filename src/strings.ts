@@ -140,6 +140,26 @@ export const t = {
     // Under a line, what to buy at its store: "2 × Arroz Blanco SAMAN 1 kg · Ta-Ta · $ 118".
     product: (packs: number, name: string, store: string, cost: string) => `${packs} × ${name} · ${store} · ${cost}`,
   },
+  // The cart buttons at the bottom of "Dónde comprar" (docs/plans/2026-10-18-fill-cart.md).
+  cart: {
+    fill: (store: string) => `Armar carrito en ${store}`,
+    // The whole list at Ta-Ta, when the chosen option leaves Ta-Ta out or can't be filled here.
+    allAt: (store: string, total: string, missing: number) =>
+      `Armar todo en ${store} · ${total}${missing ? ` · ${missing === 1 ? 'falta\u00a01' : `faltan\u00a0${missing}`}` : ''}`,
+    adds: (n: number, total: string) =>
+      `Se ${n === 1 ? 'agrega 1 producto' : `agregan ${n} productos`} · ${total} estimado, sin envío. Lo que ya tenías en el carrito queda.`,
+    // A store of the chosen option the app can't fill yet (Disco and Géant, until the extension).
+    byHand: (store: string, n: number) =>
+      `Lo de ${store} (${n === 1 ? '1 producto' : `${n} productos`}) lo agregás desde el link de cada producto en la lista.`,
+    // What a cart leaves out, one line per reason, worded so nothing has to agree with the names ("Ajo, Lentejas").
+    left: {
+      not_here: (store: string, names: string) => `${store} no tiene: ${names}.`,
+      weighed: (_store: string, names: string) => `Agregar a mano (por peso): ${names}.`,
+    },
+    nowhere: (names: string) => `Ningún súper tiene: ${names}.`,
+    // After the tap: the store's cart opens in another tab.
+    opened: (store: string) => `Abrimos tu carrito de ${store} en otra pestaña. Revisalo y pagá ahí.`,
+  },
   foods: {
     chicken_breast: 'Pechuga de pollo',
     chicken_leg: 'Pata y muslo de pollo',

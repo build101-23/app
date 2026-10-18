@@ -15,7 +15,7 @@ One file per decision: `NNNN-short-title.md`. ADRs are append-only: never rewrit
 | 0009 | [The AI nutritionist uses judgment, not gatekeeping](0009-judgment-not-gatekeeping.md) | Accepted | 2026-10-17 |
 | 0010 | [Voice dictation with the browser's speech recognition](0010-browser-speech-recognition.md) | Accepted | 2026-10-17 |
 | 0011 | [The saved profile travels into each chat](0011-profile-in-each-chat.md) | Accepted | 2026-10-17 |
-| 0012 | [Fill supermarket carts from the user's computer](0012-fill-carts-from-the-users-computer.md) | Accepted | 2026-10-17 |
+| 0012 | [Fill supermarket carts from the user's computer](0012-fill-carts-from-the-users-computer.md) | Accepted (partly changed by 0030: the extension is team-only until the legal read; Devoto, delivery answers, weekly run, zone check and substitutes) | 2026-10-17 |
 | 0013 | [Weekly menu saved by a chat tool, keyed to a fixed food catalog](0013-menu-saved-by-a-chat-tool.md) | Accepted (confirm step removed by 0022; seven fixed days superseded by 0024) | 2026-10-17 |
 | 0014 | [The client only reads; the chat function writes, under a daily cap](0014-client-reads-chat-function-writes.md) | Accepted (`menus.confirmed_at` write gone with 0022) | 2026-10-17 |
 | 0015 | [The price scraper is a Python job with a time budget](0015-price-scraper-python-job-with-time-budget.md) | Accepted (coverage and write path superseded by 0018) | 2026-10-17 |
@@ -33,6 +33,7 @@ One file per decision: `NNNN-short-title.md`. ADRs are append-only: never rewrit
 | 0027 | [Sign in with Google's own button](0027-google-sign-in-button.md) | Accepted | 2026-10-17 |
 | 0028 | [Menus in calendar order from tomorrow, named by weekday](0028-menus-of-1-to-7-days.md) | Accepted | 2026-10-17 |
 | 0029 | [The chat streams the step it's on](0029-chat-streams-its-steps.md) | Accepted | 2026-10-18 |
+| 0030 | [Cart filling: Ta-Ta by link, Disco and Géant by a team extension](0030-cart-filling-tata-link-gdu-team-extension.md) | Accepted | 2026-10-18 |
 
 ## Template
 

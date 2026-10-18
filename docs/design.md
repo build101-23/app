@@ -363,7 +363,14 @@ A 44px tangerine circle with a white up arrow. Disabled: sunk surface with a mut
   - the recommended store or split (radio buttons when there's a choice);
   - what the chosen total comes to per day of the menu, for menus of 2 days or more;
   - the budget line, in plain ink, when the menu has a budget: it fits, or what's missing and whether a split fits. Over budget is announced, but it isn't an error, so it doesn't use the alert;
-  - the saving, the total per store, and the muted note with the date the prices were read.
+  - the saving and the total per store;
+  - the cart buttons, under a hairline ([ADR 0030](adr/0030-cart-filling-tata-link-gdu-team-extension.md)), all of them links that open the supermarket in another tab:
+    - a primary "Armar carrito en Ta-Ta" for each store of the chosen option the app can fill, with muted lines under it: how many products and the estimated total, then what stays out, one line per reason;
+    - a muted line for a store of the option it can't fill yet;
+    - a quiet "Armar todo en Ta-Ta · $X · faltan N" when that puts more of the list in a cart, left-aligned with the card's text, with what stays out under it, one line per reason;
+    - one muted line for the items no store sells ("Ningún súper tiene: …");
+    - after a tap, one muted line in an always-mounted `role="status"`;
+  - the muted note with the date the prices were read.
 - While the prices load, or for a menu saved before real products, the card holds one muted line instead. If they can't be read, the inline alert takes its place.
 - Then the hint, and secondary "Compartir" and "Copiar" buttons with a "Lista nueva" link.
 - Sections (Frutas y verduras, Almacén…) list items in rows with hairlines: a checkbox (brand green), the name (it wraps beside the checkbox), the amount to buy on the right with what the menu uses under it, and 44px − and + circles. Under the name, in caption type, either "No encontrado online" or the product to buy at the chosen store ("2 × Boniato 1 kg · Géant · $ 144"), linked to its page: muted ink, underlined.

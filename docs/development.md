@@ -73,7 +73,8 @@ Vite reads `.env`, then `.env.local` (gitignored), which overrides it.
 | `chat` | `long`, `empty`, `error` | Three chats opening on the long one, no chats (a new chat with the intent cards), or a load error with retry |
 | `reply` | `ok`, `error`, `limit`, `slow`, `trickle` | The streamed reply to a sent message. `limit` answers 429 (the daily cap); `slow` waits 3 s for the first words; `trickle` streams one chunk every 600 ms, to see the status line |
 | `menu` | `saved`, `short`, `none`, `error` | The week saved (Menu, List with its products and prices, and the chat's menu and list cards), a 3-day menu from sábado to lunes, no menu yet, or a load error (Menu and List show it; the chat opens without its list card) |
-| `prices` | `ok`, `over`, `old`, `error` | The saved week's products: inside its budget, over it, a menu saved before real products, or the products can't be read. Synthetic names and prices |
+| `prices` | `ok`, `over`, `old`, `error`, `stale` | The saved week's products: inside its budget, over it, a menu saved before real products, the products can't be read, or Ta-Ta's tomato is 20 days older than Ta-Ta's newest read (the 14-day rule leaves it out). Synthetic names and prices |
+| `cart` | (none), `tata`, `split` | Where the week is cheapest, for the cart buttons: Géant (Ta-Ta lacks three items, so "Armar todo en Ta-Ta" shows), Ta-Ta (its "Armar carrito" button), or a Géant and Ta-Ta split to pick. The chicken is a tray sold by weight |
 | `numbers` | `off`, `on`, `error` | The numbers switch off or on (Menu shows macros), or saving it fails and nothing changes. Works with `profile=empty` too |
 | `profile` | `full`, `empty`, `error` | Saved profile, nothing saved, or a load error |
 | `loading` | `session`, `data` | Stuck on the splash, or on the skeletons |
@@ -94,7 +95,7 @@ Example: http://localhost:5199/?chat=empty&reply=slow. Check new screens at the 
 How it works and why: [ADR 0015](adr/0015-price-scraper-python-job-with-time-budget.md), [ADR 0018](adr/0018-gdu-listings-and-food-pages.md) and [ADR 0023](adr/0023-scraper-prices-for-the-unit-of-sale.md). Reading rules: [ADR 0008](adr/0008-how-we-read-supermarket-sites.md).
 
 - `scraper/.venv/bin/python -m scraper` reads all four chains for 25 minutes at most and saves as it goes. Ctrl-C stops it and keeps what it read.
-- Run it with `--stores disco,geant,tata` at least weekly, and before a demo: the chat's product search only sees products read within 14 days of their store's newest read, and saved menus price their products as the last run read them ([ADR 0024](adr/0024-agent-builds-the-menu-from-real-products.md)).
+- Run it with `--stores disco,geant,tata` at least weekly, and before a demo: the chat's product search, and the price and cart of saved menus, only see products read within 14 days of their store's newest read ([ADR 0024](adr/0024-agent-builds-the-menu-from-real-products.md), [ADR 0030](adr/0030-cart-filling-tata-link-gdu-team-extension.md)). A partial run moves that newest read forward too.
 - Narrow a run with `--minutes`, `--stores devoto,tata`, `--limit N` (at most N pages per chain and phase) and `--phases` (`categories,brands,food`; `brands` needs `categories`). `--phases food` reads the food product pages again, oldest first, without reading the listings ([ADR 0023](adr/0023-scraper-prices-for-the-unit-of-sale.md)). A 25-minute run of all phases rarely gets through all of them.
 - `--dry-run` writes NDJSON to `scraper/data/out/` instead of Supabase, and needs no key.
 - The GDU sitemap is cached for 24 hours in `scraper/data/cache/`. `--refresh-sitemap` reads it again.
