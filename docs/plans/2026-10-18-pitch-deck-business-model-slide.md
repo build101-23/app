@@ -12,7 +12,7 @@ Slide 10 ("Construir sobre un hábito") was about the 10–15 person pilot. The 
 - Chapter: EL NEGOCIO. Title: "Ganan los dos lados."
 - PARA VOS: "Menú, lista y el súper más barato, cada semana." Pays: "Paga una suscripción."
 - PARA LOS SUPERMERCADOS: "Por qué sus clientes compran el pollo en otro súper." / "Qué productos pierden, contra quién y qué promo los trae de vuelta." Pays: "Pagan por los datos y por pedido."
-- Speaker note: two sides; for supermarkets the data is the value (what each person wants to buy and where it suits them: "tus clientes compran el pollo en otro lado, por este precio; esta promo los trae de vuelta"), always aggregated and anonymous; revenue from subscription, data and a commission per order; "eso es lo que queremos validar".
+- Speaker note (replaces the pilot paragraph, about as long, with the two clicks marked): "El próximo paso es construir el negocio sobre ese hábito, y tiene dos lados. [clic] Para vos, una suscripción: cada semana tu menú, tu lista y dónde comprar más barato. [clic] Y para los supermercados, lo más valioso: los datos. Por qué sus clientes compran el pollo en otro súper, y qué promo los trae de vuelta. Siempre agregados y anónimos. Cobramos por esos datos y una comisión por cada pedido. Eso es lo que vamos a validar."
 - Aggregated and anonymous on purpose: Uruguay's personal data law (Ley 18.331) rules out selling identifiable data, and saying it up front answers the jury's first question.
 - A "Modelo a validar" strip was tried under the cards and dropped: it repeated how each side pays and pushed the slide past the safe area. "A validar" stays in the note.
 
