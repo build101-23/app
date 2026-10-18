@@ -895,6 +895,8 @@ a.button {
 
 /* The status line under the last bubble while a reply is on its way. */
 .chat-status {
+  /* One line reserved, so the status coming and going moves nothing under the scroll position. */
+  min-height: 1.5em;
   margin-top: 4px;
   padding-left: 4px;
   color: var(--ink-muted);
