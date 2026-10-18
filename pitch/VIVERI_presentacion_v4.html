@@ -190,6 +190,23 @@
     .monetization>span{font:700 24px/1.2 var(--display);letter-spacing:.1em;color:var(--muted)}
     .monetization>p{font:700 var(--t-body)/1.2 var(--display);letter-spacing:-.01em;color:var(--green-ink)}
 
+    /* ---------- 10 · Business model: two sides joined through VIVERI ---------- */
+    .model{display:grid;grid-template-columns:minmax(0,1fr) 80px minmax(0,1fr);grid-template-areas:"title title title" "you hub market";align-content:center}
+    .model h1{grid-area:title;font-size:var(--t-m);line-height:1.06}
+    .model .side{align-self:stretch;display:flex;flex-direction:column;margin-top:var(--gap-m);padding:24px 28px 22px;border:1px solid var(--line-strong);border-radius:24px;background:var(--white)}
+    .model .side-you{grid-area:you}.model .side-market{grid-area:market}
+    .side-label{display:block;font:700 22px/1.2 var(--display);letter-spacing:.1em;color:var(--green-ink)}
+    .model .side h2{margin:14px 0 12px;font-size:var(--t-body);line-height:1.15;letter-spacing:-.015em}
+    .model .side p{font:400 var(--t-small)/1.35 var(--body);color:var(--muted)}
+    /* How each side pays, at the foot of its card, so both cards end on the same line. */
+    .model .side p.pay{margin-top:auto;padding-top:14px;border-top:1px solid var(--line-strong);font:700 var(--t-small)/1.2 var(--display);letter-spacing:-.01em;color:var(--green-ink)}
+    .model .side h2+p.pay{margin-top:auto}
+    .model .side p:not(.pay){margin-bottom:16px}
+    /* The hub: slide 04's dotted line runs through VIVERI's tangerine dot. It draws in with the user's side. */
+    .hub{grid-area:hub;align-self:center;position:relative;height:18px;margin-top:var(--gap-m);background:radial-gradient(circle,var(--green) 0 3.5px,transparent 4.1px) center/18px 18px repeat-x;clip-path:inset(0 100% 0 0);transition:clip-path var(--hide) var(--ease-in)}
+    .hub i{position:absolute;left:50%;top:50%;width:18px;height:18px;border-radius:50%;background:var(--orange);box-shadow:0 0 0 7px var(--light);transform:translate(-50%,-50%)}
+    .side-you.visible+.hub{clip-path:inset(0 0 0 0);transition:clip-path 1100ms cubic-bezier(.45,0,.25,1) 250ms}
+
     /* ---------- HUD, notes, help, presenter view ---------- */
     #hud{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);display:flex;align-items:center;gap:8px;padding:7px;border:1px solid #ffffff34;border-radius:999px;background:#071d15d9;box-shadow:0 12px 36px #0005;transition:opacity 200ms var(--ease-out);z-index:20}
     #hud.idle{opacity:0}#hud:hover,#hud:focus-within{opacity:1}
@@ -247,6 +264,7 @@
       :root:not(.motion-full) .demo-visible-clock.running::before{animation:none}
       :root:not(.motion-full) .goal-ring,:root:not(.motion-full) .cover-ripple{display:none}
       :root:not(.motion-full) .week-fill{animation:none!important;transition:none!important}
+      :root:not(.motion-full) .hub{transition:opacity 200ms linear!important}
       :root:not(.motion-full) .week-day.weekend .week-fill{transform:scaleX(var(--fill))}
       :root:not(.motion-full) .week-day.weekend{transform:none!important;transition:opacity 200ms linear!important}
       @keyframes gentle-fade{from{opacity:0}to{opacity:1}}
@@ -267,6 +285,7 @@
       .week-day.weekend .week-fill{transform:scaleX(var(--fill))!important}
       .chores-list span::after{transform:none!important;transition:none!important}
       .chores-list span:nth-child(n+3){border-bottom-color:var(--line-strong)!important}
+      .hub{clip-path:none!important;transition:none!important}
       .demo-visible-clock::before{animation:none!important}
       #hud,#notes-panel,#help-panel,#presenter{display:none!important}
     }
@@ -425,11 +444,20 @@ window.VIVERI_SLIDES = [
       .replace('<div class="chores-list fragment stagger">','<div class="chores-list">')
       .replace(/<span>/g,'<span class="fragment">')};
     // Slide 06: new copy approved by the user on 2026-10-18 (was "Menos tiempo. / Menos esfuerzo. / Menos plata."), notes to match.
-    const benefitsNote='Queremos que comer según tus objetivos te deje más tiempo para vos y más ahorro.\nSe los muestro con mi caso.';
+    const benefitsNote='Esas horas que te quedaban después de laburar, queremos devolvértelas. Más tiempo para vos… [clic] y gastando menos.\nSe los muestro con mi caso.';
     const benefits={...window.VIVERI_SLIDES[5],title:'Más tiempo para vos, más ahorro',
       html:'<div class="slide-content benefits"><h1>Más <span>tiempo</span><br><span>para vos.</span><br><span class="fragment">Más <span class="accent">ahorro.</span></span></h1><p>Comer según tus objetivos.</p></div>',
       notes:benefitsNote,n3:benefitsNote,n4:benefitsNote};
-    const slides=[cover,opening,chores,...window.VIVERI_SLIDES.slice(2,5),benefits,...window.VIVERI_SLIDES.slice(6)];
+    // Slide 10: the business model replaces the pilot slide (user's request, 2026-10-18). Supermarkets get aggregated, anonymous demand only.
+    const modelNote='El modelo tiene dos lados.\nPara vos, una suscripción: cada semana tu menú, tu lista y dónde comprar más barato, sin pensarlo.\nPara los supermercados, lo más valioso son los datos. VIVERI ve qué quiere comprar cada persona y en qué súper le conviene. Entonces le podemos decir a un supermercado: tus clientes compran el pollo en otro lado, por este precio; esta promo los trae de vuelta; estos son los clientes que querés atraer y qué buscan. Siempre con datos agregados y anónimos. Cobramos por esos datos y una comisión por cada pedido.\nUn hábito semanal que les sirve a los dos lados. Eso es lo que queremos validar.';
+    const model={title:'Ganan los dos lados',chapter:'EL NEGOCIO',dark:false,
+      html:'<div class="slide-content model"><h1>Ganan los dos lados.</h1>'
+        +'<div class="side side-you fragment"><span class="side-label">PARA VOS</span><h2>Menú, lista y el súper más barato, cada semana.</h2><p class="pay">Paga una suscripción.</p></div>'
+        +'<div class="hub" aria-hidden="true"><i></i></div>'
+        +'<div class="side side-market fragment"><span class="side-label">PARA LOS SUPERMERCADOS</span><h2>Por qué sus clientes compran el pollo en otro súper.</h2><p>Qué productos pierden, contra quién y qué promo los trae de vuelta.</p><p class="pay">Pagan por los datos y por pedido.</p></div>'
+        +'</div>',
+      notes:modelNote,n3:modelNote,n4:modelNote};
+    const slides=[cover,opening,chores,...window.VIVERI_SLIDES.slice(2,5),benefits,...window.VIVERI_SLIDES.slice(6,9),model,window.VIVERI_SLIDES[10]];
     const ripple=d=>`<circle class="cover-ripple" cx="37.88" cy="55.9" r="9.4" style="animation-delay:${d}"/>`;
     cover.html=cover.html.replace('<circle class="goal-ring"',ripple('2.6s')+ripple('5.1s')+ripple('7.6s')+'<circle class="goal-ring"');
     // Content slides keep their numbers 01–11; the cover is 00 / "Portada".

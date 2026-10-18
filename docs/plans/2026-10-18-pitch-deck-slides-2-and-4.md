@@ -18,7 +18,7 @@ As with the cover and the week, changes are applied in the deck code; the approv
 
 ## Added during the work: slide 06 copy
 
-The user asked to reframe slide 06 positively and chose "Más tiempo para vos. / Más ahorro." (was "Menos tiempo. / Menos esfuerzo. / Menos plata."), with the speaker note changed to match: "Queremos que comer según tus objetivos te deje más tiempo para vos y más ahorro. Se los muestro con mi caso." Applied in the deck code like the other overrides. At 120 px the first phrase takes two lines ("Más tiempo" / "para vos.", mint); "Más ahorro." arrives on a click, tangerine on "ahorro.". Slide title: "Más tiempo para vos, más ahorro". [guion-pitch.md](../notes/guion-pitch.md) has no copy of this line, so nothing else changed.
+The user asked to reframe slide 06 positively and chose "Más tiempo para vos. / Más ahorro." (was "Menos tiempo. / Menos esfuerzo. / Menos plata."), with the speaker note the user wrote: "Esas horas que te quedaban después de laburar, queremos devolvértelas. Más tiempo para vos… [clic] y gastando menos. Se los muestro con mi caso." Applied in the deck code like the other overrides. At 120 px the first phrase takes two lines ("Más tiempo" / "para vos.", mint); "Más ahorro." arrives on a click, tangerine on "ahorro.". Slide title: "Más tiempo para vos, más ahorro". [guion-pitch.md](../notes/guion-pitch.md) has no copy of this line, so nothing else changed.
 
 ## Steps
 
