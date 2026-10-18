@@ -1,6 +1,6 @@
 # 0016. Price catalog: one row per product per chain
 
-- Status: Accepted
+- Status: Accepted (size merge rule superseded by 0023)
 - Date: 2026-10-17
 
 ## Context

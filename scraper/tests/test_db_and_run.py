@@ -70,6 +70,12 @@ class SkusTest(unittest.TestCase):
         s = FakeSession(pages=[[{"id": 1, "store_sku": "a"}], [{"id": 5, "store_sku": "b"}]])
         self.assertEqual(Supabase("https://x.supabase.co", "k", s).skus("devoto"), {"a", "b"})
         self.assertEqual([kw["params"]["id"] for _, _, kw in s.calls], ["gt.0", "gt.1", "gt.5"])
+        self.assertNotIn("read_from", s.calls[0][2]["params"])
+
+    def test_only_rows_read_from_a_source(self):
+        s = FakeSession()
+        Supabase("https://x.supabase.co", "k", s).skus("disco", "category_page")
+        self.assertEqual(s.calls[0][2]["params"]["read_from"], "eq.category_page")
 
 
 class StoreRunTest(unittest.TestCase):

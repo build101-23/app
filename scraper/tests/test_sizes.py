@@ -1,7 +1,7 @@
 import unittest
 
 from scraper.rows import make_row
-from scraper.sizes import gtin13, parse_size, size_fields, size_from_unit, valid_gtin
+from scraper.sizes import fix_mojibake, gtin13, parse_size, priced_per_kg, size_fields, size_from_unit, valid_gtin
 
 
 class ParseSizeTest(unittest.TestCase):
@@ -41,6 +41,15 @@ class SizeFromUnitTest(unittest.TestCase):
         self.assertEqual((s["base_qty"], s["base_unit"]), (1000, "g"))
         self.assertEqual(size_from_unit("kg", 0.5)["base_qty"], 500)
 
+    def test_over_one_kg_the_price_is_per_kg(self):
+        s = size_from_unit("kg", 1.4)
+        self.assertEqual((s["base_qty"], s["base_unit"], s["size_qty"], s["size_unit"]), (1000, "g", 1.4, "kg"))
+
+    def test_priced_per_kg(self):
+        self.assertEqual((priced_per_kg(250)["size_qty"], priced_per_kg(250)["size_unit"]), (250, "g"))
+        self.assertEqual((priced_per_kg(1500)["size_qty"], priced_per_kg(1500)["size_unit"]), (1.5, "kg"))
+        self.assertEqual(priced_per_kg(1500)["base_qty"], 1000)
+
     def test_units_say_nothing(self):
         self.assertIsNone(size_from_unit("un", 1))
         self.assertIsNone(size_from_unit(None, None))
@@ -79,3 +88,14 @@ class RowTest(unittest.TestCase):
     def test_unknown_field_is_rejected(self):
         with self.assertRaises(ValueError):
             make_row(store_key="tata", image="x")
+
+
+class MojibakeTest(unittest.TestCase):
+    def test_repairs_utf8_read_as_latin1(self):
+        self.assertEqual(fix_mojibake("VacÃ\xado"), "Vacío")
+        self.assertEqual(fix_mojibake("CaÃ±uelas"), "Cañuelas")
+        self.assertEqual(fix_mojibake("LimÃ³n"), "Limón")
+
+    def test_leaves_good_text_alone(self):
+        for s in ("Vacío", "SÃO PAULO", "Arroz", "", None):
+            self.assertEqual(fix_mojibake(s), s)

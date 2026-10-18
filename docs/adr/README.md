@@ -19,13 +19,14 @@ One file per decision: `NNNN-short-title.md`. ADRs are append-only: never rewrit
 | 0013 | [Weekly menu saved by a chat tool, keyed to a fixed food catalog](0013-menu-saved-by-a-chat-tool.md) | Accepted (confirm step removed by 0022) | 2026-10-17 |
 | 0014 | [The client only reads; the chat function writes, under a daily cap](0014-client-reads-chat-function-writes.md) | Accepted (`menus.confirmed_at` write gone with 0022) | 2026-10-17 |
 | 0015 | [The price scraper is a Python job with a time budget](0015-price-scraper-python-job-with-time-budget.md) | Accepted (coverage and write path superseded by 0018) | 2026-10-17 |
-| 0016 | [Price catalog: one row per product per chain](0016-price-catalog-one-row-per-product-per-chain.md) | Accepted | 2026-10-17 |
+| 0016 | [Price catalog: one row per product per chain](0016-price-catalog-one-row-per-product-per-chain.md) | Accepted (size merge rule superseded by 0023) | 2026-10-17 |
 | 0017 | [The shopping list is derived in the browser; only what you have is stored](0017-shopping-list-derived-in-the-browser.md) | Accepted (marks reach the chat model as numbers: 0022) | 2026-10-17 |
-| 0018 | [The scraper reads GDU through listings and a few food pages](0018-gdu-listings-and-food-pages.md) | Accepted | 2026-10-17 |
+| 0018 | [The scraper reads GDU through listings and a few food pages](0018-gdu-listings-and-food-pages.md) | Accepted (food phase picks changed by 0023) | 2026-10-17 |
 | 0019 | [Example prices bundled with the app until real prices are matched](0019-example-prices-until-matched.md) | Accepted | 2026-10-17 |
 | 0020 | [CI on Tenki runners](0020-ci-on-tenki-runners.md) | Accepted | 2026-10-17 |
 | 0021 | [The numbers switch lives in the profile; macros come from a fixed table](0021-numbers-switch-in-the-profile.md) | Accepted | 2026-10-17 |
 | 0022 | [The shopping list follows the menu, and shows in the chat](0022-list-follows-the-menu.md) | Accepted | 2026-10-17 |
+| 0023 | [Scraper prices for the unit of sale](0023-scraper-prices-for-the-unit-of-sale.md) | Accepted | 2026-10-17 |
 
 ## Template
 

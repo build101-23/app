@@ -17,6 +17,19 @@ def norm_text(s: str | None) -> str:
     return re.sub(r"\s+", " ", s).strip()
 
 
+def fix_mojibake(s: str | None) -> str | None:
+    """UTF-8 text that was decoded as Latin-1 somewhere upstream: "VacÃ­o" -> "Vacío". Text that isn't
+    stays as it is."""
+    if not s or "Ã" not in s:
+        return s
+    for encoding in ("latin-1", "cp1252"):
+        try:
+            return s.encode(encoding).decode("utf-8")
+        except (UnicodeEncodeError, UnicodeDecodeError):
+            continue
+    return s
+
+
 # ---------------------------------------------------------------- EAN / GTIN
 
 
@@ -104,14 +117,24 @@ _VTEX_UNITS = {"kg": ("g", 1000), "g": ("g", 1), "l": ("ml", 1000), "lt": ("ml",
 def size_from_unit(measurement_unit: str | None, multiplier: float | None) -> dict | None:
     """Size of a product sold by weight or volume, from VTEX's measurementUnit and unitMultiplier.
 
-    One unit of the SKU is `multiplier` × `measurement_unit`, and its price is for that amount.
+    One unit of the SKU, what goes in the cart, is `multiplier` × `measurement_unit`. Its price is for
+    that amount, except in kg over 1 kg: then the price is per kg (Ta-Ta's 1.4 kg pork loin at $199).
     Units ("un") say nothing about the content, so they give no size.
     """
     unit = (measurement_unit or "").strip().lower()
     if unit not in _VTEX_UNITS or not multiplier or multiplier <= 0:
         return None
+    if unit == "kg" and multiplier > 1:
+        return priced_per_kg(multiplier * 1000)
     base_unit, factor = _VTEX_UNITS[unit]
     return _size(float(multiplier), unit, 1, base_unit, multiplier * factor)
+
+
+def priced_per_kg(sale_g: float) -> dict:
+    """Size of an item whose price is per kg, and whose unit of sale (what goes in the cart) weighs
+    `sale_g` grams: base 1000 g, unit of sale in kg from 1 kg up, else in g."""
+    qty, unit = (round(sale_g / 1000, 3), "kg") if sale_g >= 1000 else (round(sale_g, 3), "g")
+    return _size(qty, unit, 1, "g", 1000.0)
 
 
 def _size(qty, unit, pack_count, base_unit, base_qty) -> dict:

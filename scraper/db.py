@@ -82,15 +82,16 @@ class Supabase:
         return saved
 
 
-    def skus(self, store_key: str) -> set[str]:
-        """The ids of every product saved for a chain."""
+    def skus(self, store_key: str, read_from: str | None = None) -> set[str]:
+        """The ids of every product saved for a chain, or only those last read from `read_from`."""
         out: set[str] = set()
         last = 0
         while True:
-            page = self._call("GET", "store_products", params={
-                "select": "id,store_sku", "store_key": f"eq.{store_key}", "id": f"gt.{last}", "order": "id",
-                "limit": PAGE_SIZE,
-            }).json()
+            params = {"select": "id,store_sku", "store_key": f"eq.{store_key}", "id": f"gt.{last}", "order": "id",
+                      "limit": PAGE_SIZE}
+            if read_from:
+                params["read_from"] = f"eq.{read_from}"
+            page = self._call("GET", "store_products", params=params).json()
             if not page:
                 return out
             out.update(p["store_sku"] for p in page)
@@ -137,7 +138,7 @@ class DryRun:
         return len(rows)
 
 
-    def skus(self, store_key: str) -> set[str]:
+    def skus(self, store_key: str, read_from: str | None = None) -> set[str]:
         return set()
 
     def count(self, store_key: str) -> int:

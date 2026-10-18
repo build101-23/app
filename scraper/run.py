@@ -5,6 +5,7 @@
   1. categories: the top products of every supermarket category, 12 per request;
   2. brands: the page of every brand seen in phase 1, the same list at the three chains;
   3. food: product pages for foods the listings miss, a few per food, one request every 2 seconds.
+     Pages read by an earlier food phase are read again, so their prices stay current (ADR 0023).
 - The three GDU sites share one platform: when one of them blocks us, the other two stop as well
   (ADR 0008).
 """
@@ -251,8 +252,9 @@ def read_brand_pages(sr: StoreRun, shared: GduPass, limit: int | None) -> None:
 
 
 def read_food_pages(sr: StoreRun, shared: GduPass, limit: int | None) -> None:
-    """Phase 3: product pages for foods the listings miss (gdu.FOOD_TERMS), skipping what's saved."""
-    queue = gdu.food_candidates(shared.sitemap, sr.sink.skus(sr.store_key) | sr.skus)
+    """Phase 3: product pages for foods the listings miss (gdu.FOOD_TERMS), skipping what the listings
+    read, in this run or before."""
+    queue = gdu.food_candidates(shared.sitemap, sr.sink.skus(sr.store_key, "category_page") | sr.skus)
     sr.stats["food_candidates"] = len(queue)
     sr.session.delay_s = FOOD_PAGE_DELAY_S
     base = gdu.STORES[sr.store_key]
