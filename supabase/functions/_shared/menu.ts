@@ -1,4 +1,5 @@
-// The menu the chat's save_menu tool writes and the Menu tab reads: one to seven days (ADR 0024).
+// The menu the chat's save_menu tool writes and the Menu tab reads: one to seven days, in calendar order (ADR 0024,
+// ADR 0028).
 // Plain TS shared by the chat function and the web app, so no Deno or DOM globals here.
 import { catalog, type CatalogKey, type Unit } from './catalog.ts'
 import type { StoreKey } from './stores.ts'
@@ -95,9 +96,15 @@ export function menuProblems(menu: MenuData): string[] {
     }
   }
   if (!menu.days.length) problems.push('The menu needs at least one day.')
-  for (const day of days) {
-    if (menu.days.filter((entry) => entry.day === day).length > 1) problems.push(`${day} appears more than once.`)
-  }
+  // Each day comes after the one before, counting from the first: sunday then monday, gaps fine, never twice.
+  const first = days.indexOf(menu.days[0]?.day)
+  const after = (day: Day) => (days.indexOf(day) - first + days.length) % days.length
+  menu.days.forEach(({ day }, i) => {
+    const before = menu.days[i - 1]?.day
+    if (before && after(day) <= after(before)) {
+      problems.push(`Day ${i + 1} (${day}) must come after ${before}: days go in order from the first one, sunday then monday, each once.`)
+    }
+  })
   if (menu.budget != null && !(menu.budget > 0)) problems.push('budget must be null or above 0.')
   for (const [i, pick] of (menu.products ?? []).entries()) problems.push(...foodProblems(pick, `Product ${i + 1}`))
   return problems

@@ -1,13 +1,11 @@
 import { useEffect, useState } from 'react'
-import { days as order, type MenuData } from '../supabase/functions/_shared/menu.ts'
+import type { MenuData } from '../supabase/functions/_shared/menu.ts'
 import { addMacros } from '../supabase/functions/_shared/nutrition.ts'
 import { supabase } from './supabase'
 import { t } from './strings'
 import { Alert, EmptyState, PageSkeleton } from './ui'
 
 type MenuRow = { data: MenuData }
-
-const byDay = (days: MenuData['days']) => [...days].sort((a, b) => order.indexOf(a.day) - order.indexOf(b.day))
 
 // "520 kcal · 35 g prote · 60 g carbos · 15 g grasa (sin contar espinaca)", for the numbers switch.
 function macrosLine({ kcal, protein, carbs, fat, missing }: ReturnType<typeof addMacros>) {
@@ -16,13 +14,14 @@ function macrosLine({ kcal, protein, carbs, fat, missing }: ReturnType<typeof ad
   return missing.length ? `${line} (${t.menu.without([...new Set(missing)].join(', '))})` : line
 }
 
-// The week as a save_menu call saved it, shown in the chat under that reply.
+// The menu as a save_menu call saved it, shown in the chat under that reply. Here and in the tab, days keep their
+// saved order: a menu can start on any day (ADR 0028).
 export function MenuPreview({ menu, busy, onOpen }: { menu: MenuData; busy: boolean; onOpen: () => void }) {
   const names = new Map(menu.recipes.map((recipe) => [recipe.id, recipe.name]))
   return (
     <div className="bubble assistant menu-preview">
       <ul>
-        {byDay(menu.days).map(({ day, meals }) => (
+        {menu.days.map(({ day, meals }) => (
           <li key={day}>
             <strong>{t.menu.days[day]}</strong>
             {meals.map((meal) => names.get(meal.recipe_id)).join(' · ')}
@@ -70,11 +69,10 @@ export default function Menu({ onChange }: { onChange: (draft: string) => void }
   }
 
   const recipes = new Map(menu.data.recipes.map((recipe) => [recipe.id, recipe]))
-  const days = byDay(menu.data.days)
 
   return (
     <div className="page menu">
-      {days.map(({ day, meals }) => (
+      {menu.data.days.map(({ day, meals }) => (
         <section key={day}>
           <div className="menu-day">
             <h2>{t.menu.days[day]}</h2>

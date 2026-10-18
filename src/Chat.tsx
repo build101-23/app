@@ -5,7 +5,7 @@ import { supabase } from './supabase'
 import { t } from './strings'
 import { MenuPreview } from './Menu'
 import { ListPreview, type MenuRow } from './List'
-import { Alert, AlertIcon, Mark, SendIcon } from './ui'
+import { Alert, AlertIcon, ChatsIcon, Mark, PlusIcon, SendIcon } from './ui'
 
 type Role = 'user' | 'assistant'
 // turn: counts the user's messages, so a turn's cards can be found. saved: a menu card from a save_menu call.
@@ -43,7 +43,7 @@ declare global {
 const Recognition = window.SpeechRecognition ?? window.webkitSpeechRecognition
 
 // Shows text, plus a preview after each save_menu call that saved and the turn's first show_menu call, and the list
-// card. Thinking, other tool calls, tool results and the server's profile and menu copies stay hidden.
+// card. Thinking, other tool calls, tool results and the server's profile, menu and date blocks stay hidden.
 function toBubbles(rows: Row[]): Bubble[] {
   const saved = new Set(
     rows
@@ -57,7 +57,7 @@ function toBubbles(rows: Row[]): Bubble[] {
   let turn = 0
   const bubbles = rows.flatMap((row) => {
     const text = row.content
-      .filter((block) => block.type === 'text' && !block.text?.startsWith('<saved_'))
+      .filter((block) => block.type === 'text' && !block.text?.startsWith('<saved_') && !block.text?.startsWith('<today>'))
       .map((block) => block.text)
       .join('\n')
     if (row.role === 'user' && text) {
@@ -122,8 +122,9 @@ export default function Chat({
   const [loadFailed, setLoadFailed] = useState(false)
   // The last read of the chats list failed; the list view says so and can read it again.
   const [listFailed, setListFailed] = useState(false)
-  // While a reply streams: the visible status line.
+  // While a reply streams: the visible status line, and the step the chat function last reported.
   const [streaming, setStreaming] = useState(false)
+  const [step, setStep] = useState('')
   const [error, setError] = useState('')
   const [listening, setListening] = useState(false)
   const root = useRef<HTMLDivElement>(null)
@@ -277,6 +278,7 @@ export default function Chat({
     }
     setBusy(true)
     setStreaming(true)
+    setStep('')
     onBusy(true)
     setError('')
     setLoadFailed(false)
@@ -313,13 +315,22 @@ export default function Chat({
       })
       if (res.status === 429) failure = t.chat.limit
       if (!res.ok || !res.body) throw new Error(`chat failed: ${res.status}`)
+      // One JSON object per line, text or step (ADR 0029). A chunk can end mid-line: the rest waits for the next.
       const reader = res.body.pipeThrough(new TextDecoderStream()).getReader()
       let reply = ''
+      let rest = ''
       for (;;) {
         const { done, value } = await reader.read()
         if (done) break
-        reply += value
-        setReply(reply)
+        const lines = (rest + value).split('\n')
+        rest = lines.pop() ?? ''
+        for (const line of lines) {
+          const event: { text?: string; step?: string } = JSON.parse(line)
+          if (event.step) setStep(event.step)
+          if (!event.text) continue
+          reply += event.text
+          setReply(reply)
+        }
       }
       setStreaming(false)
       if (!reply) setReply(t.chat.noReply)
@@ -345,16 +356,23 @@ export default function Chat({
     submit(draft.trim())
   }
 
-  const waiting = streaming && bubbles.at(-1)?.text === ''
+  const status = streaming ? (t.chat.steps[step] ?? t.chat.waiting) : ''
 
   return (
     <div className="chat" ref={root}>
       <div className="chat-bar">
-        <button type="button" className="link" disabled={busy} onClick={() => setShowList(!showList)}>
-          {showList ? t.chat.back : t.chat.chats}
+        <button
+          type="button"
+          // A toggle keeps its name; aria-pressed says whether the list is open.
+          aria-label={t.chat.chats}
+          aria-pressed={showList}
+          disabled={busy}
+          onClick={() => setShowList(!showList)}
+        >
+          <ChatsIcon />
         </button>
-        <button type="button" className="link" disabled={busy} onClick={newChat}>
-          {t.chat.newChat}
+        <button type="button" aria-label={t.chat.newChat} disabled={busy} onClick={newChat}>
+          <PlusIcon />
         </button>
       </div>
       {showList ? (
@@ -442,9 +460,9 @@ export default function Chat({
               </p>
             ),
           )}
-          {/* Always mounted, so screen readers announce each change of its text. */}
+          {/* Always mounted, so screen readers announce each change of its text. Keyed, so each step fades in. */}
           <p className="chat-status" role="status">
-            {streaming ? (waiting ? t.chat.waiting : t.chat.typing) : ''}
+            {status && <span key={status}>{status}</span>}
           </p>
           {error && <Alert text={error} />}
           <div ref={end} />

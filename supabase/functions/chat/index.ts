@@ -16,7 +16,7 @@ import {
   type SearchRow,
 } from '../_shared/products.ts'
 import { stores } from '../_shared/stores.ts'
-import { MENU_TAG, PROFILE_TAG, SYSTEM_PROMPT } from './prompt.ts'
+import { MENU_TAG, PROFILE_TAG, SYSTEM_PROMPT, TODAY_TAG } from './prompt.ts'
 
 type MessageParam = Anthropic.Beta.BetaMessageParam
 
@@ -87,11 +87,11 @@ const object = (properties: Record<string, unknown>) => ({
 // A few recipes that repeat, referenced by id from the days, and the product picked for each food at each store from
 // search_products (ADR 0024). Recipes come first so they're written before the days that point at them. Not strict:
 // with the products its grammar went over the API's cap (400). menuShapeProblems checks the shape, menuProblems the
-// ids, units and days (../_shared/menu.ts), productProblems the skus (../_shared/products.ts).
+// ids, units and days' order (../_shared/menu.ts), productProblems the skus (../_shared/products.ts).
 const saveMenu: Anthropic.Beta.BetaTool = {
   name: 'save_menu',
   description:
-    "Save the user's menu: the days they asked for (1 to 7), the recipes, the budget and the products picked from search_products. Each call replaces the saved menu, so always send all of it. The answer gives the real price of the shopping list.",
+    "Save the user's menu: the days they asked for (1 to 7, a week unless they asked for fewer), the recipes, the budget and the products picked from search_products. Each call replaces the saved menu, so always send all of it. The answer gives the real price of the shopping list.",
   input_schema: object({
     recipes: {
       type: 'array',
@@ -124,7 +124,8 @@ const saveMenu: Anthropic.Beta.BetaTool = {
     },
     days: {
       type: 'array',
-      description: 'Each day once, only the days the user asked for; the whole week if they did not say.',
+      description:
+        'In calendar order from the first day, each once (saturday, sunday, monday); only the days the user asked for, a week if they did not say.',
       items: object({
         day: { type: 'string', enum: [...days] },
         meals: { type: 'array', items: object({ slot: { type: 'string' }, recipe_id: { type: 'string' } }) },
@@ -161,14 +162,14 @@ const searchProducts: Anthropic.Beta.BetaTool = {
 }
 
 // Partial on purpose: only the foods sent change, so marks made in the List tab meanwhile stay.
-// Strict can't check that a food is on this week's list: runTool does.
+// Strict can't check that a food is on the list: runTool does.
 const updateShoppingList: Anthropic.Beta.BetaTool = {
   name: 'update_shopping_list',
   description:
     "Record what the user already has at home, so the shopping list buys less, and show the updated list as a card in the chat. Only the foods sent change. Send each food exactly as the saved menu has it: food, unit and other_name.",
   strict: true,
   input_schema: object({
-    reset: { type: 'boolean', description: 'true clears every earlier mark first, for a new week.' },
+    reset: { type: 'boolean', description: 'true clears every earlier mark first, for a new round of shopping.' },
     items: {
       type: 'array',
       items: object({
@@ -185,10 +186,10 @@ const updateShoppingList: Anthropic.Beta.BetaTool = {
   }),
 }
 
-// Writes nothing: the web app shows the saved week as a card under the call.
+// Writes nothing: the web app shows the saved menu as a card under the call.
 const showMenu: Anthropic.Beta.BetaTool = {
   name: 'show_menu',
-  description: "Show the user's saved weekly menu as a card in the chat.",
+  description: "Show the user's saved menu as a card in the chat.",
   strict: true,
   input_schema: object({}),
 }
@@ -197,7 +198,7 @@ const showMenu: Anthropic.Beta.BetaTool = {
 const showShoppingList: Anthropic.Beta.BetaTool = {
   name: 'show_shopping_list',
   description:
-    "Show the user's shopping list (the saved menu added up, minus what they have at home), with its total, as a card in the chat.",
+    "Show the user's shopping list (the saved menu added up, minus what they have at home), with its total and what it comes to per day, as a card in the chat.",
   strict: true,
   input_schema: object({}),
 }
@@ -246,8 +247,8 @@ Deno.serve(async (req) => {
   ])
   if (error) return json(500, { error: error.message })
 
-  // The profile and the menu can change in another chat. Each is shown again whenever it differs from
-  // the last copy this chat saw, so a save never overwrites newer data with a stale view.
+  // The profile and the menu can change in another chat, and the date overnight. Each is shown again whenever it
+  // differs from the last copy this chat saw, so a save never overwrites newer data with a stale view.
   const seen = history
     .flatMap((row: MessageParam) => (typeof row.content === 'string' ? [] : row.content))
     .flatMap((block) => (block.type === 'text' ? [block.text] : []))
@@ -260,6 +261,17 @@ Deno.serve(async (req) => {
   if (menuText && menuText !== seen.findLast((t) => t.startsWith(MENU_TAG))) {
     content.push({ type: 'text', text: menuText })
   }
+  // Today in Montevideo (the app's only city), so a menu can start tomorrow and name its days. Here, not in the
+  // system prompt, which stays the same for every request so it caches.
+  const today = new Date().toLocaleDateString('en-US', {
+    timeZone: 'America/Montevideo',
+    weekday: 'long',
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+  })
+  const todayText = `${TODAY_TAG}${today}</today>`
+  if (todayText !== seen.findLast((t) => t.startsWith(TODAY_TAG))) content.push({ type: 'text', text: todayText })
   content.push({ type: 'text', text })
 
   const messages: MessageParam[] = history
@@ -351,7 +363,7 @@ Deno.serve(async (req) => {
         if (item.have !== null && !(item.have >= 0)) return [`${where}: have must be null, 0 or more.`]
         if (onList.has(itemId(item.food, item.other_name, item.unit))) return []
         return [
-          `${where}: ${item.other_name ?? item.food} in ${item.unit} is not on this week's list. If the menu has it, use the food, unit and other_name exactly as in <saved_menu>. If not, leave it out, send the rest again and tell the user in a few words.`,
+          `${where}: ${item.other_name ?? item.food} in ${item.unit} is not on the list. If the menu has it, use the food, unit and other_name exactly as in <saved_menu>. If not, leave it out, send the rest again and tell the user in a few words.`,
         ]
       })
       if (problems.length) return { problem: `Not saved. Fix this and call update_shopping_list again:\n${problems.join('\n')}` }
@@ -380,21 +392,23 @@ Deno.serve(async (req) => {
     if (error) return `\nCould not read the list: ${error.message}`
     if (!row) return ''
     const intro =
-      "The list card with the total is in the chat. Don't write the list. The list now (week: what the menu uses; have: at home; buy: what the card buys):"
+      "The list card, with the total and what it comes to per day, is in the chat. Don't write the list. The list now (menu: what the menu uses; have: at home; buy: what the card buys):"
     return `\n${await priceText(row.data, row.have)}\n${intro}\n${listLines(row.data, row.have)}`
   }
 
   const encoder = new TextEncoder()
   const stream = new ReadableStream({
     async start(controller) {
+      // One JSON object per line: the reply's text, or the step the status line shows (ADR 0029).
+      const send = (event: { text: string } | { step: string }) =>
+        controller.enqueue(encoder.encode(`${JSON.stringify(event)}\n`))
       // Separates the text before and after a tool call, which are separate bubbles once reloaded.
       let wrote = false
       let breakBeforeNext = false
       const write = (delta: string) => {
-        if (breakBeforeNext) controller.enqueue(encoder.encode('\n\n'))
+        send({ text: breakBeforeNext ? `\n\n${delta}` : delta })
         breakBeforeNext = false
         wrote = true
-        controller.enqueue(encoder.encode(delta))
       }
 
       // The function stops at 150 s and a cut-off turn stores nothing, so late rounds go without tools (ADR 0024).
@@ -419,6 +433,12 @@ Deno.serve(async (req) => {
             betas: ['server-side-fallback-2026-07-01', 'thinking-binding-controls-2026-08-01'],
           })
           reply.on('text', write)
+          // The tool being called, writing, or thinking: each block says which as it starts.
+          reply.on('streamEvent', (event) => {
+            if (event.type !== 'content_block_start') return
+            const block = event.content_block
+            send({ step: block.type === 'tool_use' ? block.name : block.type === 'text' ? 'typing' : 'thinking' })
+          })
           const message = await reply.finalMessage()
           breakBeforeNext = wrote
           // Cost and time per round, in the function's logs.
@@ -485,5 +505,5 @@ Deno.serve(async (req) => {
     },
   })
 
-  return new Response(stream, { headers: { ...cors, 'Content-Type': 'text/plain; charset=utf-8' } })
+  return new Response(stream, { headers: { ...cors, 'Content-Type': 'application/x-ndjson; charset=utf-8' } })
 })

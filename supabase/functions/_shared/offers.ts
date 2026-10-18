@@ -55,6 +55,8 @@ export type Pricing = {
   splitFits: boolean
   // The oldest checked_at among the products used.
   checkedAt: string | null
+  // The menu's days, for the cost per day.
+  days: number
 }
 
 export function pricing(menu: MenuData, have: Have, rows: ProductRow[]): Pricing {
@@ -71,7 +73,8 @@ export function pricing(menu: MenuData, have: Have, rows: ProductRow[]): Pricing
   )
   const dates = rows.filter((row) => used.has(rowKey(row.store_key, row.store_sku))).map((row) => row.checked_at)
   const status = !menu.products ? 'old' : needs.length > plan.notFound.length ? 'ok' : 'none'
-  return { status, items, needs, prices, plan, base, budget, over, splitFits, checkedAt: dates.sort()[0] ?? null }
+  const checkedAt = dates.sort()[0] ?? null
+  return { status, items, needs, prices, plan, base, budget, over, splitFits, checkedAt, days: menu.days.length }
 }
 
 const pesos = (n: number) => `$${Math.round(n)}`
@@ -86,6 +89,8 @@ export function verdict(p: Pricing): string {
   const parts: string[] = []
   if (base) parts.push(`Cheapest: ${optionText(base)}${plan.single && plan.split ? `; or split ${optionText(plan.split)}` : ''}.`)
   else parts.push('No one store or pair has the whole list.')
+  // What the screen shows under the total (ADR 0028); a one-day menu's total already is that.
+  if (base && p.days > 1) parts.push(`Per day (${p.days} days): ${pesos(base.total / p.days)}.`)
   parts.push(`Per store: ${plan.perStore.map((s) => `${s.store} ${pesos(s.total)}${s.missing ? ` (${s.missing} missing)` : ''}`).join(', ')}.`)
   if (plan.notFound.length) parts.push(`Not priced: ${plan.notFound.join(', ')}.`)
   if (p.over != null) {

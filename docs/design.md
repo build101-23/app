@@ -276,7 +276,7 @@ A green-tinted neutral ground, the icon's deep green for the user's words and ac
   - The dock sits `max(12px, bottom inset)` above the bottom edge and 12px plus the side insets from each side.
 - **Keyboard:**
   - On touch screens (`pointer: coarse`, at any width), the dock is hidden only while the on-screen keyboard is up *and* focus is in the composer, so the keyboard doesn't stack on it. The composer accessory then drops to 8px above the keyboard. With a mouse or trackpad the rule never applies, so shrinking a desktop window never hides the dock.
-  - `useKeyboardOpen` in `src/App.tsx` reads the visual viewport (ignoring zoom, resetting on rotation) and sets `data-keyboard="open"` on the shell.
+  - `useKeyboardOpen` in `src/App.tsx` reads the visual viewport (ignoring zoom, resetting on rotation, and taking a height change without a touch screen (`pointer: coarse`) or a focused text field as the window resizing, not the keyboard) and sets `data-keyboard="open"` on the shell.
   - When the keyboard goes down, the dock comes back even if the composer keeps focus.
   - The send button keeps focus in the textarea on tap, so the keyboard stays up and nothing shifts under the finger.
 
@@ -340,14 +340,15 @@ A 44px tangerine circle with a white up arrow. Disabled: sunk surface with a mut
   - They are surface cards (16px radius, 1px line) in a 2 × 2 grid, sitting low near the composer, and tapping one sends its text as your message.
   - They only promise what the chat does today (a plan and its menu, your restrictions, your time) and never savings, real prices or calories.
 - **Status line:**
-  - While a reply is pending, a muted caption line under the last bubble says "Armando la respuesta…"; once words arrive, it says "Escribiendo…".
+  - While a reply is pending, a caption line under the last bubble says what the chat is doing: "Armando la respuesta…" until the chat function reports a step, then that step: thinking, writing, or the tool it's calling ("Buscando los mejores precios…"). Labels: `t.chat.steps` in [`src/strings.ts`](../src/strings.ts) ([ADR 0029](adr/0029-chat-streams-its-steps.md)).
+  - Each new step fades in, and a band of ink sweeps across the muted words (`shimmer`), as other AI chats do. Never lighter than the muted caption.
   - It disappears when the reply stops streaming (the turn may still be saving), and is a `role="status"` region.
   - The waiting bubble still shows the animated mark.
-- **Chat bar:** above the conversation, on the ground and aligned to the content column: "Chats" (or "Volver") on the left, "Nuevo chat" on the right, both green-ink links. Disabled while a turn is saving.
+- **Chat bar:** above the conversation, on the ground and aligned to the content column: a chats icon (two bubbles) on the left that opens and closes the list of chats, tinted while the list is open, and a + on the right for a new chat. Both are 44px round green-ink icon buttons, named "Chats" and "Nuevo chat" for screen readers, and muted while a turn is saving.
 - **Chats list:** replaces the conversation when open. Rows of title and date, 48px tall, hairlines between them; the open chat is at weight 650. It keeps the same clearance as the messages. If the list can't be read, it says so with a "Reintentar" of its own; a conversation that can't open shows its alert in the conversation.
 - **Scroll padding:** the page area, the messages and the chats list also pad their top by 8px when scrolling to a focused control, so its focus ring isn't cut under the top bar.
-- **Menu card:** when the chat saves or shows the week, it appears under that reply as an assistant bubble with the days and their meals, and a secondary "Ver menú" button. Each successful save adds one; a turn that only shows the week adds at most one, and none after a save in that turn (rules in [architecture.md](architecture.md#data-flow)).
-- **List card:** when the chat shows or changes the list, an assistant bubble under the reply with what's left to buy by section (as shared), the total where to buy it in 650 weight, the budget line when there's a budget, a muted note with how many products weren't found and the prices' date, and a secondary "Ver lista" button. Until the prices are read, or when they can't be, one muted line says so. It's drawn live from the saved menu, so only the latest one shows ([ADR 0022](adr/0022-list-follows-the-menu.md)).
+- **Menu card:** when the chat saves or shows the menu, it appears under that reply as an assistant bubble with its days in saved order and their meals, and a secondary "Ver menú" button. Each successful save adds one; a turn that only shows the menu adds at most one, and none after a save in that turn (rules in [architecture.md](architecture.md#data-flow)).
+- **List card:** when the chat shows or changes the list, an assistant bubble under the reply with what's left to buy by section (as shared), the total where to buy it in 650 weight, what it comes to per day under it in plain ink, the budget line when there's a budget, a muted note with how many products weren't found and the prices' date, and a secondary "Ver lista" button. Until the prices are read, or when they can't be, one muted line says so. It's drawn live from the saved menu, so only the latest one shows ([ADR 0022](adr/0022-list-follows-the-menu.md)).
 - **Voice:** where the browser has speech recognition, a 44px microphone circle sits between the field and send, in ink. While listening it fills with the primary color and pulses slowly; tangerine stays on send.
 
 ### Menu
@@ -360,6 +361,7 @@ A 44px tangerine circle with a white up arrow. Disabled: sunk surface with a mut
 ### List
 - A page. On top, when the list is priced from the products the chat picked ([ADR 0024](adr/0024-agent-builds-the-menu-from-real-products.md)), a flat card "Dónde comprar":
   - the recommended store or split (radio buttons when there's a choice);
+  - what the chosen total comes to per day of the menu, for menus of 2 days or more;
   - the budget line, in plain ink, when the menu has a budget: it fits, or what's missing and whether a split fits. Over budget is announced, but it isn't an error, so it doesn't use the alert;
   - the saving, the total per store, and the muted note with the date the prices were read.
 - While the prices load, or for a menu saved before real products, the card holds one muted line instead. If they can't be read, the inline alert takes its place.
@@ -431,9 +433,10 @@ Drawn for this app on a 24px grid: 1.75px round strokes, `currentColor` (the sen
 | `rise-in` | 160ms, 6px | a new bubble arriving |
 | `dot-in` | 180ms scale | the active-tab dot |
 | `converge` | 1.2s loop | the mark while waiting |
+| `shimmer` | 1.8s loop | the chat's status line |
 | `pulse` | 1.4s loop (1.2s on the microphone) | skeletons, listening |
 
-`prefers-reduced-motion: reduce` turns every animation and transition off; the mark then shows all seven dots, static.
+`prefers-reduced-motion: reduce` turns every animation and transition off; the mark then shows all seven dots, static, and the status line is plain muted text.
 
 ## Do's and Don'ts
 

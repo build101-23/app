@@ -3,7 +3,7 @@
 // imports this file. Scenarios come from the query string; see docs/development.md.
 import type { Session } from '@supabase/supabase-js'
 import type { Unit } from '../../supabase/functions/_shared/catalog.ts'
-import type { Ingredient, MenuData } from '../../supabase/functions/_shared/menu.ts'
+import type { Day, Ingredient, MenuData } from '../../supabase/functions/_shared/menu.ts'
 import type { ProductRow } from '../../supabase/functions/_shared/products.ts'
 import { stores, type StoreKey } from '../../supabase/functions/_shared/stores.ts'
 
@@ -30,6 +30,12 @@ let current: Session | null = scenario('auth', 'in') === 'out' ? null : session
 
 type Row = { role: 'user' | 'assistant'; content: Record<string, unknown>[] }
 const text = (role: Row['role'], value: string): Row => ({ role, content: [{ type: 'text', text: value }] })
+
+// menu=short: three days, sábado to lunes, as "los 3 días que vienen" builds them on a Friday.
+const menuDays: Day[] =
+  scenario('menu', 'saved') === 'short'
+    ? ['saturday', 'sunday', 'monday']
+    : ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday']
 
 // A week with few recipes that repeat, as the product asks, all from the food catalog.
 const week: MenuData = {
@@ -87,7 +93,7 @@ const week: MenuData = {
       ],
     },
   ],
-  days: (['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'] as const).map((day, i) => ({
+  days: menuDays.map((day, i) => ({
     day,
     meals: [
       { slot: 'Desayuno', recipe_id: 'avena' },
@@ -183,7 +189,14 @@ if (pricesMode !== 'old') {
 }
 
 const longChat: Row[] = [
-  text('user', 'Hola, quiero comer más ordenado entre semana.'),
+  // The chat function's date block comes first, as stored; the chat hides it.
+  {
+    role: 'user',
+    content: [
+      { type: 'text', text: '<today>Friday, October 16, 2026</today>' },
+      { type: 'text', text: 'Hola, quiero comer más ordenado entre semana.' },
+    ],
+  },
   {
     role: 'assistant',
     content: [
@@ -269,7 +282,7 @@ const fullProfile = {
   show_numbers: scenario('numbers', 'off') === 'on',
 }
 
-// menu: saved (default), none, error. One item starts crossed out on the list.
+// menu: saved (default), short (above), none, error. One item starts crossed out on the list.
 const menuMode = scenario('menu', 'saved')
 const menuRow = {
   data: week,
@@ -412,8 +425,8 @@ export const supabase = {
 const reply =
   'Buena elección: el pollo al horno con boniato se puede dejar listo el domingo y rinde para varias cenas.\n\nPara que entre en tu semana:\n- Hacé una bandeja grande y separala en porciones.\n- Sumá una verdura distinta cada día para variar.\n\n¿Querés que lo tengamos en cuenta para tu menú?'
 
-// Stream the chat function's reply the way the real one does: plain text, in chunks. The finished turn is
-// stored in its conversation, as the server would, so reloading the messages keeps it.
+// Stream the chat function's reply the way the real one does: a few steps, then the text in chunks, one JSON object
+// per line. The finished turn is stored in its conversation, as the server would, so reloading the messages keeps it.
 const realFetch = window.fetch.bind(window)
 window.fetch = async (input, init) => {
   const url = typeof input === 'string' ? input : input instanceof URL ? input.href : input.url
@@ -427,13 +440,20 @@ window.fetch = async (input, init) => {
   const encoder = new TextEncoder()
   const body = new ReadableStream<Uint8Array>({
     async start(controller) {
+      const send = (event: { text: string } | { step: string }) =>
+        controller.enqueue(encoder.encode(`${JSON.stringify(event)}\n`))
+      for (const step of ['thinking', 'search_products']) {
+        send({ step })
+        await wait(mode === 'slow' ? 3000 : 1500)
+      }
+      send({ step: 'typing' })
       for (const chunk of chunks) {
-        controller.enqueue(encoder.encode(chunk))
+        send({ text: chunk })
         await wait(mode === 'trickle' ? 600 : 45)
       }
       messages.get(conversation_id)?.push(text('user', sent), text('assistant', reply))
       controller.close()
     },
   })
-  return new Response(body, { headers: { 'Content-Type': 'text/plain; charset=utf-8' } })
+  return new Response(body, { headers: { 'Content-Type': 'application/x-ndjson; charset=utf-8' } })
 }

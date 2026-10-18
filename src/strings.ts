@@ -35,9 +35,18 @@ export const t = {
     send: 'Enviar',
     listen: 'Hablar',
     micError: 'No pude usar el micrófono.',
-    // The visible status line: before the first words, then while they stream.
+    // The visible status line: before the chat function reports a step, then each step it reports (ADR 0029).
     waiting: 'Armando la respuesta…',
-    typing: 'Escribiendo…',
+    steps: {
+      thinking: 'Pensando…',
+      typing: 'Escribiendo…',
+      search_products: 'Buscando los mejores precios…',
+      save_menu: 'Armando tu menú…',
+      save_profile: 'Guardando lo que me contaste…',
+      update_shopping_list: 'Actualizando tu lista…',
+      show_menu: 'Preparando tu menú…',
+      show_shopping_list: 'Sumando tu lista…',
+    } as Record<string, string>,
     disclaimer: 'No reemplaza a tu nutricionista.',
     healthData: 'Tus datos de salud',
     loading: 'Cargando la conversación…',
@@ -46,7 +55,6 @@ export const t = {
     loadError: 'No se pudo cargar la conversación.',
     listError: 'No se pudo cargar la lista de chats.',
     chats: 'Chats',
-    back: 'Volver',
     newChat: 'Nuevo chat',
     noChats: 'Todavía no tenés chats.',
     noReply: 'No pude responder eso. Probá decirlo de otra forma.',
@@ -54,7 +62,7 @@ export const t = {
     openList: 'Ver lista',
   },
   menu: {
-    empty: 'Todavía no hay menú. Pedíselo al chat.',
+    empty: 'Todavía no hay menú. Pedíselo al chat, para la semana o para los días que quieras.',
     loading: 'Cargando el menú…',
     loadError: 'No se pudo cargar el menú.',
     change: 'Cambiar',
@@ -116,6 +124,8 @@ export const t = {
     cheaperThan: (amount: string, store: string) => `${amount} menos que todo en ${store}`,
     noOneStore: 'Ningún súper tiene toda la lista.',
     saving: (amount: string) => `Ahorrás ${amount} frente al promedio de los súper.`,
+    // Under the chosen total, for menus of 2 days or more: "$ 277 por día · menú de 7 días".
+    perDay: (amount: string, days: number) => `${amount} por día · menú de ${days} días`,
     missing: (n: number) => (n === 1 ? '1 producto no encontrado' : `${n} productos no encontrados`),
     notFound: 'No encontrado online',
     checked: (date: string) => `Precios de las webs de los súper del ${date}. Pueden variar.`,
