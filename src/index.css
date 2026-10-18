@@ -2,16 +2,16 @@
 
 :root {
   /* Color: light */
-  --ground: #f3f6f2;
+  --ground: #f8f9f8;
   --surface: #ffffff;
-  --surface-sunk: #e8eee9;
-  --line: #d8e1db;
-  /* The pill behind a supermarket's logo: white in both themes, since the logos are never recolored. */
+  --surface-sunk: #e9f2ec;
+  --line: #e3e8e4;
+  /* The pill behind a supermarket's logo: white, since the logos are never recolored. */
   --store-logo-bg: #ffffff;
   --store-logo-h: 24px;
   --store-logo-w: 64px;
   --line-strong: #74877d;
-  --ink: #14211b;
+  --ink: #0f1713;
   --ink-muted: #55645c;
   --brand: #1e8a5e;
   --brand-ink: #156b49;
@@ -81,37 +81,6 @@
   -webkit-font-smoothing: antialiased;
   -webkit-text-size-adjust: 100%;
   text-size-adjust: 100%;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --ground: #0d1613;
-    --surface: #16221d;
-    --surface-sunk: #1d2b25;
-    --line: #26352e;
-    --line-strong: #5c7067;
-    --ink: #e6eee9;
-    --ink-muted: #9aaba3;
-    --brand-ink: #5cc495;
-    --primary: #5cc495;
-    --primary-hover: #7bd3aa;
-    --on-primary: #0b3d2b;
-    --bubble-user: #1d5a42;
-    --on-bubble-user: #e6eee9;
-    --focus: #5cc495;
-    --danger: #ff8a7a;
-    --danger-surface: #2a1715;
-    --success-surface: #13291f;
-    --glass: rgb(13 22 19 / 0.68);
-    --glass-solid: #0d1613;
-    --glass-line: rgb(230 238 233 / 0.12);
-    --glass-edge: rgb(255 255 255 / 0.08);
-    --glass-shadow: 0 1px 2px rgb(0 0 0 / 0.3), 0 12px 32px -8px rgb(0 0 0 / 0.6);
-    --capsule: #16221d;
-    --capsule-shadow: 0 1px 3px rgb(0 0 0 / 0.5);
-
-    color-scheme: dark;
-  }
 }
 
 /* Glass is a progressive enhancement: solid where it can't be drawn, or where people ask for less
@@ -448,12 +417,9 @@ a.button {
   gap: 16px;
 }
 
-/* Reserves the button's height, so the form doesn't jump when Google's script loads. Google's iframe document
-   is light: inheriting the dark color-scheme would make the browser paint it as an opaque white box. Its own
-   dark theme ('filled_black') still applies. */
+/* Reserves the button's height, so the form doesn't jump when Google's script loads. */
 .google-button {
   min-height: 44px;
-  color-scheme: light;
 }
 
 .divider {
