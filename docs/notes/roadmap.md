@@ -13,7 +13,7 @@ Ideas for after the first version ([scope](../product.md#scope)). Grouped by are
 - A deal with a supermarket chain or PedidosYa Market to fill the cart directly.
 - Find nearby stores by address and what they sell.
 - Pick the store using price and delivery cost together.
-- Scheduled orders: same day and time every week.
+- Scheduled orders: the order repeats every few days already ([product](../product.md#8-recurring-order)); next, act on the date (start a new list, fill the cart), then same day and time every week.
 - Two deliveries a week: dry goods once, fresh food twice.
 - Replacements when something is out of stock, sticking to the plan.
 - Repeat last week's order with one tap.

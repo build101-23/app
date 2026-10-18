@@ -33,6 +33,7 @@ One file per decision: `NNNN-short-title.md`. ADRs are append-only: never rewrit
 | 0027 | [Sign in with Google's own button](0027-google-sign-in-button.md) | Accepted | 2026-10-17 |
 | 0028 | [Menus in calendar order from tomorrow, named by weekday](0028-menus-of-1-to-7-days.md) | Accepted | 2026-10-17 |
 | 0029 | [The chat streams the step it's on](0029-chat-streams-its-steps.md) | Accepted | 2026-10-18 |
+| 0030 | [A recurring order is stored on the menu, every as many days as the menu lasts](0030-recurring-order-on-the-menu.md) | Accepted | 2026-10-18 |
 
 ## Template
 

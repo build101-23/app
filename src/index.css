@@ -1366,6 +1366,37 @@ textarea {
   justify-self: start;
 }
 
+/* The recurring order: one flat card on top of the menu (ADR 0030). */
+.repeat {
+  display: grid;
+  justify-items: start;
+  gap: 4px;
+  margin-bottom: 8px;
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-card);
+  background: var(--surface);
+}
+
+.repeat p {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+}
+
+.repeat .icon {
+  color: var(--brand-ink);
+}
+
+.repeat .button {
+  margin-top: 8px;
+}
+
+.repeat .button.quiet {
+  margin-left: -12px;
+}
+
 /* Where to buy: one flat card at the top, priced from the chat's products (ADR 0024). */
 .prices {
   display: grid;

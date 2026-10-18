@@ -46,6 +46,7 @@ export const t = {
       update_shopping_list: 'Actualizando tu lista…',
       show_menu: 'Preparando tu menú…',
       show_shopping_list: 'Sumando tu lista…',
+      set_repeat: 'Programando tu pedido…',
     } as Record<string, string>,
     disclaimer: 'No reemplaza a tu nutricionista.',
     healthData: 'Tus datos de salud',
@@ -86,6 +87,17 @@ export const t = {
     dayTotal: 'Total del día',
     // After the macros when some foods have no values: "(sin contar espinaca, mayonesa)".
     without: (names: string) => `sin contar ${names.toLowerCase()}`,
+    // The recurring order card on top of the menu (ADR 0030). The date comes in formatted ("sábado 25 de octubre").
+    repeat: {
+      title: 'Pedido recurrente',
+      off: (days: number) => (days === 1 ? 'Repetí este pedido todos los días.' : `Repetí este pedido cada ${days} días, lo que dura el menú.`),
+      start: 'Repetir pedido',
+      every: (days: number) => (days === 1 ? 'Se repite todos los días' : `Se repite cada ${days} días`),
+      next: (date: string) => `Próximo pedido: ${date}`,
+      today: 'Próximo pedido: hoy',
+      stop: 'Dejar de repetir',
+      saveError: 'No se pudo guardar. Probá de nuevo.',
+    },
   },
   list: {
     loading: 'Cargando la lista…',

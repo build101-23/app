@@ -25,7 +25,8 @@ This app starts from your diet. It knows what you need, how much, and which swap
 2. The app combines that with your likes and restrictions, looks for the products the supermarkets sell, and proposes a menu with them: for the week, or for the days you ask ("para el finde", "los 3 días que vienen"), from tomorrow unless you say otherwise. You change it as you like. Your plan is your profile plus that menu.
 3. The menu comes with its shopping list, priced at each supermarket, with the cheapest way to buy it on top. Change the menu and the list follows.
 4. You share the list on WhatsApp or copy it.
-5. *(Later)* The app places the order for you.
+5. If you want the same shopping again, you make the order recurring and the app shows when the next one is.
+6. *(Later)* The app places the order for you.
 
 ## Scope
 
@@ -116,12 +117,19 @@ The first version goes from a chat to a priced shopping list, in Montevideo only
 - Foods and package sizes that exist in Uruguay.
 - An "Order it for me" button that, for now, only records interest.
 
+#### 8. Recurring order
+
+- Make your order repeat: tap "Repetir pedido" on top of the Menu tab, or tell the chat ("que se repita", "pedido recurrente", "todas las semanas"). It repeats every as many days as your menu lasts: weekly for a week, every 3 days for 3 days. Tell the chat another interval ("cada dos semanas") and it uses that, from 1 to 28 days ([ADR 0030](adr/0030-recurring-order-on-the-menu.md)).
+- The Menu tab shows how often it repeats and the date of the next order, with "Dejar de repetir". The chat stops it too.
+- Changing the menu keeps it. A new menu with another number of days keeps the old interval, and the chat offers to match it.
+- For now nothing is ordered on that date: we place the order by hand for people in the pilot who ask.
+
 ### Out
 
 Left out so we can first check that people use the plan and the list every week, and actually save. See the [roadmap](notes/roadmap.md) for what comes after.
 
 - Uploading a nutritionist's plan (PDF, photo or pasted text).
-- Ordering from stores, payments and scheduled orders.
+- Ordering from stores, payments, and doing anything automatically on a recurring order's date.
 - Small local shops (butchers, produce shops) and finding stores near you. At first, only big supermarkets.
 - Cities other than Montevideo.
 - Weekly promotions and bank-card discount days.

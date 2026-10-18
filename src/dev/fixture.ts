@@ -263,10 +263,16 @@ const fullProfile = {
 
 // menu: saved (default), short (above), none, error. One item starts crossed out on the list.
 const menuMode = scenario('menu', 'saved')
+// repeat: off (default), on (a weekly order set three days ago, ADR 0030).
+const threeDaysAgo = new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toLocaleDateString('en-CA')
+const repeatOn = scenario('repeat', 'off') === 'on'
 const menuRow = {
+  user_id: 'fixture-user',
   data: week,
   have: { banana: null } as Record<string, number | null>,
   updated_at: '2026-10-17T18:25:00Z',
+  repeat_every: repeatOn ? 7 : null,
+  repeat_from: repeatOn ? threeDaysAgo : null,
 }
 
 type Filters = Record<string, unknown>
