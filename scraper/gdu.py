@@ -225,10 +225,12 @@ def parse_product_page(page: str) -> dict | None:
 
 def food_candidates(sitemap: Sitemap, saved: set[str], terms: tuple[str, ...] = FOOD_TERMS,
                     per_term: int = FOOD_PAGES_PER_TERM, read_times: dict[str, str] | None = None) -> list[str]:
-    """Product ids for the food pages phase: up to `per_term` per food, leaving out `saved`. They are
-    picked fresh ones (FRESH_SLUG_MARKS) first, then newest first (more likely still for sale), and read
-    never-read first, then by oldest `read_times`. Foods take turns, so a run cut short by its budget
-    still gets some of each, and the next run starts with the ones it missed."""
+    """Product ids for the food pages phase: up to `per_term` per food, leaving out `saved`. Each food's
+    picks are fresh ones (FRESH_SLUG_MARKS) first, then newest first (more likely still for sale); they
+    are read never-read first, then by oldest `read_times`. Foods take turns, so a run cut short by its
+    budget still gets some of each, and the next run starts with the picks it missed. Products outside a
+    food's picks aren't read again: ordering every candidate by `read_times` would hand the picks to the
+    never-read long tail, including pages a chain no longer sells, which are never saved (ADR 0023)."""
     def rank(pid: str) -> tuple[bool, int]:
         return not any(mark in sitemap.products[pid] for mark in FRESH_SLUG_MARKS), -int(pid)
 
