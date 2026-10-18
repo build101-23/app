@@ -6,7 +6,7 @@ Living doc: how the system is *now*. Reasoning lives in [ADRs](adr/), not here.
 
 - **Web app** (`src/`): a single-page app installed on the phone as a PWA. It talks to Supabase with the public key and the user's login token. Screens: Chat (with a preview of each menu it saved or showed and a button to the Menu tab, and a live shopping list card with its total and a button to the List tab), Menu (the week, Cambiar buttons that hand a draft to the chat, and kcal and macros per meal and per day when the numbers switch is on), List (the saved menu added up into a shopping list by section, with what you have at home crossed out or reduced, each line's product at the store it's bought in, and share or copy; on top, where to buy it by the store rule and whether it fits the menu's budget) and Profile (with the numbers switch).
 - **Supabase**: one hosted project.
-  - Auth: magic link email for now, an emailed code from milestone 6.
+  - Auth: Google's sign-in button ([ADR 0027](adr/0027-google-sign-in-button.md)), or a magic link email for now and an emailed code from milestone 6.
   - Postgres (`supabase/migrations/`), with row-level security on every table. Users read only their own rows, except the price catalog below. They write only `conversations`, `menus.have` and the profile's `show_numbers` (through `set_show_numbers`); the `chat` function writes the rest ([ADR 0014](adr/0014-client-reads-chat-function-writes.md)):
     - `conversations`: the user's chats, with a title (the first message) and `updated_at` for sorting.
     - `messages`: the turns of each conversation. `content` holds each message exactly as sent to or returned by Claude, thinking blocks included. The history is append-only and replayed as is.
@@ -26,7 +26,9 @@ Living doc: how the system is *now*. Reasoning lives in [ADRs](adr/), not here.
 
 ## Data flow
 
-1. Sign-in: browser → Supabase Auth → magic link email → back to the app with a session.
+1. Sign-in, either way:
+   - Google: browser → Google's button → signed ID token → Supabase Auth (`signInWithIdToken`) → session, without leaving the page.
+   - Email: browser → Supabase Auth → magic link email → back to the app with a session.
 2. Chat: the browser creates a `conversations` row for a new chat, then → `chat` function (user token, conversation id) → Claude (streaming) → text streamed back to the browser. The function writes: `save_profile` calls write `profiles`, `save_menu` calls write `menus.data`, `update_shopping_list` calls write `menus.have`, and the new turns are appended to `messages`. When the stream ends, the browser reloads the chat's messages, so it sees the `save_menu` and `show_menu` calls it shows as previews, and the list calls it shows the list card under. It also reads the `menus` row then: the list card is drawn live from it, like the List tab, so only the last one shows, and once the list has been shown, a later turn that shows it again hides the menu previews it saved. A `show_menu` preview is the latest menu in the chat before it: a saved `save_menu` input or the server's `<saved_menu>` copy. A turn shows at most one `show_menu` preview, and none after a save in the same turn, because the model sometimes calls it right after `save_menu`.
 3. Screens read `conversations`, `messages`, `profiles` and `menus` directly from Supabase, limited to the user's own rows. The List tab and the chat's list card build the list in the browser from `menus.data` and the catalog. The List tab writes `menus.have`, the only column of `menus` the browser may change. Both read the picked products from `store_products` (one query per store, `src/prices.ts`) and price what's left to buy, in the browser, with `offers.ts`.
 4. Prices: `python -m scraper` → supermarket sites (1 request per second per site, 25 minutes at most) → `upsert_store_products` in batches → `store_products`, and `price_changes` through the trigger. One `scrape_runs` row per chain records how the run went.
@@ -36,6 +38,7 @@ Living doc: how the system is *now*. Reasoning lives in [ADRs](adr/), not here.
 - Client: installable web app (PWA), Capacitor later ([ADR 0002](adr/0002-pwa-now-capacitor-later.md))
 - Framework: Vite + React + TypeScript ([ADR 0004](adr/0004-vite-react-supabase-claude.md))
 - UI language: Spanish, strings in `src/strings.ts` ([ADR 0006](adr/0006-spanish-ui.md))
+- UI design: plain CSS with design tokens in `src/index.css`, VIVERI identity, no CSS framework ([ADR 0025](adr/0025-viveri-identity-and-ui-system.md), [design.md](design.md))
 - Backend: Supabase: auth, Postgres, Edge Functions ([ADR 0004](adr/0004-vite-react-supabase-claude.md))
 - AI: `claude-sonnet-5-5` at medium effort via the Anthropic SDK ([ADR 0007](adr/0007-sonnet-for-chat.md))
 - Hosting: Cloudflare Worker serving the static build ([ADR 0005](adr/0005-cloudflare-workers.md))

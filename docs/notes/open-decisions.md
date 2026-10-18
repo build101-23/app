@@ -16,4 +16,3 @@ Once a decision is made, record it where it belongs (an ADR in [adr/](../adr/), 
 - [ ] Sending health data to an AI provider abroad: check what Law 18.331 requires for international transfers, and say it in the consent.
 - [ ] Which list edits count toward "under 20% of items edited" ([product.md](../product.md#what-we-want-to-learn)). Crossing something out often means it's in the pantry, not that the list was wrong, so milestone 6's events should record the kind of edit (crossed out or −) and where it came from (list or chat).
 - [ ] Which event marks a plan as accepted for "How many shop from their first plan with 2 menu changes or fewer" ([product.md](../product.md#what-we-want-to-learn)), now that there's no confirm step ([ADR 0022](../adr/0022-list-follows-the-menu.md)). Candidates: sharing or copying the list, or asking the chat for it.
-- [ ] App name.

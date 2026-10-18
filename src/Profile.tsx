@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import type { Session } from '@supabase/supabase-js'
 import { supabase } from './supabase'
 import { t } from './strings'
+import { Alert, AlertIcon, EmptyState } from './ui'
 
 // The shape the chat's save_profile tool writes (supabase/functions/chat/index.ts).
 type ProfileData = {
@@ -18,31 +19,96 @@ type ProfileData = {
   show_numbers?: boolean | null
 }
 
-export default function Profile({ session }: { session: Session }) {
+export default function Profile({ session, onOpenChat }: { session: Session; onOpenChat: () => void }) {
   const [data, setData] = useState<ProfileData | null>(null)
-  const [error, setError] = useState('')
+  const [failed, setFailed] = useState(false)
+  const [numbersError, setNumbersError] = useState('')
 
-  useEffect(() => {
+  function load() {
     supabase
       .from('profiles')
       .select('data')
       .maybeSingle()
-      .then(({ data }) => setData(data?.data ?? {}))
-  }, [])
+      .then(({ data, error }) => {
+        if (error) setFailed(true)
+        else setData(data?.data ?? {})
+      })
+  }
 
-  if (!data) return null
+  useEffect(load, [])
 
+  function retry() {
+    setFailed(false)
+    load()
+  }
+
+  // The switch changes at once, and goes back if saving fails.
   async function setNumbers(on: boolean) {
-    const before = data!.show_numbers
-    setError('')
+    const before = data?.show_numbers
+    setNumbersError('')
     setData((d) => d && { ...d, show_numbers: on })
     const { error } = await supabase.rpc('set_show_numbers', { show_numbers: on })
     if (error) {
       setData((d) => d && { ...d, show_numbers: before })
-      setError(t.profile.numbersError)
+      setNumbersError(t.profile.numbersError)
     }
   }
 
+  return (
+    <div className="page profile">
+      {failed ? (
+        <div role="alert" className="alert">
+          <AlertIcon />
+          <div>
+            <p>{t.profile.loadError}</p>
+            <button type="button" className="button quiet" onClick={retry}>
+              {t.retry}
+            </button>
+          </div>
+        </div>
+      ) : data ? (
+        <Saved data={data} onOpenChat={onOpenChat} />
+      ) : (
+        <div className="card profile-skeleton" role="status">
+          <span className="sr-only">{t.profile.loading}</span>
+          <span className="skeleton-line" />
+          <span className="skeleton-line" />
+          <span className="skeleton-line" />
+          <span className="skeleton-line" />
+        </div>
+      )}
+      {/* Even with nothing saved yet: numbers are optional and can be turned on any time. */}
+      {data && (
+        <section className="settings">
+          <h2>{t.profile.settings}</h2>
+          <div className="card settings-card">
+            <label className="switch">
+              <span>{t.profile.numbers}</span>
+              <input
+                type="checkbox"
+                role="switch"
+                checked={data.show_numbers === true}
+                onChange={(e) => setNumbers(e.target.checked)}
+              />
+            </label>
+          </div>
+          {numbersError && <Alert text={numbersError} />}
+        </section>
+      )}
+      <section className="account">
+        <h2>{t.profile.account}</h2>
+        <div className="card account-card">
+          <p className="account-email">{session.user.email}</p>
+          <button type="button" className="button secondary" onClick={() => supabase.auth.signOut()}>
+            {t.profile.signOut}
+          </button>
+        </div>
+      </section>
+    </div>
+  )
+}
+
+function Saved({ data, onOpenChat }: { data: ProfileData; onOpenChat: () => void }) {
   const plan =
     data.follows_nutritionist_plan == null
       ? null
@@ -64,11 +130,14 @@ export default function Profile({ session }: { session: Session }) {
   const shownFacts = facts.filter(([, value]) => value != null && value !== '')
   const shownLists = lists.filter(([, items]) => items?.length)
 
+  if (shownFacts.length + shownLists.length === 0) {
+    return <EmptyState text={t.profile.empty} action={t.profile.openChat} onAction={onOpenChat} />
+  }
+
   return (
-    <div className="profile">
-      {shownFacts.length + shownLists.length === 0 && <p>{t.profile.empty}</p>}
+    <>
       {shownFacts.length > 0 && (
-        <dl>
+        <dl className="card facts">
           {shownFacts.map(([label, value]) => (
             <div key={label}>
               <dt>{label}</dt>
@@ -78,27 +147,15 @@ export default function Profile({ session }: { session: Session }) {
         </dl>
       )}
       {shownLists.map(([label, items]) => (
-        <section key={label}>
+        <section key={label} className="group">
           <h2>{label}</h2>
-          <ul>
+          <ul className="chips">
             {items!.map((item) => (
               <li key={item}>{item}</li>
             ))}
           </ul>
         </section>
       ))}
-      <label className="switch">
-        <input
-          type="checkbox"
-          role="switch"
-          checked={data.show_numbers === true}
-          onChange={(e) => setNumbers(e.target.checked)}
-        />
-        {t.profile.numbers}
-      </label>
-      {error && <p role="alert">{error}</p>}
-      <p className="muted">{session.user.email}</p>
-      <button onClick={() => supabase.auth.signOut()}>{t.profile.signOut}</button>
-    </div>
+    </>
   )
 }

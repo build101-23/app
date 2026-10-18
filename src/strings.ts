@@ -3,24 +3,48 @@ import type { StoreKey } from '../supabase/functions/_shared/stores.ts'
 
 // All user-facing text, in Rioplatense Spanish (ADR 0006).
 export const t = {
+  loading: 'Cargando…',
+  retry: 'Reintentar',
   signIn: {
     title: 'Ingresar',
+    hint: 'Te mandamos un link a tu email para entrar, sin contraseña.',
     email: 'Email',
     send: 'Enviame un link para entrar',
+    sending: 'Enviando…',
     sent: 'Revisá tu email y tocá el link para entrar.',
     otherEmail: 'Usar otro email',
+    error: 'No pudimos mandar el link. Probá de nuevo en unos minutos.',
+    orEmail: 'o con tu email',
+    googleError: 'No se pudo entrar con Google. Probá de nuevo o usá tu email.',
   },
+  nav: 'Secciones',
   tabs: { chat: 'Chat', menu: 'Menú', list: 'Lista', profile: 'Perfil' },
+  // A feature that exists in the product plan but not in the app yet.
+  soon: 'Muy pronto',
   chat: {
     welcome: 'Hola. Contame un poco de vos: ¿qué querés lograr con tu alimentación?',
+    // Only what the chat does today, in the user's own words. Tapping one sends it.
+    starters: 'Para empezar',
+    intents: [
+      'Armemos mi plan desde cero',
+      'Tengo un plan de mi nutricionista',
+      'Hay cosas que no puedo comer',
+      'Tengo poco tiempo para cocinar',
+    ],
     placeholder: 'Escribí tu mensaje…',
     send: 'Enviar',
     listen: 'Hablar',
-    stopListening: 'Dejar de escuchar',
     micError: 'No pude usar el micrófono.',
+    // The visible status line: before the first words, then while they stream.
+    waiting: 'Armando la respuesta…',
+    typing: 'Escribiendo…',
+    disclaimer: 'No reemplaza a tu nutricionista.',
+    healthData: 'Tus datos de salud',
+    loading: 'Cargando la conversación…',
     error: 'No se pudo enviar. Probá de nuevo.',
     limit: 'Llegaste al límite de mensajes por hoy. Probá de nuevo mañana.',
     loadError: 'No se pudo cargar la conversación.',
+    listError: 'No se pudo cargar la lista de chats.',
     chats: 'Chats',
     back: 'Volver',
     newChat: 'Nuevo chat',
@@ -31,6 +55,7 @@ export const t = {
   },
   menu: {
     empty: 'Todavía no hay menú. Pedíselo al chat.',
+    loading: 'Cargando el menú…',
     loadError: 'No se pudo cargar el menú.',
     change: 'Cambiar',
     // Lowercase to fit inside a sentence; headings capitalize them with CSS.
@@ -55,6 +80,7 @@ export const t = {
     without: (names: string) => `sin contar ${names.toLowerCase()}`,
   },
   list: {
+    loading: 'Cargando la lista…',
     hint: 'Tachá lo que ya tenés en casa.',
     // The chat's list card when everything is crossed out.
     nothingLeft: 'No te falta comprar nada.',
@@ -160,8 +186,18 @@ export const t = {
     canned_peas: 'Arvejas en lata',
     canned_corn: 'Choclo en lata',
   } satisfies Record<CatalogKey, string>,
+  // The health-data consent doesn't exist yet (milestone 6): say so, and only what's true today.
+  healthData: {
+    title: 'Tus datos de salud',
+    soon: 'Acá vas a poder leer y aceptar cómo usamos tus datos de salud.',
+    now: 'Por ahora, tus mensajes y lo que le contás al chat (tu objetivo, tus gustos, lo que no podés comer) quedan guardados en tu cuenta.',
+    close: 'Entendido',
+  },
   profile: {
+    loading: 'Cargando tu perfil…',
+    loadError: 'No se pudo cargar tu perfil.',
     empty: 'Todavía no hay nada guardado. Contáselo al chat.',
+    openChat: 'Ir al chat',
     goal: 'Objetivo',
     meals: 'Comidas por día',
     cookingTime: 'Tiempo para cocinar',
@@ -172,8 +208,11 @@ export const t = {
     dislike: 'No me gusta',
     like: 'Me gusta',
     want: 'Quiero comer',
+    // The numbers switch (product.md: numbers are optional, hidden by default).
+    settings: 'Preferencias',
     numbers: 'Mostrar números (calorías y macros)',
     numbersError: 'No se pudo guardar. Probá de nuevo.',
+    account: 'Cuenta',
     signOut: 'Cerrar sesión',
   },
 }

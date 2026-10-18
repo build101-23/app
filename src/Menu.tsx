@@ -3,6 +3,7 @@ import { days as order, type MenuData } from '../supabase/functions/_shared/menu
 import { addMacros } from '../supabase/functions/_shared/nutrition.ts'
 import { supabase } from './supabase'
 import { t } from './strings'
+import { Alert, EmptyState, PageSkeleton } from './ui'
 
 type MenuRow = { data: MenuData }
 
@@ -28,7 +29,7 @@ export function MenuPreview({ menu, busy, onOpen }: { menu: MenuData; busy: bool
           </li>
         ))}
       </ul>
-      <button disabled={busy} onClick={onOpen}>
+      <button type="button" className="button secondary" disabled={busy} onClick={onOpen}>
         {t.chat.openMenu}
       </button>
     </div>
@@ -57,19 +58,28 @@ export default function Menu({ onChange }: { onChange: (draft: string) => void }
       .then(({ data }) => setShowNumbers(data?.data?.show_numbers === true))
   }, [])
 
-  if (menu === undefined) return error ? <p role="alert" className="menu">{error}</p> : null
-  if (!menu) return <p className="menu">{t.menu.empty}</p>
+  if (menu === undefined) {
+    return <div className="page menu">{error ? <Alert text={error} /> : <PageSkeleton label={t.menu.loading} />}</div>
+  }
+  if (!menu) {
+    return (
+      <div className="page menu">
+        <EmptyState text={t.menu.empty} action={t.profile.openChat} onAction={() => onChange('')} />
+      </div>
+    )
+  }
 
   const recipes = new Map(menu.data.recipes.map((recipe) => [recipe.id, recipe]))
   const days = byDay(menu.data.days)
 
   return (
-    <div className="menu">
+    <div className="page menu">
       {days.map(({ day, meals }) => (
         <section key={day}>
           <div className="menu-day">
             <h2>{t.menu.days[day]}</h2>
             <button
+              type="button"
               className="link"
               aria-label={t.menu.changeDay(t.menu.days[day]).trim()}
               onClick={() => onChange(t.menu.changeDay(t.menu.days[day]))}
@@ -102,6 +112,7 @@ export default function Menu({ onChange }: { onChange: (draft: string) => void }
                 </ul>
                 <p>{recipe.how}</p>
                 <button
+                  type="button"
                   className="link"
                   aria-label={t.menu.changeMeal(meal.slot, t.menu.days[day]).trim()}
                   onClick={() => onChange(t.menu.changeMeal(meal.slot, t.menu.days[day]))}

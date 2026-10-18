@@ -8,6 +8,7 @@ import type { Option } from '../supabase/functions/_shared/stores.ts'
 import { usePrices } from './prices'
 import { supabase } from './supabase'
 import { t } from './strings'
+import { Alert, EmptyState, PageSkeleton } from './ui'
 
 // updated_at is the menu's version: writing have doesn't touch it.
 export type MenuRow = { data: MenuData; have: Have; updated_at: string }
@@ -112,14 +113,14 @@ export function ListPreview({ row, busy, onOpen }: { row: MenuRow; busy: boolean
     <div className="bubble assistant list-preview">
       <p>{nothingToBuy ? t.list.nothingLeft : listText(items, row.have)}</p>
       {summary ?? (!nothingToBuy && <p className="muted">{waiting}</p>)}
-      <button disabled={busy} onClick={onOpen}>
+      <button type="button" className="button secondary" disabled={busy} onClick={onOpen}>
         {t.chat.openList}
       </button>
     </div>
   )
 }
 
-export default function List({ session }: { session: Session }) {
+export default function List({ session, onOpenChat }: { session: Session; onOpenChat: () => void }) {
   // undefined while loading, null when the AI hasn't saved a menu yet.
   const [menu, setMenu] = useState<MenuRow | null | undefined>(undefined)
   const [error, setError] = useState('')
@@ -146,8 +147,16 @@ export default function List({ session }: { session: Session }) {
     return () => document.removeEventListener('visibilitychange', onVisible)
   }, [])
 
-  if (menu === undefined) return error ? <p role="alert" className="list">{error}</p> : null
-  if (!menu) return <p className="list">{t.menu.empty}</p>
+  if (menu === undefined) {
+    return <div className="page list">{error ? <Alert text={error} /> : <PageSkeleton label={t.list.loading} />}</div>
+  }
+  if (!menu) {
+    return (
+      <div className="page list">
+        <EmptyState text={t.menu.empty} action={t.profile.openChat} onAction={onOpenChat} />
+      </div>
+    )
+  }
 
   const { have, updated_at } = menu
   const items = buildList(menu.data)
@@ -209,12 +218,16 @@ export default function List({ session }: { session: Session }) {
   }
 
   return (
-    <div className="list">
-      {!priced && !nothingToBuy && (
-        <section className="prices">
-          <p className="muted">{waiting}</p>
-        </section>
-      )}
+    <div className="page list">
+      {!priced &&
+        !nothingToBuy &&
+        (rows === null ? (
+          <Alert text={t.prices.loadError} />
+        ) : (
+          <section className="prices">
+            <p className="muted">{waiting}</p>
+          </section>
+        ))}
       {priced && plan && (
         <section className="prices">
           <h2 id="where">{t.prices.where}</h2>
@@ -254,20 +267,23 @@ export default function List({ session }: { session: Session }) {
       )}
       <p className="muted">{t.list.hint}</p>
       <div className="list-actions">
-        <button disabled={nothingToBuy} onClick={share}>
+        <button type="button" className="button secondary" disabled={nothingToBuy} onClick={share}>
           {t.list.share}
         </button>
-        <button disabled={nothingToBuy} onClick={copy}>
+        <button type="button" className="button secondary" disabled={nothingToBuy} onClick={copy}>
           {t.list.copy}
         </button>
         {Object.keys(have).length > 0 && (
-          <button className="link" onClick={() => window.confirm(t.list.resetConfirm) && save({})}>
+          <button type="button" className="link" onClick={() => window.confirm(t.list.resetConfirm) && save({})}>
             {t.list.reset}
           </button>
         )}
       </div>
-      {notice && <p className="muted">{notice}</p>}
-      {error && <p role="alert">{error}</p>}
+      {/* Always mounted, so "Lista copiada." is announced when its text appears. */}
+      <p className="muted" role="status">
+        {notice}
+      </p>
+      {error && <Alert text={error} />}
       {sections.map((section) => {
         const inSection = items.filter((item) => item.section === section)
         if (!inSection.length) return null
@@ -316,6 +332,7 @@ export default function List({ session }: { session: Session }) {
                       )}
                     </span>
                     <button
+                      type="button"
                       className="step"
                       aria-label={t.list.less(name)}
                       disabled={crossed}
@@ -324,6 +341,7 @@ export default function List({ session }: { session: Session }) {
                       −
                     </button>
                     <button
+                      type="button"
                       className="step"
                       aria-label={t.list.more(name)}
                       disabled={buy >= toBuy(item, {})}
