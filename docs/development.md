@@ -28,6 +28,7 @@ Sign-in has two ways in:
 | `npx supabase functions deploy chat` | Deploy the `chat` Edge Function. Functions aren't deployed by pushing to `main`. |
 | `deno check --no-lock --node-modules-dir=none supabase/functions/chat/index.ts` | Type-check the `chat` function (Deno 2), which `npm run build` doesn't cover |
 | `scraper/.venv/bin/python -m scraper` | Read supermarket prices into Supabase, 25 minutes at most ([below](#price-scraper)) |
+| `npm run pitch` | Serve the pitch deck at http://localhost:8080 (`PORT` overrides it) ([below](#pitch-deck)) |
 
 When a migration takes away a write that the deployed function still makes with the user's token, deploy the function first, then `db push`. The other way round, the function breaks until it's deployed.
 
@@ -101,6 +102,17 @@ How it works and why: [ADR 0015](adr/0015-price-scraper-python-job-with-time-bud
 - The GDU sitemap is cached for 24 hours in `scraper/data/cache/`. `--refresh-sitemap` reads it again.
 - Every run leaves one `scrape_runs` row per chain: `status` (`done`, `interrupted`, `blocked`, `failed`), `price_context` and counters in `stats`.
 - A `blocked` chain stopped on its own, without retrying. When it's Devoto, Géant or Disco, the other two stop as well (`interrupted`): they share one platform. Read [ADR 0008](adr/0008-how-we-read-supermarket-sites.md) before trying again. Wait a while, then check with a tiny run (`--stores devoto --limit 1 --dry-run`, two requests); Devoto's first block lasted under 11 minutes.
+
+## Pitch deck
+
+The pitch deck is `pitch/VIVERI_presentacion_v4.html`: one self-contained file (brand fonts embedded, no network, no build step), and it is the deck's source, so edits go straight into it. `pitch/VIVERI_presentacion_v3.html` is the previous version.
+
+- **Run it:** `npm run pitch` and open http://localhost:8080, or open the file directly in Chrome or Edge. Both ways keep the presenter view in sync.
+- **Keys:** → / Space reveal or advance, ← back, F full screen, P presenter view (open it on your screen, the deck on the projector), N notes, T and D start or pause the pitch and demo timers, R resets both timers, A replays the logo animation, H shows all keys.
+- **Start from zero:** Shift+R, or "Reiniciar" in the bottom controls or the presenter view (asks first): back to the cover with nothing revealed and both timers at 00:00. Home goes to the cover without touching the timers.
+- `?motion=full` keeps the full animations when the OS asks for reduced motion (Windows with animation effects off). Print to PDF from the browser gives one slide per page.
+
+Design decisions behind it: [v4 plan](plans/2026-10-18-pitch-deck-v4-visual-polish.md) and the follow-ups linked from [pitch.md](notes/pitch.md).
 
 ## Spikes
 
