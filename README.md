@@ -1,6 +1,8 @@
 # VIVERI
 
-A phone app that turns your diet, built by chatting with an AI nutritionist, into a weekly menu and a shopping list. It prices the list at Montevideo's supermarkets and shows where it's cheapest.
+VIVERI es el end-to-end de tu alimentación: del menú a tu casa, al mejor precio.
+
+Una app donde conversás con un nutricionista de IA sobre tus objetivos, restricciones y presupuesto, y lo transforma en un menú semanal personalizado y una lista de compras con cantidades exactas. Luego compara precios entre los supermercados de Montevideo, arma el carrito con la opción que más ahorro te da y, con tu confirmación, el pedido llega a tu casa.
 
 Docs: [docs/](docs/) · Agent rules: [AGENTS.md](AGENTS.md)
 
